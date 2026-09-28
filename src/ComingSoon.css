@@ -30,7 +30,9 @@
     #080d28;
 }
 
-/* Star field — same visual language as the app */
+/* =========================================================
+   STAR FIELD
+   ========================================================= */
 
 .coming-soon::before {
   content: "";
@@ -51,7 +53,9 @@
   background-size: 68px 68px;
 }
 
-/* Main content */
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
 
 .coming-soon-content {
   position: relative;
@@ -63,7 +67,8 @@
 
   text-align: center;
 
-  border: 1px solid rgba(143, 231, 255, 0.2);
+  border: 1px solid
+    rgba(143, 231, 255, 0.2);
 
   border-radius: 28px;
 
@@ -76,7 +81,8 @@
 
   box-shadow:
     0 24px 70px rgba(0, 0, 0, 0.35),
-    0 0 45px rgba(80, 150, 255, 0.08);
+    0 0 45px
+      rgba(80, 150, 255, 0.08);
 
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -88,7 +94,9 @@
     both;
 }
 
-/* Logo */
+/* =========================================================
+   LOGO
+   ========================================================= */
 
 .coming-soon-logo {
   display: block;
@@ -114,7 +122,9 @@
     infinite;
 }
 
-/* Eyebrow */
+/* =========================================================
+   EYEBROW
+   ========================================================= */
 
 .coming-soon .eyebrow {
   margin: 20px 0 0;
@@ -128,7 +138,9 @@
   color: #8fe7ff;
 }
 
-/* Heading */
+/* =========================================================
+   HEADING
+   ========================================================= */
 
 .coming-soon h1 {
   margin: 10px 0 16px;
@@ -147,7 +159,9 @@
     rgba(102, 255, 102, 0.33);
 }
 
-/* Description */
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
 
 .coming-soon-description {
   max-width: 620px;
@@ -161,7 +175,9 @@
   color: #c7d2f6;
 }
 
-/* Rocket */
+/* =========================================================
+   ROCKET
+   ========================================================= */
 
 .coming-soon-planet {
   margin: 26px auto 8px;
@@ -183,7 +199,9 @@
     infinite;
 }
 
-/* Status */
+/* =========================================================
+   COMING SOON STATUS
+   ========================================================= */
 
 .coming-soon-status {
   display: inline-block;
@@ -215,7 +233,9 @@
     rgba(143, 231, 255, 0.1);
 }
 
-/* Store badges */
+/* =========================================================
+   STORE BADGES
+   ========================================================= */
 
 .coming-soon-stores {
   display: flex;
@@ -267,15 +287,31 @@
   background: #1c2860;
 }
 
+/* =========================================================
+   STORE ICONS
+   ========================================================= */
+
 .store-icon {
-  width: 34px;
+  flex: 0 0 32px;
 
-  font-size: 1.8rem;
+  width: 32px;
+  height: 32px;
 
-  line-height: 1;
-
-  text-align: center;
+  display: block;
 }
+
+.app-store-icon {
+  color: #ffffff;
+}
+
+.google-play-icon {
+  width: 32px;
+  height: 32px;
+}
+
+/* =========================================================
+   STORE TEXT
+   ========================================================= */
 
 .store-badge small {
   display: block;
@@ -299,7 +335,9 @@
   color: #f8fbff;
 }
 
-/* Footer */
+/* =========================================================
+   FOOTER
+   ========================================================= */
 
 .coming-soon-footer {
   margin: 30px 0 0;
@@ -309,11 +347,14 @@
   font-size: 0.9rem;
 }
 
-/* Animations */
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
 
 @keyframes comingSoonEnter {
   from {
     opacity: 0;
+
     transform:
       translateY(18px)
       scale(0.98);
@@ -321,6 +362,7 @@
 
   to {
     opacity: 1;
+
     transform:
       translateY(0)
       scale(1);
@@ -357,60 +399,24 @@
   }
 }
 
-/* Mobile */
-
-@media (max-width: 600px) {
-  .coming-soon {
-    padding: 24px 14px;
-  }
-
-  .coming-soon-content {
-    padding: 30px 20px 28px;
-
-    border-radius: 24px;
-  }
-
-  .coming-soon-logo {
-    width: min(270px, 72vw);
-
-    max-height: 190px;
-
-    margin-bottom: 14px;
-  }
-
-  .coming-soon-description {
-    font-size: 1rem;
-  }
-
-  .coming-soon-stores {
-    flex-direction: column;
-
-    align-items: stretch;
-  }
-
-  .store-badge {
-    width: 100%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .coming-soon-content,
-  .coming-soon-logo,
-  .coming-soon-planet {
-    animation: none;
-  }
-}
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
 @media (max-width: 600px) {
   .coming-soon {
     min-height: 100dvh;
+
     padding: 20px 12px;
+
     align-items: center;
   }
 
   .coming-soon-content {
     width: 100%;
+
     max-width: 430px;
+
     box-sizing: border-box;
 
     padding: 28px 18px 24px;
@@ -422,6 +428,7 @@
 
   .coming-soon-logo {
     width: min(235px, 68vw);
+
     max-height: 155px;
 
     margin: 0 auto 12px;
@@ -433,6 +440,7 @@
     margin-top: 8px;
 
     font-size: 0.7rem;
+
     letter-spacing: 0.16em;
   }
 
@@ -443,7 +451,13 @@
 
     max-width: 340px;
 
-    font-size: clamp(2.1rem, 9vw, 2.8rem);
+    font-size:
+      clamp(
+        2.1rem,
+        9vw,
+        2.8rem
+      );
+
     line-height: 1.02;
   }
 
@@ -453,6 +467,7 @@
     max-width: 330px;
 
     font-size: 0.95rem;
+
     line-height: 1.45;
   }
 
@@ -478,10 +493,13 @@
 
   .coming-soon-stores {
     width: 100%;
+
     box-sizing: border-box;
 
     display: flex;
+
     flex-direction: column;
+
     align-items: stretch;
 
     gap: 10px;
@@ -491,7 +509,9 @@
 
   .store-badge {
     width: 100%;
+
     min-width: 0;
+
     max-width: 100%;
 
     box-sizing: border-box;
@@ -505,8 +525,7 @@
     flex: 0 0 32px;
 
     width: 32px;
-
-    font-size: 1.6rem;
+    height: 32px;
   }
 
   .store-badge small {
@@ -523,5 +542,17 @@
     margin-top: 22px;
 
     font-size: 0.8rem;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .coming-soon-content,
+  .coming-soon-logo,
+  .coming-soon-planet {
+    animation: none;
   }
 }
