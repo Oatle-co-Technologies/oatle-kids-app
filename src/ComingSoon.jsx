@@ -2,39 +2,68 @@ import "./ComingSoon.css";
 
 function ComingSoon() {
   return (
-    <main className="coming-soon">
-      <div className="coming-soon-content">
+    <main className="coming-soon-page">
+      <div className="stars" aria-hidden="true">
+        <span>✦</span>
+        <span>·</span>
+        <span>✧</span>
+        <span>·</span>
+        <span>✦</span>
+        <span>·</span>
+        <span>✧</span>
+      </div>
 
+      <section className="coming-soon-card">
         <img
           src="/logo.png"
           alt="Oatle Kids"
           className="coming-soon-logo"
         />
 
-        <h1>Coming Soon</h1>
+        <p className="eyebrow">OATLE KIDS</p>
 
-        <p>
-          We’re working behind the scenes to make Oatle Kids
-          even better.
+        <h1>
+          Something stellar
+          <br />
+          is coming.
+        </h1>
+
+        <p className="coming-soon-intro">
+          We’re working behind the scenes to make your
+          learning adventure even better.
         </p>
 
-        <p className="coming-soon-subtitle">
-          An educational digital adventure for little learners.
+        <div className="coming-soon-planet" aria-hidden="true">
+          🪐
+        </div>
+
+        <p className="coming-soon-status">
+          <span className="status-dot" />
+          COMING SOON
         </p>
 
-        <div className="store-badges">
-          <div className="store-badge">
-            <span>Coming soon to</span>
-            <strong>App Store</strong>
+        <div className="coming-soon-stores">
+          <div className="coming-soon-store">
+            <span className="store-icon"></span>
+            <div>
+              <small>Coming soon to the</small>
+              <strong>App Store</strong>
+            </div>
           </div>
 
-          <div className="store-badge">
-            <span>Coming soon to</span>
-            <strong>Google Play</strong>
+          <div className="coming-soon-store">
+            <span className="store-icon">▶</span>
+            <div>
+              <small>Coming soon to</small>
+              <strong>Google Play</strong>
+            </div>
           </div>
         </div>
 
-      </div>
+        <p className="coming-soon-footer">
+          Keep your eyes on the stars. 🚀
+        </p>
+      </section>
     </main>
   );
 }
