@@ -400,3 +400,128 @@
     animation: none;
   }
 }
+
+@media (max-width: 600px) {
+  .coming-soon {
+    min-height: 100dvh;
+    padding: 20px 12px;
+    align-items: center;
+  }
+
+  .coming-soon-content {
+    width: 100%;
+    max-width: 430px;
+    box-sizing: border-box;
+
+    padding: 28px 18px 24px;
+
+    border-radius: 24px;
+  }
+
+  /* LOGO */
+
+  .coming-soon-logo {
+    width: min(235px, 68vw);
+    max-height: 155px;
+
+    margin: 0 auto 12px;
+  }
+
+  /* EYEBROW */
+
+  .coming-soon .eyebrow {
+    margin-top: 8px;
+
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+  }
+
+  /* HEADING */
+
+  .coming-soon h1 {
+    margin: 8px auto 14px;
+
+    max-width: 340px;
+
+    font-size: clamp(2.1rem, 9vw, 2.8rem);
+    line-height: 1.02;
+  }
+
+  /* DESCRIPTION */
+
+  .coming-soon-description {
+    max-width: 330px;
+
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  /* ROCKET */
+
+  .coming-soon-planet {
+    margin: 20px auto 4px;
+
+    font-size: 3.8rem;
+  }
+
+  /* COMING SOON */
+
+  .coming-soon-status {
+    margin-top: 10px;
+
+    padding: 7px 14px;
+
+    font-size: 0.7rem;
+  }
+
+  /* STORE BUTTONS */
+
+  .coming-soon-stores {
+    width: 100%;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 10px;
+
+    margin-top: 24px;
+  }
+
+  .store-badge {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 11px 14px;
+
+    border-radius: 14px;
+  }
+
+  .store-icon {
+    flex: 0 0 32px;
+
+    width: 32px;
+
+    font-size: 1.6rem;
+  }
+
+  .store-badge small {
+    font-size: 0.62rem;
+  }
+
+  .store-badge strong {
+    font-size: 0.9rem;
+  }
+
+  /* FOOTER */
+
+  .coming-soon-footer {
+    margin-top: 22px;
+
+    font-size: 0.8rem;
+  }
+}
