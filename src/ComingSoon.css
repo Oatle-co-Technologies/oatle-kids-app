@@ -1,161 +1,91 @@
-.coming-soon-page {
+.coming-soon {
   position: relative;
+
   min-height: 100vh;
   min-height: 100dvh;
+
   width: 100%;
-  overflow: hidden;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  padding: 40px 20px;
+  padding: 40px 18px;
+
+  overflow: hidden;
+
+  color: #f8fbff;
 
   background:
     radial-gradient(
-      circle at 50% 25%,
-      rgba(67, 111, 255, 0.18),
-      transparent 35%
+      circle at 18% 12%,
+      #263e8b 0,
+      transparent 25rem
     ),
-    linear-gradient(
-      180deg,
-      #070d2b 0%,
-      #0a1238 50%,
-      #050a22 100%
+    radial-gradient(
+      circle at 85% 80%,
+      #461a75 0,
+      transparent 28rem
+    ),
+    #080d28;
+}
+
+/* Star field — same visual language as the app */
+
+.coming-soon::before {
+  content: "";
+
+  position: fixed;
+  inset: 0;
+
+  pointer-events: none;
+
+  opacity: 0.45;
+
+  background-image:
+    radial-gradient(
+      #fff 1px,
+      transparent 1.5px
     );
 
-  color: #f8fbff;
-  font-family: Arial, Helvetica, sans-serif;
+  background-size: 68px 68px;
 }
 
-.coming-soon-page::before,
-.coming-soon-page::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-}
+/* Main content */
 
-.coming-soon-page::before {
-  width: 420px;
-  height: 420px;
-  top: -220px;
-  left: -180px;
-
-  background: rgba(143, 231, 255, 0.06);
-  box-shadow:
-    0 0 100px rgba(143, 231, 255, 0.08);
-}
-
-.coming-soon-page::after {
-  width: 500px;
-  height: 500px;
-  right: -250px;
-  bottom: -300px;
-
-  background: rgba(97, 85, 255, 0.08);
-  box-shadow:
-    0 0 120px rgba(97, 85, 255, 0.1);
-}
-
-/* Stars */
-
-.stars {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.stars span {
-  position: absolute;
-  color: #8fe7ff;
-  opacity: 0.6;
-  font-size: 1.2rem;
-  animation: twinkle 3s ease-in-out infinite;
-}
-
-.stars span:nth-child(1) {
-  top: 12%;
-  left: 15%;
-}
-
-.stars span:nth-child(2) {
-  top: 22%;
-  right: 18%;
-  animation-delay: 0.8s;
-}
-
-.stars span:nth-child(3) {
-  top: 70%;
-  left: 10%;
-  animation-delay: 1.4s;
-}
-
-.stars span:nth-child(4) {
-  top: 78%;
-  right: 13%;
-  animation-delay: 2s;
-}
-
-.stars span:nth-child(5) {
-  top: 38%;
-  left: 7%;
-  animation-delay: 1s;
-}
-
-.stars span:nth-child(6) {
-  top: 55%;
-  right: 8%;
-  animation-delay: 2.4s;
-}
-
-.stars span:nth-child(7) {
-  top: 10%;
-  right: 38%;
-  animation-delay: 1.8s;
-}
-
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.25;
-    transform: scale(0.8);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
-/* Main card */
-
-.coming-soon-card {
+.coming-soon-content {
   position: relative;
-  z-index: 2;
+  z-index: 1;
 
   width: min(680px, 100%);
 
-  padding: 48px 34px 36px;
+  padding: 42px 30px 34px;
 
   text-align: center;
 
-  border: 1px solid rgba(143, 231, 255, 0.18);
+  border: 1px solid rgba(143, 231, 255, 0.2);
+
   border-radius: 28px;
 
   background:
     linear-gradient(
       180deg,
-      rgba(17, 26, 66, 0.92),
-      rgba(10, 18, 52, 0.88)
+      rgba(20, 31, 73, 0.94),
+      rgba(10, 17, 48, 0.94)
     );
 
   box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.45),
-    0 0 50px rgba(80, 180, 255, 0.08);
+    0 24px 70px rgba(0, 0, 0, 0.35),
+    0 0 45px rgba(80, 150, 255, 0.08);
 
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  animation:
+    comingSoonEnter
+    0.65s
+    cubic-bezier(.2,.8,.2,1)
+    both;
 }
 
 /* Logo */
@@ -163,145 +93,126 @@
 .coming-soon-logo {
   display: block;
 
-  width: min(300px, 70vw);
-  max-height: 190px;
+  width: min(360px, 72vw);
+
+  max-height: 250px;
 
   object-fit: contain;
 
   margin: 0 auto 18px;
 
   filter:
-    drop-shadow(0 10px 22px rgba(80, 180, 255, 0.18));
+    drop-shadow(
+      0 10px 22px
+      rgba(80, 180, 255, 0.18)
+    );
 
-  animation: logoFloat 4s ease-in-out infinite;
+  animation:
+    comingSoonLogoFloat
+    4.5s
+    ease-in-out
+    infinite;
 }
 
-@keyframes logoFloat {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
+/* Eyebrow */
 
-  50% {
-    transform: translateY(-7px);
-  }
-}
+.coming-soon .eyebrow {
+  margin: 20px 0 0;
 
-/* Typography */
+  font-size: 0.77rem;
 
-.eyebrow {
-  margin: 0 0 14px;
-
-  color: #8fe7ff;
-
-  font-family: "Pixelify Sans", sans-serif;
-
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 900;
 
   letter-spacing: 0.18em;
+
+  color: #8fe7ff;
 }
 
-.coming-soon-card h1 {
-  margin: 0;
+/* Heading */
 
-  font-family: "Pixelify Sans", sans-serif;
+.coming-soon h1 {
+  margin: 10px 0 16px;
 
-  font-size: clamp(2.8rem, 8vw, 5rem);
-  font-weight: 700;
-  line-height: 1.05;
+  font:
+    700
+    clamp(2.5rem, 7vw, 5rem)
+    /0.98
+    "Pixelify Sans",
+    sans-serif;
 
-  color: #f8fbff;
+  color: #66ff66;
 
   text-shadow:
-    0 0 24px rgba(143, 231, 255, 0.16);
+    0 0 18px
+    rgba(102, 255, 102, 0.33);
 }
 
-.coming-soon-intro {
-  max-width: 520px;
+/* Description */
 
-  margin: 22px auto 0;
+.coming-soon-description {
+  max-width: 620px;
+
+  margin: 0 auto;
+
+  font-size: 1.18rem;
+
+  line-height: 1.6;
 
   color: #c7d2f6;
-
-  font-size: 1.05rem;
-  line-height: 1.65;
 }
 
-/* Planet */
+/* Rocket */
 
 .coming-soon-planet {
   margin: 26px auto 8px;
 
-  font-size: 4rem;
+  font-size: 5rem;
+
+  line-height: 1;
 
   filter:
-    drop-shadow(0 0 22px rgba(143, 231, 255, 0.5));
+    drop-shadow(
+      0 0 22px
+      #72bfff
+    );
 
-  animation: planetFloat 4s ease-in-out infinite;
+  animation:
+    comingSoonRocket
+    2.5s
+    ease-in-out
+    infinite;
 }
 
-@keyframes planetFloat {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-3deg);
-  }
-
-  50% {
-    transform: translateY(-8px) rotate(3deg);
-  }
-}
-
-/* Coming soon status */
+/* Status */
 
 .coming-soon-status {
-  display: inline-flex;
+  display: inline-block;
 
-  align-items: center;
-  gap: 9px;
+  margin: 12px 0 0;
 
-  margin: 8px auto 0;
+  padding: 8px 16px;
 
-  padding: 9px 16px;
+  border:
+    2px solid
+    #8fe7ff;
 
-  border: 1px solid rgba(143, 231, 255, 0.2);
-  border-radius: 999px;
+  border-radius: 99px;
 
-  background: rgba(143, 231, 255, 0.07);
+  background: #111a42cc;
 
   color: #8fe7ff;
 
-  font-family: "Pixelify Sans", sans-serif;
+  font:
+    700
+    0.8rem
+    "Pixelify Sans",
+    sans-serif;
 
-  font-size: 0.82rem;
-  font-weight: 700;
-
-  letter-spacing: 0.08em;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-
-  border-radius: 50%;
-
-  background: #8fe7ff;
+  letter-spacing: 0.12em;
 
   box-shadow:
-    0 0 10px #8fe7ff;
-
-  animation: pulse 1.8s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.5;
-  }
-
-  50% {
-    opacity: 1;
-  }
+    0 0 18px
+    rgba(143, 231, 255, 0.1);
 }
 
 /* Store badges */
@@ -311,27 +222,31 @@
 
   justify-content: center;
 
-  gap: 14px;
+  gap: 12px;
 
   margin-top: 32px;
 
   flex-wrap: wrap;
 }
 
-.coming-soon-store {
+.store-badge {
   min-width: 190px;
 
   display: flex;
+
   align-items: center;
 
   gap: 12px;
 
-  padding: 12px 18px;
+  padding: 13px 18px;
 
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.16);
+
   border-radius: 14px;
 
-  background: rgba(4, 10, 32, 0.6);
+  background: #111a42cc;
 
   color: #fff;
 
@@ -343,12 +258,13 @@
     background 0.2s ease;
 }
 
-.coming-soon-store:hover {
+.store-badge:hover {
   transform: translateY(-3px);
 
-  border-color: rgba(143, 231, 255, 0.35);
+  border-color:
+    rgba(143, 231, 255, 0.4);
 
-  background: rgba(28, 40, 96, 0.7);
+  background: #1c2860;
 }
 
 .store-icon {
@@ -356,68 +272,131 @@
 
   font-size: 1.8rem;
 
+  line-height: 1;
+
   text-align: center;
 }
 
-.coming-soon-store small {
+.store-badge small {
   display: block;
 
   margin-bottom: 2px;
 
-  color: #9da9cf;
+  color: #9aa6c4;
 
   font-size: 0.68rem;
 }
 
-.coming-soon-store strong {
+.store-badge strong {
   display: block;
 
+  font:
+    700
+    1rem
+    "Pixelify Sans",
+    sans-serif;
+
   color: #f8fbff;
-
-  font-family: "Pixelify Sans", sans-serif;
-
-  font-size: 1rem;
 }
 
 /* Footer */
 
 .coming-soon-footer {
-  margin: 32px 0 0;
+  margin: 30px 0 0;
 
-  color: #7f8db8;
+  color: #7886c8;
 
-  font-family: "Pixelify Sans", sans-serif;
+  font-size: 0.9rem;
+}
 
-  font-size: 0.85rem;
+/* Animations */
+
+@keyframes comingSoonEnter {
+  from {
+    opacity: 0;
+    transform:
+      translateY(18px)
+      scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+@keyframes comingSoonLogoFloat {
+  0%,
+  100% {
+    transform:
+      translateY(0)
+      rotate(-1deg);
+  }
+
+  50% {
+    transform:
+      translateY(-9px)
+      rotate(1deg);
+  }
+}
+
+@keyframes comingSoonRocket {
+  0%,
+  100% {
+    transform:
+      translateY(0)
+      rotate(0deg);
+  }
+
+  50% {
+    transform:
+      translateY(-13px)
+      rotate(4deg);
+  }
 }
 
 /* Mobile */
 
 @media (max-width: 600px) {
-  .coming-soon-page {
-    padding: 20px 14px;
+  .coming-soon {
+    padding: 24px 14px;
   }
 
-  .coming-soon-card {
-    padding: 34px 20px 28px;
+  .coming-soon-content {
+    padding: 30px 20px 28px;
 
-    border-radius: 22px;
+    border-radius: 24px;
   }
 
   .coming-soon-logo {
-    width: min(250px, 72vw);
+    width: min(270px, 72vw);
+
+    max-height: 190px;
+
+    margin-bottom: 14px;
   }
 
-  .coming-soon-intro {
-    font-size: 0.95rem;
+  .coming-soon-description {
+    font-size: 1rem;
   }
 
   .coming-soon-stores {
     flex-direction: column;
+
     align-items: stretch;
   }
 
-  .coming-soon-store {
+  .store-badge {
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coming-soon-content,
+  .coming-soon-logo,
+  .coming-soon-planet {
+    animation: none;
   }
 }
