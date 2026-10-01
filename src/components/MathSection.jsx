@@ -2768,20 +2768,6 @@ export default function MathSection({
   ]);
 
   useEffect(() => {
-    if (!soundOn || screen !== "mission" || !feedback) {
-      return undefined;
-    }
-
-    const timer = window.setTimeout(() => {
-      speak(feedback);
-    }, 80);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [feedback, screen, soundOn]);
-
-  useEffect(() => {
     const victoryScreen =
       screen === "complete" || screen === "assessment-results";
 
