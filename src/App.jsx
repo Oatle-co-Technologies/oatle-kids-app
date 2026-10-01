@@ -323,6 +323,11 @@ const savedChildProfile = () => {
   }
 };
 
+const savedAgeGroup = () => {
+  const saved = localStorage.getItem("oatle-age-group");
+  return saved === "little" || saved === "big" ? saved : null;
+};
+
 const writingPlanets = [
   {
     id: 1,
@@ -753,8 +758,10 @@ function App() {
   const [writingCelebrationMission, setWritingCelebrationMission] =
     useState(null);
 
-  const [screen, setScreen] = useState("home");
-  const [ageGroup, setAgeGroup] = useState(null);
+  const [screen, setScreen] = useState(() =>
+    savedAgeGroup() === "little" ? "littleExplorers" : "home"
+  );
+  const [ageGroup, setAgeGroup] = useState(savedAgeGroup);
   const [launchAdventure, setLaunchAdventure] =
     useState("reading");
 
@@ -813,6 +820,7 @@ function App() {
         setUser(session?.user ?? null);
 
         if (event === "SIGNED_OUT") {
+          localStorage.removeItem("oatle-age-group");
           setAgeGroup(null);
           setScreen("home");
         }
@@ -1765,6 +1773,7 @@ function App() {
   };
 
   const selectAgeGroup = (group) => {
+    localStorage.setItem("oatle-age-group", group);
     setAgeGroup(group);
     setScreen(group === "little" ? "littleExplorers" : "home");
   };
@@ -1998,6 +2007,7 @@ function App() {
       <LoginPage
         onLogin={(loggedInUser) => {
           setUser(loggedInUser);
+          localStorage.removeItem("oatle-age-group");
           setAgeGroup(null);
           setScreen("ageSelect");
         }}
@@ -2226,7 +2236,7 @@ function App() {
             <strong>
               Reading
             </strong>
-            <small>Ages 4+</small>
+            <small>Ages 4–7</small>
           </button>
 
           <button
@@ -2246,7 +2256,7 @@ function App() {
             <strong>
               Counting
             </strong>
-            <small>Ages 4+</small>
+            <small>Ages 4–7</small>
           </button>
 
           <button
@@ -2266,7 +2276,7 @@ function App() {
             <strong>
               Writing
             </strong>
-            <small>Ages 4+</small>
+            <small>Ages 4–7</small>
           </button>
 
         </div>
@@ -2280,6 +2290,7 @@ function App() {
         backLabel={ageGroup === "little" ? "Age groups" : "Explore"}
         onBack={() => {
           if (ageGroup === "little") {
+            localStorage.removeItem("oatle-age-group");
             setAgeGroup(null);
             setScreen("ageSelect");
             return;
@@ -3839,6 +3850,7 @@ function App() {
         <button
           className="secondary-button"
           onClick={() => {
+            localStorage.removeItem("oatle-age-group");
             setAgeGroup(null);
             setScreen("ageSelect");
           }}
@@ -3853,6 +3865,7 @@ function App() {
             await supabase.auth.signOut();
             setUser(null);
             setHasAccess(false);
+            localStorage.removeItem("oatle-age-group");
             setAgeGroup(null);
             setScreen("home");
           }}
