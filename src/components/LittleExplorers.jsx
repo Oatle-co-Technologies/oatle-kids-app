@@ -540,7 +540,20 @@ export default function LittleExplorers({
     const effect = new Audio(victorySound);
     effect.volume = 0.55;
     victoryAudioRef.current = effect;
-    effect.play().catch(() => {});
+    effect.addEventListener(
+      "ended",
+      () => {
+        if (victoryAudioRef.current === effect) {
+          victoryAudioRef.current = null;
+        }
+      },
+      { once: true }
+    );
+    effect.play().catch(() => {
+      if (victoryAudioRef.current === effect) {
+        victoryAudioRef.current = null;
+      }
+    });
   };
 
   const celebratePlanet = (delay = 0, playSong = true) => {
@@ -624,6 +637,18 @@ export default function LittleExplorers({
     if (celebrationTimerRef.current) window.clearTimeout(celebrationTimerRef.current);
     victoryAudioRef.current?.pause();
   }, []);
+
+  useEffect(() => {
+    if (screen === "celebration" && soundOn) {
+      return;
+    }
+
+    if (victoryAudioRef.current) {
+      victoryAudioRef.current.pause();
+      victoryAudioRef.current.currentTime = 0;
+      victoryAudioRef.current = null;
+    }
+  }, [screen, soundOn]);
 
   useEffect(() => {
     if (screen !== "scribble") return undefined;

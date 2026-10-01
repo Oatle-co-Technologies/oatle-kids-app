@@ -252,6 +252,16 @@ const BIG_KIDS_PRAISE = [
   "You got it!",
 ];
 
+function stopAudioRef(audioRef) {
+  if (!audioRef.current) {
+    return;
+  }
+
+  audioRef.current.pause();
+  audioRef.current.currentTime = 0;
+  audioRef.current = null;
+}
+
 const savedGame = () => {
   try {
     const saved = JSON.parse(
@@ -793,6 +803,8 @@ function App() {
 
   const advanceTimer = useRef(null);
   const welcomeAudioRef = useRef(null);
+  const victoryAudioRef = useRef(null);
+  const effectAudioRef = useRef(null);
 
   useLayoutEffect(() => {
     // React swaps screens without a browser navigation, so mobile WebViews
@@ -1176,108 +1188,118 @@ function App() {
     };
   }, [feedback, screen, soundOn]);
 
-  const playWelcomeSound = () => {
-    if (!soundOn || welcomeAudioRef.current) {
-      return;
+  useEffect(() => {
+    const bigKidsHomeVisible = Boolean(
+      user?.id &&
+      !authLoading &&
+      !accessLoading &&
+      hasAccess &&
+      ageGroup === "big" &&
+      screen === "home"
+    );
+
+    if (!soundOn || !bigKidsHomeVisible) {
+      stopAudioRef(welcomeAudioRef);
+      return undefined;
     }
 
     const effect = new Audio(welcomeSound);
     effect.volume = 1;
     welcomeAudioRef.current = effect;
-
-    effect.addEventListener(
-      "ended",
-      () => {
-        if (welcomeAudioRef.current === effect) {
-          welcomeAudioRef.current = null;
-        }
-      },
-      { once: true }
-    );
-
     effect.play().catch(() => {
       if (welcomeAudioRef.current === effect) {
         welcomeAudioRef.current = null;
       }
     });
-  };
+
+    return () => {
+      stopAudioRef(welcomeAudioRef);
+    };
+  }, [
+    accessLoading,
+    ageGroup,
+    authLoading,
+    hasAccess,
+    screen,
+    soundOn,
+    user?.id,
+  ]);
 
   useEffect(() => {
-    if (screen !== "home" || !soundOn) {
-      return;
+    const celebrationVisible = Boolean(
+      user?.id &&
+      !authLoading &&
+      !accessLoading &&
+      hasAccess &&
+      ageGroup === "big" &&
+      (screen === "celebration" || screen === "writingCelebration")
+    );
+
+    if (!soundOn || !celebrationVisible) {
+      stopAudioRef(victoryAudioRef);
+      return undefined;
     }
 
-    playWelcomeSound();
+    stopAudioRef(effectAudioRef);
 
-    const handleHomeInteraction = () => {
-      playWelcomeSound();
-    };
-
-    window.addEventListener(
-      "pointerdown",
-      handleHomeInteraction,
-      { once: true }
-    );
-
-    window.addEventListener(
-      "touchstart",
-      handleHomeInteraction,
-      { once: true, passive: true }
-    );
-
-    const handleVisibility = () => {
-      if (
-        document.visibilityState === "visible"
-      ) {
-        playWelcomeSound();
+    const effect = new Audio(victorySound);
+    effect.volume = 0.55;
+    victoryAudioRef.current = effect;
+    effect.play().catch(() => {
+      if (victoryAudioRef.current === effect) {
+        victoryAudioRef.current = null;
       }
-    };
-
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibility
-    );
+    });
 
     return () => {
-      window.removeEventListener(
-        "pointerdown",
-        handleHomeInteraction
-      );
-
-      window.removeEventListener(
-        "touchstart",
-        handleHomeInteraction
-      );
-
-      document.removeEventListener(
-        "visibilitychange",
-        handleVisibility
-      );
-
-      if (welcomeAudioRef.current) {
-        welcomeAudioRef.current.pause();
-        welcomeAudioRef.current.currentTime = 0;
-        welcomeAudioRef.current = null;
-      }
+      stopAudioRef(victoryAudioRef);
     };
-  }, [screen, soundOn]);
+  }, [
+    accessLoading,
+    ageGroup,
+    authLoading,
+    hasAccess,
+    screen,
+    soundOn,
+    user?.id,
+  ]);
 
   useEffect(() => {
     return () => {
-      if (welcomeAudioRef.current) {
-        welcomeAudioRef.current.pause();
-        welcomeAudioRef.current.currentTime = 0;
-        welcomeAudioRef.current = null;
-      }
+      stopAudioRef(effectAudioRef);
+    };
+  }, [screen, progress.question]);
+
+  useEffect(() => {
+    return () => {
+      stopAudioRef(welcomeAudioRef);
+      stopAudioRef(victoryAudioRef);
+      stopAudioRef(effectAudioRef);
     };
   }, []);
 
   const playSound = (sound) => {
     if (!soundOn) return;
 
+    stopAudioRef(effectAudioRef);
+
     const effect = new Audio(sound);
     effect.volume = 0.55;
-    effect.play().catch(() => {});
+    effectAudioRef.current = effect;
+    effect.addEventListener(
+      "ended",
+      () => {
+        if (effectAudioRef.current === effect) {
+          effectAudioRef.current = null;
+        }
+      },
+      { once: true }
+    );
+    effect.play().catch(() => {
+      if (effectAudioRef.current === effect) {
+        effectAudioRef.current = null;
+      }
+    });
   };
 
   const goToPlanet = (id) => {
@@ -1354,7 +1376,6 @@ function App() {
   const finishPlutoAssessment = (scores) => {
     setAssessmentResults(scores);
     setReadingAssessmentActive(false);
-    playSound(victorySound);
     setScreen("celebration");
   };
 
@@ -1409,7 +1430,6 @@ function App() {
       return;
     }
 
-    playSound(victorySound);
     setScreen("celebration");
   };
 
@@ -1520,7 +1540,6 @@ function App() {
           nextScores
         );
       } else {
-        playSound(victorySound);
         setScreen("celebration");
       }
 
@@ -1611,7 +1630,6 @@ function App() {
         return;
       }
 
-      playSound(victorySound);
       setScreen("celebration");
 
       setIsProcessing(false);
@@ -1694,7 +1712,6 @@ function App() {
             nextScores
           );
         } else {
-          playSound(victorySound);
           setScreen("celebration");
         }
 
@@ -1726,7 +1743,6 @@ function App() {
           nextScores
         );
       } else {
-        playSound(victorySound);
         setScreen("celebration");
       }
 
@@ -1745,7 +1761,6 @@ function App() {
       },
     }));
     setWritingCelebrationMission(missionId);
-    playSound(victorySound);
     setScreen("writingCelebration");
   };
 

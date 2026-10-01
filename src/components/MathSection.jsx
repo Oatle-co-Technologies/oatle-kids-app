@@ -29,6 +29,16 @@ const defaultProgress = {
   startedMissions: {},
 };
 
+function stopAudioRef(audioRef) {
+  if (!audioRef.current) {
+    return;
+  }
+
+  audioRef.current.pause();
+  audioRef.current.currentTime = 0;
+  audioRef.current = null;
+}
+
 const MATH_ASSESSMENT_ATTEMPT_KEY =
   "oatle-maths-assessment-attempt";
 
@@ -2636,6 +2646,7 @@ export default function MathSection({
     useState(false);
 
   const questionNarrationDelayRef = useRef(250);
+  const victoryAudioRef = useRef(null);
 
   const [
     assessmentAnswers,
@@ -2768,6 +2779,29 @@ export default function MathSection({
       window.clearTimeout(timer);
     };
   }, [feedback, screen, soundOn]);
+
+  useEffect(() => {
+    const victoryScreen =
+      screen === "complete" || screen === "assessment-results";
+
+    if (!soundOn || !victoryScreen) {
+      stopAudioRef(victoryAudioRef);
+      return undefined;
+    }
+
+    const effect = new Audio(victorySound);
+    effect.volume = 0.55;
+    victoryAudioRef.current = effect;
+    effect.play().catch(() => {
+      if (victoryAudioRef.current === effect) {
+        victoryAudioRef.current = null;
+      }
+    });
+
+    return () => {
+      stopAudioRef(victoryAudioRef);
+    };
+  }, [screen, soundOn]);
 
   const shuffledOptions =
     useMemo(() => {
@@ -3004,19 +3038,12 @@ export default function MathSection({
   const finishMission =
     () => {
       if (isAssessment) {
-        playSound(
-          victorySound
-        );
         setAssessmentActive(false);
         setScreen(
           "assessment-results"
         );
         return;
       }
-
-      playSound(
-        victorySound
-      );
 
       setProgress(
         (current) => ({
