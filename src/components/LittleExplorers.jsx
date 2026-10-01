@@ -18,12 +18,12 @@ const BALLOON_POSITIONS = [
 ];
 
 const SHAPE_BALLOON_POSITIONS = [
-  { x: 14, y: 42, delay: "0s" },
-  { x: 43, y: 35, delay: "-0.7s" },
+  { x: 14, y: 43, delay: "0s" },
+  { x: 43, y: 43, delay: "-0.7s" },
   { x: 76, y: 43, delay: "-1.4s" },
-  { x: 25, y: 72, delay: "-2s" },
-  { x: 56, y: 68, delay: "-0.4s" },
-  { x: 88, y: 70, delay: "-1.1s" },
+  { x: 25, y: 73, delay: "-2s" },
+  { x: 56, y: 73, delay: "-0.4s" },
+  { x: 88, y: 73, delay: "-1.1s" },
 ];
 
 const BREAK_BALLOONS = [
@@ -422,7 +422,7 @@ export default function LittleExplorers({
           ? BALLOON_LESSONS[balloonMode].rounds[balloonRound]?.prompt
           : balloonCategory
             ? `Choose a ${BALLOON_CATEGORIES[balloonCategory].title} game.`
-            : "Choose numbers, letters, or colours.",
+            : "Choose numbers, letters, colours, or shapes.",
       trail: trailPattern
         ? TRAIL_PATTERNS[trailPattern].prompt
         : "Choose a star trail pattern.",
@@ -603,6 +603,32 @@ export default function LittleExplorers({
     });
   };
 
+  const finishBalloonRound = (lesson, round) => {
+    if (balloonTimerRef.current) window.clearTimeout(balloonTimerRef.current);
+    balloonTimerRef.current = window.setTimeout(() => {
+      if (balloonRound === lesson.rounds.length - 1) {
+        setBalloonFinished(true);
+        saveBalloonSession(balloonMode, null);
+        completeBalloonLesson(balloonMode);
+        if (soundOn) speak(`${lesson.title} complete! Amazing!`);
+        return;
+      }
+
+      const nextRound = balloonRound + 1;
+      saveBalloonSession(balloonMode, nextRound);
+
+      if (round.breakAfter) {
+        setBalloonBreak(true);
+        setBreakPopped([]);
+        setPopped([]);
+        return;
+      }
+
+      setBalloonRound((current) => current + 1);
+      setPopped([]);
+    }, 720);
+  };
+
   const chooseBalloon = (choice, index) => {
     if (!balloonMode || balloonBreak || popped.length || balloonFinished) return;
 
@@ -628,29 +654,35 @@ export default function LittleExplorers({
     playBoop(soundOn, balloonRound + 1);
     if (soundOn) speak(BALLOON_PRAISE[balloonRound % BALLOON_PRAISE.length]);
 
-    if (balloonTimerRef.current) window.clearTimeout(balloonTimerRef.current);
-    balloonTimerRef.current = window.setTimeout(() => {
-      if (balloonRound === lesson.rounds.length - 1) {
-        setBalloonFinished(true);
-        saveBalloonSession(balloonMode, null);
-        completeBalloonLesson(balloonMode);
-        if (soundOn) speak(`${lesson.title} complete! Amazing!`);
-        return;
-      }
+    finishBalloonRound(lesson, round);
+  };
 
-      const nextRound = balloonRound + 1;
-      saveBalloonSession(balloonMode, nextRound);
+  const chooseShapeBalloon = (choice, index) => {
+    if (!balloonMode || balloonBreak || balloonFinished || popped.includes(index)) return;
 
-      if (round.breakAfter) {
-        setBalloonBreak(true);
-        setBreakPopped([]);
-        setPopped([]);
-        return;
-      }
+    const lesson = BALLOON_LESSONS[balloonMode];
+    const round = lesson.rounds[balloonRound];
+    const targetCount = round.choices.filter((shape) => shape === round.target).length;
+    if (popped.length >= targetCount) return;
 
-      setBalloonRound((current) => current + 1);
-      setPopped([]);
-    }, 720);
+    if (choice !== round.target) {
+      setWrongBalloon(index);
+      if (soundOn) speak(`That is a ${choice}. Try again.`);
+      if (balloonTimerRef.current) window.clearTimeout(balloonTimerRef.current);
+      balloonTimerRef.current = window.setTimeout(() => setWrongBalloon(null), 650);
+      return;
+    }
+
+    const nextPopped = [...popped, index];
+
+    setWrongBalloon(null);
+    setPopped(nextPopped);
+    playBoop(soundOn, balloonRound * SHAPE_BALLOON_POSITIONS.length + nextPopped.length);
+    if (soundOn) {
+      speak(BALLOON_PRAISE[(balloonRound + nextPopped.length - 1) % BALLOON_PRAISE.length]);
+    }
+
+    if (nextPopped.length === targetCount) finishBalloonRound(lesson, round);
   };
 
   const continueBalloonLesson = () => {
@@ -861,7 +893,11 @@ export default function LittleExplorers({
           />
 
           <section className="balloon-space balloon-lesson-menu" aria-label="Balloon learning games">
-            <div className={`balloon-lesson-grid ${category ? "balloon-lesson-grid-two" : ""}`}>
+            <div
+              className={`balloon-lesson-grid ${
+                category ? "balloon-lesson-grid-two" : "balloon-category-grid"
+              }`}
+            >
               {menuKeys.map((key) => {
                 const item = category ? BALLOON_LESSONS[key] : BALLOON_CATEGORIES[key];
                 const isComplete = category
@@ -954,23 +990,33 @@ export default function LittleExplorers({
                     style={{ "--target-colour": BALLOON_COLOURS[round.target] }}
                     aria-hidden="true"
                   />
+                ) : lesson.kind === "shapes" ? (
+                  <span className="balloon-target-shape" aria-hidden="true">
+                    <i className={`balloon-shape balloon-shape-${round.target}`} />
+                  </span>
                 ) : (
                   <b aria-hidden="true">{round.target}</b>
                 )}
               </div>
 
               {round.choices.map((choice, index) => {
-                const position = BALLOON_POSITIONS[index];
+                const isShapeLesson = lesson.kind === "shapes";
+                const positions = isShapeLesson ? SHAPE_BALLOON_POSITIONS : BALLOON_POSITIONS;
+                const position = positions[index];
                 const balloonColour =
                   lesson.kind === "colours"
                     ? BALLOON_COLOURS[choice]
-                    : BALLOON_PALETTE[index];
+                    : isShapeLesson
+                      ? SHAPE_BALLOON_PALETTE[index]
+                      : BALLOON_PALETTE[index];
 
                 return (
                   <button
                     key={`${balloonRound}-${choice}-${index}`}
                     type="button"
                     className={`space-balloon learning-balloon ${
+                      isShapeLesson ? "shape-learning-balloon" : ""
+                    } ${
                       popped.includes(index) ? "popped" : ""
                     } ${wrongBalloon === index ? "wrong" : ""}`}
                     style={{
@@ -979,12 +1025,21 @@ export default function LittleExplorers({
                       "--balloon-y": `${position.y}%`,
                       "--balloon-delay": position.delay,
                     }}
-                    onClick={() => chooseBalloon(choice, index)}
+                    onClick={() =>
+                      isShapeLesson
+                        ? chooseShapeBalloon(choice, index)
+                        : chooseBalloon(choice, index)
+                    }
                     disabled={popped.includes(index)}
                     aria-label={`Choose ${choice}`}
                   >
                     <span aria-hidden="true" />
-                    {lesson.kind !== "colours" && (
+                    {isShapeLesson ? (
+                      <i
+                        className={`balloon-shape balloon-shape-${choice}`}
+                        aria-hidden="true"
+                      />
+                    ) : lesson.kind !== "colours" && (
                       <strong className="balloon-choice-label" aria-hidden="true">
                         {choice}
                       </strong>
@@ -1217,7 +1272,7 @@ export default function LittleExplorers({
         <button type="button" onClick={() => startActivity("balloons")}>
           <span className="little-planet little-planet-balloon" aria-hidden="true">🎈</span>
           <strong>Learning Balloons</strong>
-          <small>Numbers, letters and colours</small>
+          <small>Numbers, letters, colours and shapes</small>
           {BALLOON_LESSON_KEYS.every((key) =>
             completed.includes(BALLOON_LESSONS[key].progressId)
           ) && <b aria-label="Completed">✓</b>}
