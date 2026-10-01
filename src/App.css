@@ -1773,22 +1773,27 @@ button:focus-visible,
 }
 
 .adventure-card:nth-child(1) {
-  left: 4%;
+  left: 1%;
   top: 42px;
   animation-delay: 0s;
 }
 
 .adventure-card:nth-child(2) {
-  left: 50%;
-  top: 170px;
-  transform: translateX(-50%);
+  left: 26%;
+  top: 178px;
   animation-delay: -1.2s;
 }
 
 .adventure-card:nth-child(3) {
-  right: 4%;
+  right: 26%;
   top: 48px;
   animation-delay: -2.4s;
+}
+
+.adventure-card:nth-child(4) {
+  right: 1%;
+  top: 178px;
+  animation-delay: -3.2s;
 }
 
 .adventure-card:hover {
@@ -1799,16 +1804,8 @@ button:focus-visible,
     0 0 45px rgba(143, 231, 255, 0.2);
 }
 
-.adventure-card:nth-child(2):hover {
-  transform: translateX(-50%) translateY(-9px) scale(1.06);
-}
-
 .adventure-card:active {
   transform: scale(0.97);
-}
-
-.adventure-card:nth-child(2):active {
-  transform: translateX(-50%) scale(0.97);
 }
 
 .adventure-card-icon {
@@ -1840,6 +1837,15 @@ button:focus-visible,
   letter-spacing: 0.03em;
 }
 
+.adventure-card small {
+  position: relative;
+  z-index: 2;
+  color: #c7d2f6;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
 .adventure-card:nth-child(1) .adventure-card-icon {
   box-shadow:
     0 0 0 5px rgba(89, 220, 255, 0.08),
@@ -1856,6 +1862,19 @@ button:focus-visible,
   box-shadow:
     0 0 0 5px rgba(176, 119, 255, 0.1),
     0 8px 18px rgba(0, 0, 0, 0.24);
+}
+
+.adventure-card:nth-child(4) .adventure-card-icon {
+  box-shadow:
+    0 0 0 5px rgba(255, 111, 145, 0.12),
+    0 8px 18px rgba(0, 0, 0, 0.24);
+}
+
+.adventure-card.little-explorers-card {
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255, 212, 92, 0.2), transparent 34%),
+    radial-gradient(circle at 70% 75%, rgba(255, 111, 145, 0.22), transparent 42%),
+    rgba(20, 22, 67, 0.82);
 }
 
 @keyframes missionFloat {
@@ -1885,7 +1904,7 @@ button:focus-visible,
   }
 
   .adventure-grid {
-    height: 500px;
+    height: 650px;
     width: min(390px, 100%);
     margin-top: 20px;
   }
@@ -1928,13 +1947,20 @@ button:focus-visible,
   }
 
   .adventure-card:nth-child(2) {
-    left: 50%;
-    top: 190px;
+    left: auto;
+    right: 2%;
+    top: 188px;
   }
 
   .adventure-card:nth-child(3) {
+    left: 2%;
+    right: auto;
+    top: 324px;
+  }
+
+  .adventure-card:nth-child(4) {
     right: 2%;
-    top: 328px;
+    top: 460px;
   }
 
   .adventure-card-icon {
@@ -1949,6 +1975,10 @@ button:focus-visible,
 
   .adventure-card strong {
     font-size: 0.98rem;
+  }
+
+  .adventure-card small {
+    font-size: 0.72rem;
   }
 }
 

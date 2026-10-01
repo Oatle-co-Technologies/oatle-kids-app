@@ -29,6 +29,7 @@ import ShapeTracingMission from "./components/ShapeTracingMission";
 import SentenceWritingMission from "./components/SentenceWritingMission";
 import BetaFeedback from "./components/BetaFeedback";
 import LocalBackButton from "./components/LocalBackButton";
+import LittleExplorers from "./components/LittleExplorers";
 
 import mercuryImage from "./assets/images/planets/mercury.webp";
 import venusImage from "./assets/images/planets/venus.webp";
@@ -610,6 +611,26 @@ function PencilIcon() {
   );
 }
 
+function LittleExplorerIcon() {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <path
+        d="M32 8c7 0 12.5 5.5 12.5 12.5 0 5.5-3.5 10.2-8.4 11.9L34 40h-4l-2.1-7.6A12.5 12.5 0 0 1 32 8Z"
+        fill="#ffd45c"
+        stroke="currentColor"
+        strokeWidth="3"
+      />
+      <path d="M25 43h14v10H25z" fill="#55c6ff" stroke="currentColor" strokeWidth="3" />
+      <path d="M20 55h24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+      <circle cx="27" cy="19" r="2.5" fill="currentColor" />
+      <circle cx="37" cy="19" r="2.5" fill="currentColor" />
+      <path d="M27 25c3 3 7 3 10 0" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="m10 15 1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9L6.4 26l.7-4-2.9-2.8 4-.6Z" fill="#ff6f91" />
+      <path d="m51 28 1.4 2.8 3.1.5-2.2 2.2.5 3.1-2.8-1.5-2.8 1.5.5-3.1-2.2-2.2 3.1-.5Z" fill="#a875e8" />
+    </svg>
+  );
+}
+
 function AppNav({
   onHome,
   onExplore,
@@ -642,7 +663,8 @@ function AppNav({
         activeScreen === "writingMission1" ||
         activeScreen === "writingMission2" ||
         activeScreen === "writingMission3" ||
-        activeScreen === "writingMission4",
+        activeScreen === "writingMission4" ||
+        activeScreen === "littleExplorers",
     },
     {
       label: "Settings",
@@ -1730,6 +1752,7 @@ function App() {
 
     setWritingActivePlanet(1);
     setWritingCelebrationMission(null);
+    localStorage.removeItem("oatle-little-explorers-progress");
 
     setScreen("home");
   };
@@ -2145,6 +2168,7 @@ function App() {
             <strong>
               Reading
             </strong>
+            <small>Ages 4+</small>
           </button>
 
           <button
@@ -2164,6 +2188,7 @@ function App() {
             <strong>
               Counting
             </strong>
+            <small>Ages 4+</small>
           </button>
 
           <button
@@ -2183,9 +2208,34 @@ function App() {
             <strong>
               Writing
             </strong>
+            <small>Ages 4+</small>
+          </button>
+
+          <button
+            className="adventure-card little-explorers-card"
+            onClick={() => setScreen("littleExplorers")}
+            type="button"
+          >
+            <span className="adventure-card-icon">
+              <LittleExplorerIcon />
+            </span>
+
+            <strong>
+              Little Explorers
+            </strong>
+            <small>Ages 2–3</small>
           </button>
         </div>
       </main>
+    );
+  } else if (
+    screen === "littleExplorers"
+  ) {
+    content = (
+      <LittleExplorers
+        onBack={() => setScreen("explore")}
+        soundOn={soundOn}
+      />
     );
   } else if (
     screen === "writingMap"

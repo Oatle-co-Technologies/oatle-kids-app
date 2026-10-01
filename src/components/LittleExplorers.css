@@ -1,0 +1,669 @@
+.little-explorers-page {
+  position: relative;
+  width: 100%;
+  min-height: calc(100dvh - 84px);
+  padding: clamp(22px, 4vw, 48px) clamp(14px, 4vw, 48px) 112px;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(circle at 12% 16%, rgba(85, 198, 255, 0.18) 0 2px, transparent 3px),
+    radial-gradient(circle at 78% 11%, rgba(255, 212, 92, 0.2) 0 2px, transparent 3px),
+    radial-gradient(circle at 88% 72%, rgba(168, 117, 232, 0.2) 0 2px, transparent 3px),
+    radial-gradient(circle at 32% 82%, rgba(255, 255, 255, 0.13) 0 1px, transparent 2px),
+    linear-gradient(160deg, #111b4a 0%, #080d28 58%, #180c37 100%);
+}
+
+.little-map-page {
+  padding-top: clamp(78px, 10vh, 108px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.little-map-header {
+  width: min(820px, 100%);
+  text-align: center;
+}
+
+.little-map-header .eyebrow {
+  margin: 0 0 10px;
+  color: #8fe7ff;
+}
+
+.little-map-header h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 6vw, 4.6rem);
+  line-height: 0.95;
+}
+
+.little-map-header > p:last-child {
+  margin: 18px 0 0;
+  color: #d6e0ff;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 700;
+}
+
+.little-planet-grid {
+  width: min(980px, 100%);
+  margin: clamp(28px, 5vw, 48px) auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(14px, 2.4vw, 24px);
+}
+
+.little-planet-grid > button {
+  position: relative;
+  min-height: 300px;
+  padding: 24px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid rgba(143, 231, 255, 0.26);
+  border-radius: 30px;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(29, 46, 100, 0.94), rgba(10, 17, 50, 0.96));
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  animation: littlePlanetArrive 0.55s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.little-planet-grid > button:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.little-planet-grid > button:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.little-planet-grid > button:hover,
+.little-planet-grid > button:focus-visible {
+  transform: translateY(-7px);
+  border-color: rgba(143, 231, 255, 0.72);
+}
+
+.little-planet-grid > button:active {
+  transform: scale(0.97);
+}
+
+.little-planet-grid strong {
+  font: 800 clamp(1.15rem, 2.2vw, 1.45rem)/1.1 "Pixelify Sans", sans-serif;
+}
+
+.little-planet-grid small {
+  color: #c8d6ff;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.little-planet-grid b {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #0a1737;
+  background: #66e28b;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.24);
+}
+
+.little-planet {
+  width: clamp(118px, 15vw, 156px);
+  aspect-ratio: 1;
+  margin-bottom: 10px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: clamp(3.4rem, 7vw, 5.2rem);
+  filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.26));
+  animation: littlePlanetFloat 3.2s ease-in-out infinite;
+}
+
+.little-planet-balloon {
+  background: radial-gradient(circle at 35% 28%, #ffbad0, #ff668d 48%, #b82e68 100%);
+}
+
+.little-planet-trail {
+  background: radial-gradient(circle at 35% 28%, #fff4b0, #ffbd4a 48%, #ce6b23 100%);
+  animation-delay: -1s;
+}
+
+.little-planet-scribble {
+  background: radial-gradient(circle at 35% 28%, #c8b5ff, #8b63e6 48%, #50329d 100%);
+  animation-delay: -2s;
+}
+
+.little-grownup-note {
+  width: min(720px, 100%);
+  margin: 26px auto 0;
+  color: #b9c6ee;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.little-activity-page {
+  min-height: calc(100dvh - 84px);
+  padding-top: max(12px, env(safe-area-inset-top));
+  display: grid;
+  grid-template-rows: auto minmax(420px, 1fr);
+  gap: 12px;
+}
+
+.little-activity-header {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.little-activity-header > div {
+  min-width: 0;
+}
+
+.little-activity-header .eyebrow {
+  margin: 0 0 2px;
+  color: #8fe7ff;
+  font-size: 0.72rem;
+}
+
+.little-activity-header h1 {
+  margin: 0;
+  font-size: clamp(1.65rem, 4vw, 3.1rem);
+  line-height: 1;
+}
+
+.little-activity-header p:last-child {
+  margin: 5px 0 0;
+  overflow: hidden;
+  color: #d3ddfa;
+  font-size: clamp(0.82rem, 1.6vw, 1rem);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.balloon-space,
+.star-trail-space,
+.little-scribble-space {
+  position: relative;
+  width: min(1180px, 100%);
+  min-height: 420px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 2px solid rgba(143, 231, 255, 0.2);
+  border-radius: clamp(22px, 3vw, 34px);
+  background:
+    radial-gradient(circle at 15% 18%, #fff 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 72% 24%, #fff 0 1px, transparent 2px),
+    radial-gradient(circle at 86% 73%, #ffe788 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 43% 82%, #9be8ff 0 1.5px, transparent 2.5px),
+    linear-gradient(160deg, #142b68, #211151 65%, #0c1233);
+  box-shadow: 0 24px 54px rgba(0, 0, 0, 0.28);
+}
+
+.space-balloon {
+  position: absolute;
+  left: var(--balloon-x);
+  top: var(--balloon-y);
+  width: clamp(72px, 10vw, 108px);
+  aspect-ratio: 0.84;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  transform: translate(-50%, -50%);
+  animation: balloonBob 2.8s var(--balloon-delay) ease-in-out infinite;
+}
+
+.space-balloon > span {
+  position: absolute;
+  inset: 0 5px 14px;
+  border-radius: 50% 50% 46% 46%;
+  background:
+    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.82) 0 7%, transparent 8%),
+    var(--balloon-color);
+  box-shadow: inset -10px -12px 0 rgba(0, 0, 0, 0.1), 0 12px 18px rgba(0, 0, 0, 0.2);
+}
+
+.space-balloon > span::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 15px;
+  height: 13px;
+  background: var(--balloon-color);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  transform: translateX(-50%);
+}
+
+.space-balloon > span::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 11px);
+  width: 2px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.space-balloon:active {
+  animation: none;
+  transform: translate(-50%, -50%) scale(0.88);
+}
+
+.space-balloon.popped {
+  animation: balloonPop 0.28s ease-out forwards;
+  pointer-events: none;
+}
+
+.little-success-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 20;
+  width: min(360px, calc(100% - 28px));
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.42);
+  border-radius: 24px;
+  color: #fff;
+  background: rgba(15, 28, 76, 0.94);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  transform: translate(-50%, -50%);
+  animation: littleSuccessArrive 0.35s cubic-bezier(.2, .9, .2, 1.2) both;
+}
+
+.little-success-card > span {
+  font-size: 3.4rem;
+}
+
+.little-success-card strong {
+  font: 800 1.45rem/1.1 "Pixelify Sans", sans-serif;
+}
+
+.little-success-card > div {
+  display: flex;
+  gap: 10px;
+}
+
+.little-success-card button {
+  min-height: 50px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 14px;
+  color: #10214d;
+  background: #fff;
+  font: 900 0.95rem/1 system-ui, sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.star-trail-space > svg {
+  position: absolute;
+  inset: 5%;
+  width: 90%;
+  height: 90%;
+  overflow: visible;
+}
+
+.star-trail-space path {
+  fill: none;
+  stroke: rgba(143, 231, 255, 0.34);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 3 4;
+}
+
+.trail-star {
+  position: absolute;
+  left: var(--star-x);
+  top: var(--star-y);
+  z-index: 3;
+  width: clamp(60px, 8vw, 88px);
+  height: clamp(60px, 8vw, 88px);
+  padding: 0;
+  border: 0;
+  color: rgba(255, 255, 255, 0.34);
+  background: transparent;
+  font-size: clamp(2.7rem, 6vw, 4.4rem);
+  line-height: 1;
+  cursor: default;
+  transform: translate(-50%, -50%);
+  touch-action: manipulation;
+}
+
+.trail-star.current {
+  color: #ffe46f;
+  cursor: pointer;
+  filter: drop-shadow(0 0 14px rgba(255, 228, 111, 0.86));
+  animation: currentStarPulse 0.9s ease-in-out infinite;
+}
+
+.trail-star.visited {
+  color: #8fe7ff;
+  filter: drop-shadow(0 0 8px rgba(143, 231, 255, 0.6));
+}
+
+.trail-rocket {
+  position: absolute;
+  left: var(--star-x);
+  top: var(--star-y);
+  z-index: 2;
+  font-size: clamp(2rem, 4.5vw, 3.4rem);
+  transform: translate(-82%, -12%) rotate(38deg);
+  transition: left 0.5s cubic-bezier(.2, .8, .2, 1), top 0.5s cubic-bezier(.2, .8, .2, 1);
+}
+
+.trail-rocket.finished {
+  animation: rocketCelebrate 0.8s ease-in-out infinite alternate;
+}
+
+.little-scribble-page {
+  grid-template-rows: auto minmax(420px, 1fr) auto;
+}
+
+.little-scribble-space {
+  min-height: 420px;
+  background: linear-gradient(160deg, #172e69, #24134f 62%, #0b163c);
+}
+
+.little-scribble-space canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.little-scribble-stars {
+  position: absolute;
+  inset: 8% 7% auto;
+  color: rgba(255, 255, 255, 0.26);
+  font-size: clamp(1.2rem, 4vw, 2.6rem);
+  letter-spacing: clamp(12px, 5vw, 60px);
+  text-align: center;
+  pointer-events: none;
+}
+
+.little-drawing-tools {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  background: rgba(10, 18, 48, 0.94);
+}
+
+.little-drawing-tools > button:not(.little-clear-drawing) {
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 4px solid transparent;
+  border-radius: 50%;
+  background: var(--drawing-color);
+  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.little-drawing-tools > button.selected {
+  border-color: #fff;
+  transform: scale(1.12);
+}
+
+.little-clear-drawing {
+  min-height: 46px;
+  padding: 7px 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.09);
+  font: 900 0.85rem/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+@keyframes littlePlanetArrive {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes littlePlanetFloat {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-9px) rotate(2deg); }
+}
+
+@keyframes balloonBob {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0) rotate(-2deg); }
+  50% { transform: translate(-50%, -50%) translateY(-12px) rotate(3deg); }
+}
+
+@keyframes balloonPop {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  65% { opacity: 1; transform: translate(-50%, -50%) scale(1.26); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(20deg); }
+}
+
+@keyframes littleSuccessArrive {
+  from { opacity: 0; transform: translate(-50%, -44%) scale(0.82); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes currentStarPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.22); }
+}
+
+@keyframes rocketCelebrate {
+  from { transform: translate(-82%, -12%) rotate(34deg) scale(1); }
+  to { transform: translate(-82%, -20%) rotate(42deg) scale(1.08); }
+}
+
+@media (max-width: 760px) {
+  .little-map-page {
+    padding: 78px 14px 108px;
+  }
+
+  .little-map-header h1 {
+    font-size: clamp(2.2rem, 11vw, 3.2rem);
+  }
+
+  .little-planet-grid {
+    grid-template-columns: 1fr;
+    width: min(410px, 100%);
+  }
+
+  .little-planet-grid > button {
+    min-height: 132px;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 15px;
+    text-align: left;
+  }
+
+  .little-planet {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    width: 92px;
+    margin: 0;
+    font-size: 3.2rem;
+  }
+
+  .little-planet-grid strong,
+  .little-planet-grid small {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .little-planet-grid strong {
+    align-self: end;
+  }
+
+  .little-planet-grid small {
+    align-self: start;
+  }
+
+  .little-activity-page {
+    padding: 8px 8px 104px;
+    grid-template-rows: auto minmax(500px, 68dvh);
+  }
+
+  .little-scribble-page {
+    grid-template-rows: auto minmax(500px, 68dvh) auto;
+  }
+
+  .little-activity-header {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .little-activity-header .local-back-button span:last-child {
+    display: none;
+  }
+
+  .little-activity-header .local-back-button {
+    min-width: 48px;
+    padding: 9px;
+  }
+
+  .little-activity-header h1 {
+    font-size: clamp(1.35rem, 6.5vw, 2rem);
+  }
+
+  .little-activity-header p:last-child {
+    white-space: normal;
+  }
+
+  .balloon-space,
+  .star-trail-space,
+  .little-scribble-space {
+    min-height: 500px;
+  }
+
+  .space-balloon {
+    width: clamp(68px, 22vw, 88px);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .little-explorers-page {
+    min-height: 100dvh;
+    padding: 5px 8px 90px;
+  }
+
+  .little-map-page {
+    padding-top: 10px;
+    overflow-y: auto;
+  }
+
+  .little-map-header .eyebrow {
+    display: none;
+  }
+
+  .little-map-header h1 {
+    font-size: 1.9rem;
+  }
+
+  .little-map-header > p:last-child {
+    margin-top: 6px;
+    font-size: 0.86rem;
+  }
+
+  .little-grownup-note {
+    display: none;
+  }
+
+  .little-planet-grid {
+    margin-top: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .little-planet-grid > button {
+    min-height: 150px;
+    padding: 8px;
+  }
+
+  .little-planet {
+    width: 72px;
+    margin-bottom: 2px;
+    font-size: 2.35rem;
+  }
+
+  .little-planet-grid strong {
+    font-size: 1rem;
+  }
+
+  .little-planet-grid small {
+    font-size: 0.76rem;
+  }
+
+  .little-activity-page {
+    grid-template-rows: auto minmax(210px, 1fr);
+    overflow-y: auto;
+  }
+
+  .little-scribble-page {
+    grid-template-rows: auto minmax(210px, 1fr) auto;
+  }
+
+  .little-activity-header h1 {
+    font-size: 1.45rem;
+  }
+
+  .little-activity-header .eyebrow,
+  .little-activity-header p:last-child {
+    display: none;
+  }
+
+  .balloon-space,
+  .star-trail-space,
+  .little-scribble-space {
+    min-height: 210px;
+  }
+
+  .space-balloon {
+    width: clamp(54px, 8vw, 76px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .little-planet-grid > button,
+  .little-planet,
+  .space-balloon,
+  .trail-star,
+  .trail-rocket,
+  .little-success-card {
+    animation: none;
+    transition: none;
+  }
+}

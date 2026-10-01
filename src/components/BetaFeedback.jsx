@@ -11,7 +11,7 @@ const FEEDBACK_SCHEDULE = {
       ["Mercury", "Capital Letters"],
       ["Venus", "Lowercase Letters"],
       ["Earth", "Uppercase & Lowercase Matching"],
-      ["Mars", "Letter Sounds"],
+      ["Mars", "Listening & Building Words"],
     ],
   },
   2: {
@@ -22,6 +22,7 @@ const FEEDBACK_SCHEDULE = {
       ["Saturn", "Missing Letters"],
       ["Uranus", "Building Sentences"],
       ["Neptune", "Reading the Story"],
+      ["Pluto", "Reading Skills Assessment"],
     ],
   },
   3: {
@@ -42,6 +43,7 @@ const FEEDBACK_SCHEDULE = {
       ["Saturn", "Adding Numbers"],
       ["Uranus", "Taking Away"],
       ["Neptune", "Equal Groups & Sharing"],
+      ["Pluto", "Maths Assessment"],
     ],
   },
   5: {
