@@ -279,6 +279,156 @@
   pointer-events: none;
 }
 
+.balloon-lesson-menu {
+  padding: clamp(14px, 3vw, 30px);
+  display: grid;
+  place-items: center;
+}
+
+.balloon-lesson-grid {
+  width: min(920px, 100%);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 2.5vw, 22px);
+}
+
+.balloon-lesson-grid > button {
+  position: relative;
+  min-height: 220px;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 2px solid rgba(143, 231, 255, 0.3);
+  border-radius: 24px;
+  color: #fff;
+  background: rgba(24, 43, 99, 0.88);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.balloon-lesson-grid > button:active {
+  transform: scale(0.97);
+}
+
+.balloon-lesson-grid > button > span {
+  min-width: 82px;
+  min-height: 82px;
+  padding: 10px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #15285d;
+  background: #ffd45c;
+  font: 900 clamp(1.45rem, 4vw, 2.4rem)/1 "Nunito", Arial, sans-serif;
+}
+
+.balloon-lesson-grid > button:nth-child(2) > span {
+  background: #8fe7ff;
+}
+
+.balloon-lesson-grid > button:nth-child(3) > span {
+  background: #ff9fc2;
+}
+
+.balloon-lesson-grid strong {
+  font: 900 clamp(1.05rem, 2vw, 1.35rem)/1.1 "Nunito", Arial, sans-serif;
+}
+
+.balloon-lesson-grid small {
+  color: #d4defc;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.balloon-lesson-grid b {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #10214d;
+  background: #66e28b;
+}
+
+.balloon-learning-prompt {
+  position: absolute;
+  top: clamp(12px, 3vh, 24px);
+  left: 50%;
+  z-index: 8;
+  width: min(440px, calc(100% - 24px));
+  padding: 10px 16px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 3px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 18px;
+  color: #fff;
+  background: rgba(10, 20, 58, 0.9);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.balloon-learning-prompt > span {
+  grid-column: 1;
+  color: #8fe7ff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.balloon-learning-prompt > strong {
+  grid-column: 1;
+  font: 900 clamp(1rem, 2.6vw, 1.35rem)/1.05 "Nunito", Arial, sans-serif;
+}
+
+.balloon-learning-prompt > b,
+.balloon-target-colour {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: #142553;
+  background: #fff;
+  font: 900 1.8rem/1 "Nunito", Arial, sans-serif;
+  font-style: normal;
+}
+
+.balloon-target-colour {
+  border-radius: 50%;
+  background: var(--target-colour);
+  box-shadow: inset -6px -7px 0 rgba(0, 0, 0, 0.1);
+}
+
+.balloon-choice-label {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: 2;
+  color: #15285d;
+  font: 900 clamp(1.7rem, 4vw, 2.7rem)/1 "Nunito", Arial, sans-serif;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.learning-balloon.wrong {
+  animation: wrongBalloonShake 0.35s ease-in-out;
+}
+
 .little-success-card {
   position: absolute;
   left: 50%;
@@ -607,6 +757,12 @@
   100% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(20deg); }
 }
 
+@keyframes wrongBalloonShake {
+  0%, 100% { transform: translate(-50%, -50%); }
+  25% { transform: translate(calc(-50% - 8px), -50%); }
+  75% { transform: translate(calc(-50% + 8px), -50%); }
+}
+
 @keyframes littleSuccessArrive {
   from { opacity: 0; transform: translate(-50%, -44%) scale(0.82); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
@@ -719,6 +875,30 @@
   .space-balloon {
     width: clamp(68px, 22vw, 88px);
   }
+
+  .balloon-lesson-grid {
+    width: min(410px, 100%);
+    grid-template-columns: 1fr;
+  }
+
+  .balloon-lesson-grid > button {
+    min-height: 120px;
+    padding: 12px 54px 12px 112px;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .balloon-lesson-grid > button > span {
+    position: absolute;
+    left: 16px;
+    width: 80px;
+    min-width: 80px;
+    min-height: 80px;
+  }
+
+  .balloon-lesson-grid small {
+    text-align: left;
+  }
 }
 
 @media (max-width: 700px) {
@@ -811,6 +991,44 @@
 
   .space-balloon {
     width: clamp(54px, 8vw, 76px);
+  }
+
+  .balloon-lesson-grid {
+    width: min(850px, 100%);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .balloon-lesson-grid > button {
+    min-height: 150px;
+    padding: 8px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .balloon-lesson-grid > button > span {
+    position: static;
+    width: auto;
+    min-width: 62px;
+    min-height: 62px;
+  }
+
+  .balloon-lesson-grid small {
+    font-size: 0.72rem;
+    text-align: center;
+  }
+
+  .balloon-learning-prompt {
+    top: 6px;
+    width: min(390px, calc(100% - 16px));
+    padding: 6px 12px;
+  }
+
+  .balloon-learning-prompt > b,
+  .balloon-target-colour {
+    width: 38px;
+    height: 38px;
+    font-size: 1.45rem;
   }
 }
 
