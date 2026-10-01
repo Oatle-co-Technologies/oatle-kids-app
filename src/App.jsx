@@ -27,7 +27,6 @@ import AlphabetTracingMission from "./components/AlphabetTracingMission";
 import NumberTracingMission from "./components/NumberTracingMission";
 import ShapeTracingMission from "./components/ShapeTracingMission";
 import SentenceWritingMission from "./components/SentenceWritingMission";
-import BetaFeedback from "./components/BetaFeedback";
 import LocalBackButton from "./components/LocalBackButton";
 import LittleExplorers from "./components/LittleExplorers";
 
@@ -2188,7 +2187,7 @@ function App() {
           </p>
 
           <p className="login-intro">
-            Subscribe for R79/month, or enter a promo code to get access.
+            Subscribe for R99/month, or enter a promo code to get access.
           </p>
 
           <button
@@ -2201,7 +2200,7 @@ function App() {
           >
             {paymentLoading
               ? "Opening payment..."
-              : "Subscribe — R79/month"}
+              : "Subscribe — R99/month"}
           </button>
 
           {paymentError && (
@@ -3821,13 +3820,6 @@ function App() {
         )}
       </main>
     );
-    } else if (screen === "betaFeedback") {
-    content = (
-      <BetaFeedback
-        user={user}
-        onBack={() => setScreen("settings")}
-      />
-    );
   } else {
     content = (
       <main className="settings-panel">
@@ -3945,21 +3937,6 @@ function App() {
             />
           </label>
         </section>
-
-        <button
-          className="setting-row beta-feedback-setting"
-          onClick={() => setScreen("betaFeedback")}
-          type="button"
-        >
-          <span>
-            <strong>Today's Feedback</strong>
-            <small>
-              Share your experience with today's activities
-            </small>
-          </span>
-
-          <span aria-hidden="true">→</span>
-        </button>
 
         <label className="setting-row">
           Sound effects and spoken
