@@ -17,6 +17,7 @@ import wrongSound from "../sounds/wrong.mp3";
 import victorySound from "../sounds/victory.mp3";
 import blastoffSound from "../sounds/blastoff.mp3";
 import AbacusHelper from "./AbacusHelper";
+import GroupingHelper from "./GroupingHelper";
 import { speak, stopSpeech } from "../utils/speech";
 import LocalBackButton from "./LocalBackButton";
 
@@ -3492,6 +3493,20 @@ export default function MathSection({
       */}
       {[6, 7].includes(mission.id) ? (
         <AbacusHelper />
+      ) : null}
+
+      {mission.id === 8 &&
+      !question.teaching &&
+      [
+        "equal-groups",
+        "multiplication-numbers",
+        "sharing",
+        "division-numbers",
+      ].includes(question.type) ? (
+        <GroupingHelper
+          key={`${mission.id}-${progress.question}`}
+          question={question}
+        />
       ) : null}
 
       {!isInteractive ? (
