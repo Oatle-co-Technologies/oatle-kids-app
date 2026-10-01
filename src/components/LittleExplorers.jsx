@@ -17,6 +17,15 @@ const BALLOON_POSITIONS = [
   { x: 80, y: 62, delay: "-1.5s" },
 ];
 
+const SHAPE_BALLOON_POSITIONS = [
+  { x: 14, y: 42, delay: "0s" },
+  { x: 43, y: 35, delay: "-0.7s" },
+  { x: 76, y: 43, delay: "-1.4s" },
+  { x: 25, y: 72, delay: "-2s" },
+  { x: 56, y: 68, delay: "-0.4s" },
+  { x: 88, y: 70, delay: "-1.1s" },
+];
+
 const BREAK_BALLOONS = [
   { id: 1, color: "#ff6f91", x: 12, y: 40, delay: "0s" },
   { id: 2, color: "#ffd45c", x: 28, y: 68, delay: "-0.8s" },
@@ -70,6 +79,35 @@ const LETTER_A_TO_M = "ABCDEFGHIJKLM".split("");
 const LETTER_N_TO_Z = "NOPQRSTUVWXYZ".split("");
 const TEN_COLOURS = [
   "red", "blue", "yellow", "green", "purple", "orange", "pink", "black", "white", "brown",
+];
+
+const SHAPE_ROUNDS = [
+  {
+    target: "square",
+    prompt: "Pop all the squares",
+    choices: ["square", "circle", "square", "triangle", "square", "rectangle"],
+  },
+  {
+    target: "circle",
+    prompt: "Pop all the circles",
+    choices: ["star", "circle", "triangle", "circle", "square", "circle"],
+  },
+  {
+    target: "triangle",
+    prompt: "Pop all the triangles",
+    choices: ["triangle", "rectangle", "circle", "triangle", "star", "triangle"],
+    breakAfter: true,
+  },
+  {
+    target: "rectangle",
+    prompt: "Pop all the rectangles",
+    choices: ["circle", "rectangle", "rectangle", "star", "triangle", "rectangle"],
+  },
+  {
+    target: "star",
+    prompt: "Pop all the stars",
+    choices: ["star", "square", "circle", "star", "rectangle", "star"],
+  },
 ];
 
 const BALLOON_LESSONS = {
@@ -126,6 +164,15 @@ const BALLOON_LESSONS = {
     progressId: "balloons-colours-10",
     rounds: makeBalloonRounds(TEN_COLOURS, (colour) => `Pop the ${colour} balloon`, 4),
   },
+  shapes: {
+    kind: "shapes",
+    title: "Shape Balloons",
+    cardTitle: "Five Shapes",
+    cardText: "Find every matching shape",
+    icon: "△○□",
+    progressId: "balloons-shapes-5",
+    rounds: SHAPE_ROUNDS,
+  },
 };
 
 const BALLOON_CATEGORIES = {
@@ -150,21 +197,88 @@ const BALLOON_CATEGORIES = {
     icon: "🎨",
     lessonKeys: ["colours"],
   },
+  shapes: {
+    title: "Shape Balloons",
+    cardTitle: "Pop the Shapes",
+    cardText: "Learn five basic shapes",
+    icon: "△○□",
+    lessonKeys: ["shapes"],
+  },
 };
 
 const BALLOON_PALETTE = ["#ff6f91", "#ffd45c", "#55c6ff"];
+const SHAPE_BALLOON_PALETTE = [
+  "#ff6f91", "#ffd45c", "#55c6ff", "#a875e8", "#66d17a", "#ff9f43",
+];
 const BALLOON_LESSON_KEYS = Object.keys(BALLOON_LESSONS);
 const BALLOON_CATEGORY_KEYS = Object.keys(BALLOON_CATEGORIES);
 const BALLOON_PRAISE = ["Correct!", "Amazing!", "Good job!"];
 
-const TRAIL_STARS = [
-  { x: 10, y: 72 },
-  { x: 26, y: 45 },
-  { x: 43, y: 64 },
-  { x: 61, y: 34 },
-  { x: 78, y: 51 },
-  { x: 91, y: 20 },
-];
+const TRAIL_PATTERNS = {
+  straight: {
+    title: "Straight Line",
+    cardText: "Across the sky",
+    icon: "➖",
+    prompt: "Follow the stars in a straight line.",
+    progressId: "trail-straight",
+    path: "M10 52 L90 52",
+    stars: [
+      { x: 10, y: 52 }, { x: 26, y: 52 }, { x: 42, y: 52 },
+      { x: 58, y: 52 }, { x: 74, y: 52 }, { x: 90, y: 52 },
+    ],
+  },
+  zigzag: {
+    title: "Zigzag",
+    cardText: "Up, down, up",
+    icon: "⚡",
+    prompt: "Follow the zigzag stars.",
+    progressId: "trail-zigzag",
+    path: "M9 72 L25 30 L41 72 L57 30 L73 72 L91 30",
+    stars: [
+      { x: 9, y: 72 }, { x: 25, y: 30 }, { x: 41, y: 72 },
+      { x: 57, y: 30 }, { x: 73, y: 72 }, { x: 91, y: 30 },
+    ],
+  },
+  curve: {
+    title: "Big Curve",
+    cardText: "Around the moon",
+    icon: "〰",
+    prompt: "Follow the stars around the big curve.",
+    progressId: "trail-curve",
+    path: "M9 74 C22 22 72 12 91 70",
+    stars: [
+      { x: 9, y: 74 }, { x: 20, y: 43 }, { x: 35, y: 25 },
+      { x: 52, y: 20 }, { x: 69, y: 28 }, { x: 82, y: 47 }, { x: 91, y: 70 },
+    ],
+  },
+  circle: {
+    title: "Circle Orbit",
+    cardText: "Round and round",
+    icon: "⭕",
+    prompt: "Follow the stars around the circle.",
+    progressId: "trail-circle",
+    path: "M50 14 C75 14 88 32 88 51 C88 72 72 87 50 87 C28 87 12 72 12 51 C12 31 28 14 50 14 Z",
+    stars: [
+      { x: 50, y: 14 }, { x: 76, y: 23 }, { x: 88, y: 51 }, { x: 75, y: 77 },
+      { x: 50, y: 87 }, { x: 25, y: 77 }, { x: 12, y: 51 }, { x: 25, y: 24 },
+    ],
+  },
+  spiral: {
+    title: "Space Spiral",
+    cardText: "Curl into the middle",
+    icon: "🌀",
+    prompt: "Follow the spiral stars into the middle.",
+    progressId: "trail-spiral",
+    path: "M10 77 C12 24 84 12 90 55 C94 90 38 94 29 61 C22 34 65 25 73 51 C79 70 49 78 43 59 C40 48 52 43 58 51",
+    stars: [
+      { x: 10, y: 77 }, { x: 18, y: 31 }, { x: 53, y: 16 }, { x: 86, y: 37 },
+      { x: 83, y: 74 }, { x: 49, y: 84 }, { x: 29, y: 61 }, { x: 40, y: 36 },
+      { x: 68, y: 45 }, { x: 58, y: 65 }, { x: 46, y: 55 },
+    ],
+  },
+};
+
+const TRAIL_PATTERN_KEYS = Object.keys(TRAIL_PATTERNS);
 
 const DRAWING_COLORS = [
   "#ffd45c",
@@ -267,6 +381,7 @@ export default function LittleExplorers({
   const [balloonFinished, setBalloonFinished] = useState(false);
   const [balloonBreak, setBalloonBreak] = useState(false);
   const [breakPopped, setBreakPopped] = useState([]);
+  const [trailPattern, setTrailPattern] = useState(null);
   const [trailStep, setTrailStep] = useState(0);
   const [drawingColor, setDrawingColor] = useState(DRAWING_COLORS[0]);
   const [drawingTool, setDrawingTool] = useState("draw");
@@ -308,14 +423,16 @@ export default function LittleExplorers({
           : balloonCategory
             ? `Choose a ${BALLOON_CATEGORIES[balloonCategory].title} game.`
             : "Choose numbers, letters, or colours.",
-      trail: "Tap the glowing stars and help the rocket fly!",
+      trail: trailPattern
+        ? TRAIL_PATTERNS[trailPattern].prompt
+        : "Choose a star trail pattern.",
       scribble: "Draw anything you like in space!",
     };
 
     const timer = window.setTimeout(() => speak(prompts[screen]), 220);
 
     return () => window.clearTimeout(timer);
-  }, [balloonBreak, balloonCategory, balloonMode, balloonRound, screen, soundOn]);
+  }, [balloonBreak, balloonCategory, balloonMode, balloonRound, screen, soundOn, trailPattern]);
 
   useEffect(() => () => {
     stopSpeech();
@@ -387,6 +504,7 @@ export default function LittleExplorers({
     if (balloonTimerRef.current) window.clearTimeout(balloonTimerRef.current);
     setBalloonCategory(null);
     setBalloonMode(null);
+    setTrailPattern(null);
     setScreen("map");
   };
 
@@ -401,7 +519,10 @@ export default function LittleExplorers({
       setBalloonBreak(false);
       setBreakPopped([]);
     }
-    if (activity === "trail") setTrailStep(0);
+    if (activity === "trail") {
+      setTrailPattern(null);
+      setTrailStep(0);
+    }
     setScreen(activity);
   };
 
@@ -556,17 +677,45 @@ export default function LittleExplorers({
     }
   };
 
+  const showTrailMenu = () => {
+    stopSpeech();
+    setTrailPattern(null);
+    setTrailStep(0);
+  };
+
+  const startTrailPattern = (pattern) => {
+    setTrailPattern(pattern);
+    setTrailStep(0);
+  };
+
+  const completeTrailPattern = (pattern) => {
+    const progressId = TRAIL_PATTERNS[pattern].progressId;
+
+    setCompleted((current) => {
+      const next = current.includes(progressId) ? [...current] : [...current, progressId];
+      const allPatternsDone = TRAIL_PATTERN_KEYS.every((key) =>
+        next.includes(TRAIL_PATTERNS[key].progressId)
+      );
+
+      if (allPatternsDone && !next.includes("trail")) next.push("trail");
+      localStorage.setItem(LITTLE_PROGRESS_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
   const tapTrailStar = (index) => {
+    if (!trailPattern) return;
     if (index !== trailStep) return;
 
+    const pattern = TRAIL_PATTERNS[trailPattern];
     const next = trailStep + 1;
     setTrailStep(next);
     playBoop(soundOn, next + 1);
 
-    if (next === TRAIL_STARS.length) {
-      completeActivity("trail");
+    if (next === pattern.stars.length) {
+      completeTrailPattern(trailPattern);
       window.setTimeout(() => {
-        if (soundOn) speak("The rocket found every star! Well done!");
+        if (soundOn) speak(`${pattern.title} complete! Well done!`);
       }, 260);
     }
   };
@@ -866,20 +1015,52 @@ export default function LittleExplorers({
   }
 
   if (screen === "trail") {
-    const finished = trailStep === TRAIL_STARS.length;
-    const rocketPoint = TRAIL_STARS[Math.min(trailStep, TRAIL_STARS.length - 1)];
+    if (!trailPattern) {
+      return (
+        <main className="little-explorers-page little-activity-page">
+          <ActivityHeader
+            title="Star Trail Patterns"
+            instruction="Choose a trail and follow its shape."
+            onBack={showMap}
+          />
+
+          <section className="star-trail-space trail-pattern-menu" aria-label="Star trail patterns">
+            <div className="trail-pattern-grid">
+              {TRAIL_PATTERN_KEYS.map((key) => {
+                const pattern = TRAIL_PATTERNS[key];
+                const isComplete = completed.includes(pattern.progressId);
+
+                return (
+                  <button key={key} type="button" onClick={() => startTrailPattern(key)}>
+                    <span aria-hidden="true">{pattern.icon}</span>
+                    <strong>{pattern.title}</strong>
+                    <small>{pattern.cardText}</small>
+                    {isComplete && <b aria-label="Completed">✓</b>}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        </main>
+      );
+    }
+
+    const pattern = TRAIL_PATTERNS[trailPattern];
+    const finished = trailStep === pattern.stars.length;
+    const rocketPoint = pattern.stars[Math.min(trailStep, pattern.stars.length - 1)];
 
     return (
       <main className="little-explorers-page little-activity-page">
         <ActivityHeader
-          title="Follow the Star Trail"
-          instruction="Tap the glowing star and help the rocket fly."
-          onBack={showMap}
+          title={pattern.title}
+          instruction="Tap the glowing stars in order and help the rocket fly."
+          backLabel="Star trails"
+          onBack={showTrailMenu}
         />
 
-        <section className="star-trail-space" aria-label="Star trail">
+        <section className="star-trail-space" aria-label={`${pattern.title} star trail`}>
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M10 72 C20 25 35 80 48 55 S72 20 91 20" />
+            <path d={pattern.path} />
           </svg>
 
           <span
@@ -890,7 +1071,7 @@ export default function LittleExplorers({
             🚀
           </span>
 
-          {TRAIL_STARS.map((star, index) => (
+          {pattern.stars.map((star, index) => (
             <button
               key={`${star.x}-${star.y}`}
               type="button"
@@ -911,8 +1092,8 @@ export default function LittleExplorers({
                 <button type="button" onClick={() => setTrailStep(0)}>
                   ↻ Again
                 </button>
-                <button type="button" onClick={showMap}>
-                  🪐 Map
+                <button type="button" onClick={showTrailMenu}>
+                  ⭐ Trails
                 </button>
               </div>
             </div>
@@ -1044,9 +1225,11 @@ export default function LittleExplorers({
 
         <button type="button" onClick={() => startActivity("trail")}>
           <span className="little-planet little-planet-trail" aria-hidden="true">⭐</span>
-          <strong>Star Trail</strong>
-          <small>Tap and help the rocket</small>
-          {completed.includes("trail") && <b aria-label="Completed">✓</b>}
+          <strong>Star Trail Patterns</strong>
+          <small>Five shapes for the rocket</small>
+          {TRAIL_PATTERN_KEYS.every((key) =>
+            completed.includes(TRAIL_PATTERNS[key].progressId)
+          ) && <b aria-label="Completed">✓</b>}
         </button>
 
         <button type="button" onClick={() => startActivity("scribble")}>
