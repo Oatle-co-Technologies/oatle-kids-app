@@ -5,7 +5,7 @@ function ComingSoon() {
     <main className="coming-soon">
       <div className="coming-soon-content">
         <img
-          src="/oatle-kids-wordmark.png"
+          src="/oatle-kids-wordmark.webp"
           alt="Oatle Kids"
           className="coming-soon-logo"
         />

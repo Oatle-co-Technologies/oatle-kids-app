@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import "./AlphabetTracingMission.css";
 import { speak } from "../utils/speech";
@@ -125,13 +125,21 @@ function ToolIcon({ type }) {
   return <EraserIcon />;
 }
 
-export default function NumberTracingMission({ onBack, onComplete }) {
+export default function NumberTracingMission({
+  onBack,
+  onComplete,
+  initialStep = 0,
+  onProgress,
+}) {
   const canvasRef = useRef(null);
 
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);
+  const activePointerIdRef = useRef(null);
 
-  const [numberIndex, setNumberIndex] = useState(0);
+  const [numberIndex, setNumberIndex] = useState(() =>
+    Math.min(Math.max(initialStep, 0), NUMBERS.length - 1)
+  );
   const [tool, setTool] = useState("pencil");
 
   const currentNumber = NUMBERS[numberIndex];
@@ -155,20 +163,43 @@ export default function NumberTracingMission({ onBack, onComplete }) {
 
     if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
+    let frameId;
 
-    const dpr = window.devicePixelRatio || 1;
+    const setupCanvas = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(() => {
+        const rect = canvas.getBoundingClientRect();
 
-    canvas.width = Math.max(1, Math.round(rect.width * dpr));
-    canvas.height = Math.max(1, Math.round(rect.height * dpr));
+        // The activity is hidden while the phone is in landscape.
+        // Wait until it is visible instead of locking in a 1px canvas.
+        if (!rect.width || !rect.height) return;
 
-    const ctx = canvas.getContext("2d");
+        const dpr = window.devicePixelRatio || 1;
 
-    if (!ctx) return;
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
 
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const ctx = canvas.getContext("2d");
 
-    ctx.clearRect(0, 0, rect.width, rect.height);
+        if (!ctx) return;
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, rect.width, rect.height);
+      });
+    };
+
+    const observer = new ResizeObserver(setupCanvas);
+    observer.observe(canvas);
+    setupCanvas();
+    window.addEventListener("resize", setupCanvas);
+    window.addEventListener("orientationchange", setupCanvas);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      observer.disconnect();
+      window.removeEventListener("resize", setupCanvas);
+      window.removeEventListener("orientationchange", setupCanvas);
+    };
   }, [currentNumber]);
 
   const getPoint = (event) => {
@@ -191,15 +222,44 @@ export default function NumberTracingMission({ onBack, onComplete }) {
 
     if (!canvas) return;
 
+    if (
+      activePointerIdRef.current !== null ||
+      (event.pointerType === "touch" && !event.isPrimary)
+    ) return;
+
     drawingRef.current = true;
+    activePointerIdRef.current = event.pointerId;
 
     lastPointRef.current = getPoint(event);
 
     canvas.setPointerCapture?.(event.pointerId);
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const settings = TOOLS[tool];
+    ctx.save();
+    ctx.globalAlpha = tool === "eraser" ? 1 : settings.opacity;
+    ctx.globalCompositeOperation =
+      tool === "eraser" ? "destination-out" : "source-over";
+    ctx.fillStyle = DEFAULT_COLOR;
+    ctx.beginPath();
+    ctx.arc(
+      lastPointRef.current.x,
+      lastPointRef.current.y,
+      settings.size / 2,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+    ctx.restore();
   };
 
   const draw = (event) => {
-    if (!drawingRef.current) return;
+    if (
+      !drawingRef.current ||
+      event.pointerId !== activePointerIdRef.current
+    ) return;
 
     event.preventDefault();
 
@@ -252,14 +312,21 @@ export default function NumberTracingMission({ onBack, onComplete }) {
   };
 
   const stopDrawing = (event) => {
+    if (event.pointerId !== activePointerIdRef.current) return;
+
     drawingRef.current = false;
 
     lastPointRef.current = null;
+    activePointerIdRef.current = null;
 
     const canvas = canvasRef.current;
 
     if (canvas && event?.pointerId != null) {
-      canvas.releasePointerCapture?.(event.pointerId);
+      try {
+        canvas.releasePointerCapture?.(event.pointerId);
+      } catch {
+        // The browser may already have released capture during rotation.
+      }
     }
   };
 
@@ -269,7 +336,11 @@ export default function NumberTracingMission({ onBack, onComplete }) {
       return;
     }
 
-    setNumberIndex((current) => current + 1);
+    setNumberIndex((current) => {
+      const next = current + 1;
+      onProgress?.(next);
+      return next;
+    });
   };
 
   return (

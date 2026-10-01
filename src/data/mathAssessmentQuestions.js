@@ -52,10 +52,15 @@ const isAssessmentQuestion = (question) => {
 const addSkill = (questions, skill) =>
   questions
     .filter(isAssessmentQuestion)
-    .map((question, index) => ({
+    .map((question) => ({
       ...question,
       skill,
-      assessmentId: `${skill}-${index}`,
+      assessmentId: [
+        skill,
+        question.type,
+        question.prompt,
+        String(question.answer),
+      ].join("::"),
     }));
 
 /*
@@ -204,7 +209,7 @@ const divisionAssessmentQuestions = addSkill(
   MathSection should randomly select the questions used
   for the child's individual attempt.
 */
-export const mathAssessmentQuestions = [
+const completeAssessmentPool = [
   ...numberAssessmentQuestions,
   ...shapeAssessmentQuestions,
   ...countingAssessmentQuestions,
@@ -216,6 +221,15 @@ export const mathAssessmentQuestions = [
   ...multiplicationAssessmentQuestions,
   ...divisionAssessmentQuestions,
 ];
+
+export const mathAssessmentQuestions =
+  completeAssessmentPool.filter(
+    (question, index, questions) =>
+      questions.findIndex(
+        (candidate) =>
+          candidate.assessmentId === question.assessmentId
+      ) === index
+  );
 
 /*
   Skills used by the parent assessment report.

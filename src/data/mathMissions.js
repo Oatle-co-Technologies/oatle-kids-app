@@ -1,12 +1,12 @@
-import mercuryImage from "../assets/images/planets/mercury.png";
-import venusImage from "../assets/images/planets/venus.png";
-import earthImage from "../assets/images/planets/earth.png";
-import marsImage from "../assets/images/planets/mars.png";
-import jupiterImage from "../assets/images/planets/jupitor.png";
-import saturnImage from "../assets/images/planets/saturn.png";
-import uranusImage from "../assets/images/planets/uranus.png";
-import neptuneImage from "../assets/images/planets/neptune.png";
-import plutoImage from "../assets/images/planets/pluto.png";
+import mercuryImage from "../assets/images/planets/mercury.webp";
+import venusImage from "../assets/images/planets/venus.webp";
+import earthImage from "../assets/images/planets/earth.webp";
+import marsImage from "../assets/images/planets/mars.webp";
+import jupiterImage from "../assets/images/planets/jupitor.webp";
+import saturnImage from "../assets/images/planets/saturn.webp";
+import uranusImage from "../assets/images/planets/uranus.webp";
+import neptuneImage from "../assets/images/planets/neptune.webp";
+import plutoImage from "../assets/images/planets/pluto.webp";
 
 import { numberQuestions } from "./numberQuestions";
 

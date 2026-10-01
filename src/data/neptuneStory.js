@@ -1,10 +1,10 @@
-import mapImage from "../assets/images/words/map.png";
-import bagImage from "../assets/images/words/bag.png";
-import rugImage from "../assets/images/words/rug.png";
-import dogImage from "../assets/images/words/dog.png";
-import netImage from "../assets/images/words/net.png";
-import vanImage from "../assets/images/words/van.png";
-import neptuneImage from "../assets/images/planets/neptune.png";
+import mapImage from "../assets/images/words/map.webp";
+import bagImage from "../assets/images/words/bag.webp";
+import rugImage from "../assets/images/words/rug.webp";
+import dogImage from "../assets/images/words/dog.webp";
+import netImage from "../assets/images/words/net.webp";
+import vanImage from "../assets/images/words/van.webp";
+import neptuneImage from "../assets/images/planets/neptune.webp";
 
 export const neptuneStory = [
   {

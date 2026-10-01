@@ -496,47 +496,62 @@ body {
 
   .alphabet-tracing-mission {
     min-height: 100dvh;
-    height: 100dvh;
-    padding: 20px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    height: auto;
+    padding: 8px 8px 24px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: block;
     box-sizing: border-box;
-  }
-
-  .alphabet-mission-header,
-  .alphabet-mission-content,
-  .alphabet-tool-bar,
-  .alphabet-mission-hint {
-    display: none;
+    -webkit-overflow-scrolling: touch;
   }
 
   .alphabet-portrait-message {
-    min-height: calc(100dvh - 40px);
+    display: none;
+  }
+
+  .alphabet-mission-header {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 24px;
-    box-sizing: border-box;
+    min-height: 40px;
   }
 
-  .alphabet-portrait-message h2 {
-    margin: 0 0 10px;
-    font-family: "Pixelify Sans", sans-serif;
-    font-size: clamp(1.4rem, 4vw, 2rem);
-    color: #fff;
+  .alphabet-mission-title,
+  .alphabet-mission-progress {
+    display: none;
   }
 
-  .alphabet-portrait-message p {
-    margin: 0;
-    max-width: 420px;
-    font-family: "Andika", sans-serif;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.75);
+  .alphabet-mission-content {
+    display: block;
+    width: 100%;
+    margin: 4px auto 0;
+  }
+
+  .alphabet-paper {
+    height: max(260px, 64dvh);
+    min-height: 260px;
+    max-height: 420px;
+    border-radius: 16px;
+  }
+
+  .alphabet-target-display {
+    transform: translateX(-50%) scale(0.78);
+    transform-origin: top center;
+  }
+
+  .shape-target-display {
+    transform: translateX(-50%) scale(0.72);
+    transform-origin: center;
+  }
+
+  .alphabet-tool-bar {
+    display: flex;
+    margin: 8px auto 0;
+  }
+
+  .alphabet-mission-hint {
+    display: block;
+    margin: 7px 0 12px;
+    font-size: 0.78rem;
   }
 }
 
@@ -611,4 +626,3 @@ body {
   display: block;
   overflow: visible;
 }
-

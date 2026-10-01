@@ -4,11 +4,14 @@ import "./App.css";
 import { questions } from "./data/questions";
 import { lowercaseQuestions } from "./data/lowercaseQuestions";
 import { matchingQuestions } from "./data/matchingQuestions";
-import { phonicsQuestions } from "./data/phonicsQuestions";
 import { wordOrderQuestions } from "./data/wordOrderQuestions";
 import { readingQuestions } from "./data/readingQuestions";
 import { sentenceQuestions } from "./data/sentenceQuestions";
 import { missingLettersQuestions } from "./data/missingLettersQuestions";
+import {
+  assessmentQuestions as plutoQuestions,
+  assessmentSkills as plutoSkills,
+} from "./data/assessmentQuestions";
 import { speak } from "./utils/speech";
 import LoginPage from "./components/LoginPage";
 import { supabase } from "./lib/supabase";
@@ -25,34 +28,35 @@ import NumberTracingMission from "./components/NumberTracingMission";
 import ShapeTracingMission from "./components/ShapeTracingMission";
 import SentenceWritingMission from "./components/SentenceWritingMission";
 import BetaFeedback from "./components/BetaFeedback";
+import LocalBackButton from "./components/LocalBackButton";
 
-import mercuryImage from "./assets/images/planets/mercury.png";
-import venusImage from "./assets/images/planets/venus.png";
-import earthImage from "./assets/images/planets/earth.png";
-import marsImage from "./assets/images/planets/mars.png";
-import jupiterImage from "./assets/images/planets/jupitor.png";
-import saturnImage from "./assets/images/planets/saturn.png";
-import uranusImage from "./assets/images/planets/uranus.png";
-import neptuneImage from "./assets/images/planets/neptune.png";
-import plutoImage from "./assets/images/planets/pluto.png";
+import mercuryImage from "./assets/images/planets/mercury.webp";
+import venusImage from "./assets/images/planets/venus.webp";
+import earthImage from "./assets/images/planets/earth.webp";
+import marsImage from "./assets/images/planets/mars.webp";
+import jupiterImage from "./assets/images/planets/jupitor.webp";
+import saturnImage from "./assets/images/planets/saturn.webp";
+import uranusImage from "./assets/images/planets/uranus.webp";
+import neptuneImage from "./assets/images/planets/neptune.webp";
+import plutoImage from "./assets/images/planets/pluto.webp";
 
 import correctSound from "./sounds/correct.mp3";
 import wrongSound from "./sounds/wrong.mp3";
 import victorySound from "./sounds/victory.mp3";
 import welcomeSound from "./sounds/welcome-sound.mp3";
 
-import neptunePage1 from "./assets/images/story/neptune-page1.png";
-import neptunePage2 from "./assets/images/story/neptune-page2.png";
-import neptunePage3 from "./assets/images/story/neptune-page3.png";
-import neptunePage4 from "./assets/images/story/neptune-page4.png";
-import neptunePage5 from "./assets/images/story/neptune-page5.png";
-import neptunePage6 from "./assets/images/story/neptune-page6.png";
-import neptunePage7 from "./assets/images/story/neptune-page7.png";
-import neptunePage8 from "./assets/images/story/neptune-page8.png";
-import neptunePage9 from "./assets/images/story/neptune-page9.png";
-import neptunePage10 from "./assets/images/story/neptune-page10.png";
-import neptunePage11 from "./assets/images/story/neptune-page11.png";
-import neptunePage12 from "./assets/images/story/neptune-page12.png";
+import neptunePage1 from "./assets/images/story/neptune-page1.webp";
+import neptunePage2 from "./assets/images/story/neptune-page2.webp";
+import neptunePage3 from "./assets/images/story/neptune-page3.webp";
+import neptunePage4 from "./assets/images/story/neptune-page4.webp";
+import neptunePage5 from "./assets/images/story/neptune-page5.webp";
+import neptunePage6 from "./assets/images/story/neptune-page6.webp";
+import neptunePage7 from "./assets/images/story/neptune-page7.webp";
+import neptunePage8 from "./assets/images/story/neptune-page8.webp";
+import neptunePage9 from "./assets/images/story/neptune-page9.webp";
+import neptunePage10 from "./assets/images/story/neptune-page10.webp";
+import neptunePage11 from "./assets/images/story/neptune-page11.webp";
+import neptunePage12 from "./assets/images/story/neptune-page12.webp";
 
 const neptuneStory = [
   {
@@ -181,60 +185,6 @@ const planets = [
   },
 ];
 
-const plutoSkills = [
-  { id: "capital", name: "Capital letters" },
-  { id: "lowercase", name: "Lowercase letters" },
-  { id: "matching", name: "Upper/lowercase matching" },
-  { id: "phonics", name: "Letter sounds / phonics" },
-  { id: "reading", name: "Reading simple words" },
-  { id: "missing", name: "Missing letters" },
-  { id: "sentences", name: "Building simple sentences" },
-];
-
-const plutoQuestions = [
-  ...questions.slice(0, 4).map((question) => ({
-    ...question,
-    skill: "capital",
-    type: "letters",
-  })),
-
-  ...lowercaseQuestions.slice(0, 4).map((question) => ({
-    ...question,
-    skill: "lowercase",
-    type: "letters",
-  })),
-
-  ...matchingQuestions.slice(0, 4).map((question) => ({
-    ...question,
-    skill: "matching",
-    type: "letters",
-  })),
-
-  ...phonicsQuestions.slice(0, 4).map((question) => ({
-    ...question,
-    skill: "phonics",
-    type: "phonics",
-  })),
-
-  ...readingQuestions.slice(0, 4).map((question) => ({
-    ...question,
-    skill: "reading",
-    type: "reading",
-  })),
-
-  ...missingLettersQuestions.slice(0, 4).map((question) => ({
-    ...question,
-    skill: "missing",
-    type: "missing",
-  })),
-
-  ...sentenceQuestions.slice(0, 4).map((question) => ({
-    ...question,
-    skill: "sentences",
-    type: "sentences",
-  })),
-];
-
 const emptyPlutoResults = () =>
   Object.fromEntries(
     plutoSkills.map((skill) => [
@@ -258,6 +208,27 @@ const savedAssessmentResults = () => {
   }
 };
 
+const READING_ASSESSMENT_ATTEMPT_KEY =
+  "oatle-reading-assessment-attempt";
+
+const savedReadingAssessmentAttempt = () => {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(READING_ASSESSMENT_ATTEMPT_KEY)
+    );
+
+    return {
+      active: Boolean(saved?.active),
+      scores: saved?.scores || emptyPlutoResults(),
+    };
+  } catch {
+    return {
+      active: false,
+      scores: emptyPlutoResults(),
+    };
+  }
+};
+
 function shuffleArray(items) {
   const shuffled = [...items];
 
@@ -275,34 +246,51 @@ function shuffleArray(items) {
 
 const savedGame = () => {
   try {
-    return (
-      JSON.parse(localStorage.getItem("atli-space-progress")) || {
+    const saved = JSON.parse(
+      localStorage.getItem("atli-space-progress")
+    );
+
+    if (!saved) {
+      return {
         unlocked: 1,
         activePlanet: 1,
         question: 0,
-      }
-    );
+        missions: {},
+      };
+    }
+
+    return {
+      unlocked: 1,
+      activePlanet: 1,
+      question: 0,
+      missions: {},
+      ...saved,
+    };
   } catch {
     return {
       unlocked: 1,
       activePlanet: 1,
       question: 0,
+      missions: {},
     };
   }
 };
 
 const savedWritingProgress = () => {
   try {
-    return (
-      JSON.parse(
-        localStorage.getItem("atli-writing-progress")
-      ) || {
-        unlocked: 1,
-      }
+    const saved = JSON.parse(
+      localStorage.getItem("atli-writing-progress")
     );
+
+    return {
+      unlocked: 1,
+      missions: {},
+      ...(saved || {}),
+    };
   } catch {
     return {
       unlocked: 1,
+      missions: {},
     };
   }
 };
@@ -746,7 +734,10 @@ function App() {
     useState(savedAssessmentResults);
 
   const [assessmentScores, setAssessmentScores] =
-    useState(emptyPlutoResults);
+    useState(() => savedReadingAssessmentAttempt().scores);
+
+  const [readingAssessmentActive, setReadingAssessmentActive] =
+    useState(() => savedReadingAssessmentAttempt().active);
 
   const [soundOn, setSoundOn] = useState(true);
 
@@ -848,7 +839,7 @@ function App() {
       planet.id === 8
         ? planet.questions
         : planet.id === 9
-          ? shuffleArray(plutoQuestions)
+          ? plutoQuestions
           : shuffleArray(planet.questions),
     [planet.id, planet.questions]
   );
@@ -856,6 +847,21 @@ function App() {
   const question =
     missionQuestions[progress.question] ||
     missionQuestions[0];
+
+  const [loadedQuestionImage, setLoadedQuestionImage] =
+    useState(null);
+
+  const questionImageLoaded =
+    !question?.image || loadedQuestionImage === question.image;
+
+  useEffect(() => {
+    const nextQuestion = missionQuestions[progress.question + 1];
+
+    if (!nextQuestion?.image) return;
+
+    const preload = new Image();
+    preload.src = nextQuestion.image;
+  }, [missionQuestions, progress.question]);
 
   const options = useMemo(() => {
     if (!question || planet.id === 8) {
@@ -919,9 +925,17 @@ function App() {
   }, [question, planet.id]);
 
   useEffect(() => {
+    const savedProgress = {
+      ...progress,
+      missions: {
+        ...progress.missions,
+        [progress.activePlanet]: progress.question,
+      },
+    };
+
     localStorage.setItem(
       "atli-space-progress",
-      JSON.stringify(progress)
+      JSON.stringify(savedProgress)
     );
   }, [progress]);
 
@@ -948,19 +962,21 @@ function App() {
     }
   }, [assessmentResults]);
 
-  const playPhonicsSound = (audioSrc) => {
-    if (!soundOn || !audioSrc) return;
-
-    const phonicsAudio = new Audio(audioSrc);
-    phonicsAudio.volume = 1;
-    phonicsAudio.play().catch(() => {});
-  };
+  useEffect(() => {
+    localStorage.setItem(
+      READING_ASSESSMENT_ATTEMPT_KEY,
+      JSON.stringify({
+        active: readingAssessmentActive,
+        scores: assessmentScores,
+      })
+    );
+  }, [assessmentScores, readingAssessmentActive]);
 
   /*
    * Central reading speech.
    *
    * Mars uses whole-word TTS.
-   * Pluto phonics uses real recorded phonics audio.
+   * Pluto mirrors the current Reading missions.
    * Everything else that needs spoken accessibility prompts
    * continues to use the existing TTS voice.
    */
@@ -973,22 +989,12 @@ function App() {
       return;
     }
 
-    const isMarsWordOrder = planet.id === 4;
-    const isPlutoPhonics =
-      planet.id === 9 &&
-      question.skill === "phonics";
+    const isWordOrder =
+      planet.id === 4 || question.type === "word-order";
 
-    if (isMarsWordOrder) {
+    if (isWordOrder) {
       const timer = setTimeout(() => {
         speak(question.word);
-      }, 250);
-
-      return () => clearTimeout(timer);
-    }
-
-    if (isPlutoPhonics) {
-      const timer = setTimeout(() => {
-        playPhonicsSound(question.audioSrc);
       }, 250);
 
       return () => clearTimeout(timer);
@@ -1125,23 +1131,27 @@ function App() {
   };
 
   const goToPlanet = (id) => {
-    setProgress((current) => ({
-      ...current,
-      activePlanet: id,
-      question: 0,
-    }));
+    setProgress((current) => {
+      const saved = savedGame();
+      const missions = {
+        ...saved.missions,
+        ...current.missions,
+        [current.activePlanet]: current.question,
+      };
+
+      return {
+        ...current,
+        missions,
+        activePlanet: id,
+        question: missions[id] || 0,
+      };
+    });
 
     setFeedback("");
     setBuiltSentence([]);
     setBuiltWord([]);
     setIsProcessing(false);
     setRevealedAnswer("");
-
-    if (id === 9) {
-      setAssessmentScores(
-        emptyPlutoResults()
-      );
-    }
 
     if (advanceTimer.current) {
       clearTimeout(advanceTimer.current);
@@ -1151,14 +1161,21 @@ function App() {
   };
 
   const startPlutoAssessment = () => {
+    const savedAttempt = savedReadingAssessmentAttempt();
+
+    if (!savedAttempt.active) {
+      setAssessmentScores(emptyPlutoResults());
+      setReadingAssessmentActive(true);
+    } else {
+      setAssessmentScores(savedAttempt.scores);
+    }
+
     setProgress((current) => ({
       ...current,
-      question: 0,
+      question: savedAttempt.active
+        ? current.missions?.[9] || current.question || 0
+        : 0,
     }));
-
-    setAssessmentScores(
-      emptyPlutoResults()
-    );
 
     setBuiltSentence([]);
     setBuiltWord([]);
@@ -1186,8 +1203,36 @@ function App() {
 
   const finishPlutoAssessment = (scores) => {
     setAssessmentResults(scores);
+    setReadingAssessmentActive(false);
     playSound(victorySound);
     setScreen("celebration");
+  };
+
+  const advancePlutoAssessment = (
+    scores,
+    message,
+    delay = 1200
+  ) => {
+    setFeedback(message);
+    setIsProcessing(true);
+
+    advanceTimer.current = setTimeout(() => {
+      if (progress.question < missionQuestions.length - 1) {
+        setProgress((current) => ({
+          ...current,
+          question: current.question + 1,
+        }));
+        setBuiltSentence([]);
+        setBuiltWord([]);
+        setRevealedAnswer("");
+        setFeedback("");
+        setIsProcessing(false);
+        return;
+      }
+
+      finishPlutoAssessment(scores);
+      setIsProcessing(false);
+    }, delay);
   };
 
   const previousStoryPage = () => {
@@ -1277,6 +1322,13 @@ function App() {
     );
 
     if (!correct) {
+      if (planet.id === 9) {
+        const nextScores = savePlutoAnswer(false);
+        advancePlutoAssessment(
+          nextScores,
+          `Not quite. The correct sentence is “${question.words.join(" ")}.”`
+        );
+      }
       return;
     }
 
@@ -1341,6 +1393,14 @@ function App() {
       expectedLetter
     ) {
       playSound(wrongSound);
+      if (planet.id === 9) {
+        const nextScores = savePlutoAnswer(false);
+        advancePlutoAssessment(
+          nextScores,
+          `Not quite. The word is “${question.word}.”`
+        );
+        return;
+      }
       setFeedback(
         "Almost! Try another star."
       );
@@ -1368,6 +1428,12 @@ function App() {
     }
 
     setIsProcessing(true);
+
+    if (planet.id === 9) {
+      const nextScores = savePlutoAnswer(true);
+      advancePlutoAssessment(nextScores, "Great listening!");
+      return;
+    }
 
     advanceTimer.current = setTimeout(() => {
       if (
@@ -1401,6 +1467,15 @@ function App() {
       selectedAnswer !== question.answer
     ) {
       playSound(wrongSound);
+
+      if (planet.id === 9) {
+        const nextScores = savePlutoAnswer(false);
+        advancePlutoAssessment(
+          nextScores,
+          `Not quite. The correct answer is “${question.answer}.”`
+        );
+        return;
+      }
 
       if (planet.id === 6) {
         setFeedback("");
@@ -1488,6 +1563,13 @@ function App() {
   const completeWritingMission = (
     missionId
   ) => {
+    setWritingProgress((current) => ({
+      ...current,
+      missions: {
+        ...current.missions,
+        [missionId]: 0,
+      },
+    }));
     setWritingCelebrationMission(missionId);
     playSound(victorySound);
     setScreen("writingCelebration");
@@ -1564,6 +1646,25 @@ function App() {
     );
   };
 
+  const saveWritingMissionStep = (
+    missionId,
+    step
+  ) => {
+    setWritingProgress((current) => {
+      if (current.missions?.[missionId] === step) {
+        return current;
+      }
+
+      return {
+        ...current,
+        missions: {
+          ...current.missions,
+          [missionId]: step,
+        },
+      };
+    });
+  };
+
   const unlockNext = () => {
     const nextPlanetId =
       planet.id + 1;
@@ -1589,7 +1690,8 @@ function App() {
         nextPlanetId
       ),
       activePlanet: nextPlanetId,
-      question: 0,
+      question:
+        current.missions?.[nextPlanetId] || 0,
     }));
 
     setScreen(
@@ -1604,10 +1706,12 @@ function App() {
       unlocked: 1,
       activePlanet: 1,
       question: 0,
+      missions: {},
     });
 
     setWritingProgress({
       unlocked: 1,
+      missions: {},
     });
 
     setWritingActivePlanet(1);
@@ -2074,6 +2178,11 @@ function App() {
   ) {
     content = (
       <main className="page writing-map-page">
+        <LocalBackButton
+          className="page-back-button"
+          label="Explore"
+          onClick={() => setScreen("explore")}
+        />
         <p className="eyebrow">
           YOUR JOURNEY
         </p>
@@ -2173,6 +2282,11 @@ function App() {
 
     content = (
       <main className="planet-overview writing-planet-overview">
+        <LocalBackButton
+          className="page-back-button"
+          label="Writing map"
+          onClick={() => setScreen("writingMap")}
+        />
         <PlanetVisual
           planet={
             selectedWritingPlanet
@@ -2227,6 +2341,11 @@ function App() {
 
     content = (
       <main className="celebration-panel">
+        <LocalBackButton
+          className="page-back-button"
+          label="Writing map"
+          onClick={() => setScreen("writingMap")}
+        />
         <p className="eyebrow">
           MISSION COMPLETE
         </p>
@@ -2304,6 +2423,12 @@ function App() {
         onComplete={() =>
           completeWritingMission(1)
         }
+        initialStep={
+          writingProgress.missions?.[1] || 0
+        }
+        onProgress={(step) =>
+          saveWritingMissionStep(1, step)
+        }
       />
     );
   } else if (
@@ -2318,6 +2443,12 @@ function App() {
         }
         onComplete={() =>
           completeWritingMission(2)
+        }
+        initialStep={
+          writingProgress.missions?.[2] || 0
+        }
+        onProgress={(step) =>
+          saveWritingMissionStep(2, step)
         }
       />
     );
@@ -2334,6 +2465,12 @@ function App() {
         onComplete={() =>
           completeWritingMission(3)
         }
+        initialStep={
+          writingProgress.missions?.[3] || 0
+        }
+        onProgress={(step) =>
+          saveWritingMissionStep(3, step)
+        }
       />
     );
   } else if (
@@ -2349,6 +2486,12 @@ function App() {
         onComplete={() =>
           completeWritingMission(4)
         }
+        initialStep={
+          writingProgress.missions?.[4] || 0
+        }
+        onProgress={(step) =>
+          saveWritingMissionStep(4, step)
+        }
         childProfile={childProfile}
       />
     );
@@ -2358,7 +2501,7 @@ function App() {
     content = (
       <main className="hero-panel">
         <img
-          src="/oatle-kids-wordmark.png"
+          src="/oatle-kids-wordmark.webp"
           alt="Oatle Kids"
           className="hero-logo"
         />
@@ -2407,6 +2550,9 @@ function App() {
       <MathSection
         onHome={() =>
           setScreen("home")
+        }
+        onBack={() =>
+          setScreen("explore")
         }
         soundOn={soundOn}
       />
@@ -2466,6 +2612,11 @@ function App() {
       <main
         className={`launch-panel launch-${launchAdventure}`}
       >
+        <LocalBackButton
+          className="page-back-button"
+          label="Explore"
+          onClick={() => setScreen("explore")}
+        />
         <div
           className="countdown-orbit"
           aria-hidden="true"
@@ -2508,6 +2659,11 @@ function App() {
   ) {
     content = (
       <main className="page">
+        <LocalBackButton
+          className="page-back-button"
+          label="Explore"
+          onClick={() => setScreen("explore")}
+        />
         <p className="eyebrow">
           YOUR JOURNEY
         </p>
@@ -2580,6 +2736,11 @@ function App() {
   ) {
     content = (
       <main className="planet-overview">
+        <LocalBackButton
+          className="page-back-button"
+          label="Reading map"
+          onClick={() => setScreen("map")}
+        />
         <PlanetVisual
           planet={planet}
           className="planet-icon planet-art"
@@ -2646,6 +2807,11 @@ function App() {
 
     content = (
       <main className="mission-panel">
+        <LocalBackButton
+          className="page-back-button"
+          label="Planet"
+          onClick={() => setScreen("planet")}
+        />
         <div className="mission-status">
           <button
             className="text-button"
@@ -2811,12 +2977,29 @@ function App() {
             </p>
 
             <div className="reading-image-container">
+              {!questionImageLoaded && (
+                <div
+                  className="reading-image-loading"
+                  role="status"
+                  aria-live="polite"
+                >
+                  Loading picture…
+                </div>
+              )}
+
               <img
+                key={question.image}
                 src={
                   question.image
                 }
                 alt="Picture clue"
-                className="reading-image"
+                className={`reading-image ${
+                  questionImageLoaded ? "loaded" : "loading"
+                }`}
+                loading="eager"
+                decoding="async"
+                onLoad={() => setLoadedQuestionImage(question.image)}
+                onError={() => setLoadedQuestionImage(question.image)}
               />
             </div>
 
@@ -2830,7 +3013,8 @@ function App() {
                       answer(word)
                     }
                     disabled={
-                      isProcessing
+                      isProcessing ||
+                      !questionImageLoaded
                     }
                     type="button"
                   >
@@ -2954,7 +3138,8 @@ function App() {
               )}
             </div>
           </>
-        ) : planet.id === 4 ? (
+        ) : planet.id === 4 ||
+          question.type === "word-order" ? (
           <>
             <p className="eyebrow">
               LISTEN TO THE WORD AND PUT IT IN THE RIGHT ORDER
@@ -3031,34 +3216,12 @@ function App() {
         ) : (
           <>
             <p className="eyebrow">
-              {planet.id === 9 &&
-              question.skill === "phonics"
-                ? "LISTEN AND CHOOSE"
-                : "FIND THE LETTER"}
+              FIND THE LETTER
             </p>
 
-            {planet.id === 9 &&
-            question.skill === "phonics" ? (
-              <button
-                className="sound-target"
-                type="button"
-                onClick={() =>
-                  playPhonicsSound(
-                    question.audioSrc
-                  )
-                }
-                disabled={
-                  !question.audioSrc ||
-                  !soundOn
-                }
-              >
-                🔊 Hear the sound
-              </button>
-            ) : (
-              <div className="target-letter">
-                {question.target}
-              </div>
-            )}
+            <div className="target-letter">
+              {question.target}
+            </div>
 
             <div className="answer-grid">
               {options.map(
@@ -3109,6 +3272,11 @@ function App() {
 
     content = (
       <main className="celebration-panel">
+        <LocalBackButton
+          className="page-back-button"
+          label="Reading map"
+          onClick={() => setScreen("map")}
+        />
         <p className="eyebrow">
           MISSION COMPLETE
         </p>

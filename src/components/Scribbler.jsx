@@ -741,6 +741,7 @@ const getCanvasPoint = (event, canvas) => {
 export default function Scribbler({ onBack }) {
   const canvasRef = useRef(null);
   const drawingRef = useRef(false);
+  const activePointerIdRef = useRef(null);
 
   const [selectedColor, setSelectedColor] =
     useState(COLORS[0].value);
@@ -877,7 +878,8 @@ export default function Scribbler({ onBack }) {
 
     if (
       !canvas ||
-      !drawingRef.current
+      !drawingRef.current ||
+      event.pointerId !== activePointerIdRef.current
     ) {
       return;
     }
@@ -937,11 +939,16 @@ export default function Scribbler({ onBack }) {
 
     if (!canvas) return;
 
-    event.preventDefault();
+    // One physical gesture owns one stroke. Ignore extra fingers and
+    // palm touches until the active finger or stylus has been released.
+    if (
+      activePointerIdRef.current !== null ||
+      (event.pointerType === "touch" && !event.isPrimary)
+    ) {
+      return;
+    }
 
-    canvas.setPointerCapture(
-      event.pointerId
-    );
+    event.preventDefault();
 
     const point =
       getCanvasPoint(
@@ -965,6 +972,12 @@ export default function Scribbler({ onBack }) {
 
       return;
     }
+
+    activePointerIdRef.current = event.pointerId;
+
+    canvas.setPointerCapture?.(
+      event.pointerId
+    );
 
     const context =
       canvas.getContext("2d");
@@ -1021,7 +1034,8 @@ export default function Scribbler({ onBack }) {
     event
   ) => {
     if (
-      !drawingRef.current
+      !drawingRef.current ||
+      event.pointerId !== activePointerIdRef.current
     ) {
       return;
     }
@@ -1047,21 +1061,30 @@ export default function Scribbler({ onBack }) {
   const releasePointer = (
     event
   ) => {
+    if (event.pointerId !== activePointerIdRef.current) {
+      return;
+    }
+
     const canvas =
       canvasRef.current;
 
     drawingRef.current =
       false;
+    activePointerIdRef.current = null;
 
     if (
       canvas &&
-      canvas.hasPointerCapture(
+      canvas.hasPointerCapture?.(
         event.pointerId
       )
     ) {
-      canvas.releasePointerCapture(
-        event.pointerId
-      );
+      try {
+        canvas.releasePointerCapture?.(
+          event.pointerId
+        );
+      } catch {
+        // Rotation can release pointer capture before this handler runs.
+      }
     }
 
     const context =

@@ -288,30 +288,61 @@
   .scribbler-page {
     width: 100vw;
     min-height: 100dvh;
-    padding: 18px;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    height: auto;
+    padding: 10px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .scribbler-paper,
-  .scribbler-toolbar,
-  .scribbler-scroll-control,
+  .scribbler-paper {
+    display: block;
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: max(520px, 68dvh);
+    height: max(520px, 68dvh);
+  }
+
   .scribbler-back {
+    display: block;
+    top: 18px;
+    left: 18px;
+  }
+
+  .scribbler-scroll-control {
     display: none;
   }
 
-  .scribbler-page::before {
-    content: "Turn your device sideways";
-    width: min(420px, 90vw);
-    padding: 28px;
-    border: 2px solid rgba(143, 231, 255, 0.5);
-    border-radius: 24px;
-    background: rgba(17, 26, 66, 0.96);
-    color: #ffffff;
-    font: 800 1.4rem "Nunito", sans-serif;
-    text-align: center;
-    box-sizing: border-box;
+  .scribbler-toolbar {
+    display: flex;
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    padding: 8px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .scribbler-toolbar > * {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .scribbler-color-tools,
+  .scribbler-sticker-tools {
+    display: grid;
+    grid-template-columns: repeat(3, 30px);
+    padding: 0 0 0 8px;
+    margin: 0;
+    border-top: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
   }
 }
 

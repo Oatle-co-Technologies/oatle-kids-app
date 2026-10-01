@@ -17,12 +17,44 @@ import victorySound from "../sounds/victory.mp3";
 import blastoffSound from "../sounds/blastoff.mp3";
 import AbacusHelper from "./AbacusHelper";
 import { speak } from "../utils/speech";
+import LocalBackButton from "./LocalBackButton";
 
 const defaultProgress = {
   unlocked: 1,
   activeMission: 1,
   question: 0,
   assessmentResults: {},
+  missions: {},
+};
+
+const MATH_ASSESSMENT_ATTEMPT_KEY =
+  "oatle-maths-assessment-attempt";
+
+const readAssessmentAttempt = () => {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(MATH_ASSESSMENT_ATTEMPT_KEY)
+    );
+
+    const questionMap = new Map(
+      mathAssessmentQuestions.map((question) => [
+        question.assessmentId,
+        question,
+      ])
+    );
+
+    return {
+      active: Boolean(saved?.active),
+      questions: (saved?.questionIds || [])
+        .map((id) => questionMap.get(id))
+        .filter(Boolean),
+      answers: Array.isArray(saved?.answers)
+        ? saved.answers
+        : [],
+    };
+  } catch {
+    return { active: false, questions: [], answers: [] };
+  }
 };
 
 function getMissionQuestions(mission) {
@@ -1047,7 +1079,9 @@ function InteractiveSortVisual({
   ) => {
     if (
       placed[itemId] ||
-      draggingId
+      draggingId ||
+      currentPointerId.current !== null ||
+      (event.pointerType === "touch" && !event.isPrimary)
     ) {
       return;
     }
@@ -2553,11 +2587,16 @@ function getAssessmentQuestions() {
   const selected = [];
 
   assessmentSkills.forEach((skill) => {
+    const seen = new Set();
     const skillPool = shuffleArray(
       mathAssessmentQuestions.filter(
         (question) =>
           question.skill === skill.id
-      )
+      ).filter((question) => {
+        if (seen.has(question.assessmentId)) return false;
+        seen.add(question.assessmentId);
+        return true;
+      })
     );
 
     selected.push(
@@ -2570,6 +2609,7 @@ function getAssessmentQuestions() {
 
 export default function MathSection({
   onHome,
+  onBack,
   soundOn,
 }) {
   const [progress, setProgress] =
@@ -2589,12 +2629,15 @@ export default function MathSection({
   const [
     assessmentAnswers,
     setAssessmentAnswers,
-  ] = useState([]);
+  ] = useState(() => readAssessmentAttempt().answers);
 
   const [
     assessmentQuestions,
     setAssessmentQuestions,
-  ] = useState([]);
+  ] = useState(() => readAssessmentAttempt().questions);
+
+  const [assessmentActive, setAssessmentActive] =
+    useState(() => readAssessmentAttempt().active);
 
   const mission =
     mathMissions.find(
@@ -2697,13 +2740,32 @@ export default function MathSection({
       : 100;
 
   useEffect(() => {
+    const savedProgress = {
+      ...progress,
+      missions: {
+        ...progress.missions,
+        [progress.activeMission]: progress.question,
+      },
+    };
+
     localStorage.setItem(
       "oatle-maths-progress",
-      JSON.stringify(
-        progress
-      )
+      JSON.stringify(savedProgress)
     );
   }, [progress]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      MATH_ASSESSMENT_ATTEMPT_KEY,
+      JSON.stringify({
+        active: assessmentActive,
+        questionIds: assessmentQuestions.map(
+          (question) => question.assessmentId
+        ),
+        answers: assessmentAnswers,
+      })
+    );
+  }, [assessmentActive, assessmentAnswers, assessmentQuestions]);
 
   const assessmentSummary =
     useMemo(() => {
@@ -2794,37 +2856,72 @@ export default function MathSection({
   const startMission = (
     id
   ) => {
-    playSound(
-      blastoffSound
-    );
-
     const selectedMission =
       mathMissions.find(
         (item) => item.id === id
       );
 
+    let assessmentQuestionSet = [];
+    let assessmentAnswerSet = [];
+    let assessmentQuestionIndex = 0;
+
     if (selectedMission?.assessment) {
-      setAssessmentQuestions(
-        getAssessmentQuestions()
-      );
+      const savedAttempt = readAssessmentAttempt();
+
+      if (
+        savedAttempt.active &&
+        savedAttempt.questions.length > 0
+      ) {
+        assessmentQuestionSet = savedAttempt.questions;
+        assessmentAnswerSet = savedAttempt.answers;
+        assessmentQuestionIndex = Math.min(
+          savedAttempt.answers.length,
+          savedAttempt.questions.length - 1
+        );
+      } else {
+        assessmentQuestionSet = getAssessmentQuestions();
+        setAssessmentActive(true);
+      }
+
+      setAssessmentQuestions(assessmentQuestionSet);
+      setAssessmentAnswers(assessmentAnswerSet);
     } else {
       setAssessmentQuestions([]);
     }
 
     setProgress(
-      (current) => ({
+      (current) => {
+        const saved = readProgress();
+        const missions = {
+          ...saved.missions,
+          ...current.missions,
+          [current.activeMission]: current.question,
+        };
+
+        return {
         ...current,
+        missions,
         activeMission:
           id,
-        question: 0,
-      })
+        question: selectedMission?.assessment
+          ? assessmentQuestionIndex
+          : missions[id] || 0,
+        };
+      }
     );
 
     setFeedback("");
     setIsProcessing(false);
-    setAssessmentAnswers(
-      []
-    );
+    if (!selectedMission?.assessment) {
+      setAssessmentAnswers([]);
+    }
+    setScreen("planet");
+  };
+
+  const beginMission = () => {
+    playSound(blastoffSound);
+    setFeedback("");
+    setIsProcessing(false);
     setScreen("mission");
   };
 
@@ -2834,6 +2931,7 @@ export default function MathSection({
         playSound(
           victorySound
         );
+        setAssessmentActive(false);
         setScreen(
           "assessment-results"
         );
@@ -2913,7 +3011,9 @@ export default function MathSection({
       setFeedback(
         correct
           ? "Great exploring!"
-          : "Almost! Try another answer."
+          : isAssessment
+            ? `Not quite. The correct answer is ${question.answer}.`
+            : "Almost! Try another answer."
       );
 
       const nextAssessmentAnswers =
@@ -2947,7 +3047,7 @@ export default function MathSection({
 
       window.setTimeout(
         advanceQuestion,
-        700
+        isAssessment && !correct ? 1400 : 700
       );
     };
 
@@ -3000,6 +3100,11 @@ export default function MathSection({
   if (screen === "map") {
     return (
       <main className="page math-page">
+        <LocalBackButton
+          className="page-back-button"
+          label="Explore"
+          onClick={onBack}
+        />
         <p className="eyebrow">
           YOUR JOURNEY
         </p>
@@ -3037,9 +3142,42 @@ export default function MathSection({
     );
   }
 
+  if (screen === "planet") {
+    return (
+      <main className="planet-overview math-planet-overview">
+        <LocalBackButton
+          className="page-back-button"
+          label="Maths map"
+          onClick={() => setScreen("map")}
+        />
+
+        <img
+          className="planet-icon planet-art math-overview-planet"
+          src={mission.image}
+          alt=""
+        />
+
+        <p className="eyebrow">PLANET {mission.id}</p>
+        <h1>Welcome to {mission.title}</h1>
+        <p>
+          {mission.description} You have {questions.length} questions to complete.
+        </p>
+
+        <button className="primary-button" onClick={beginMission} type="button">
+          {mission.assessment ? "Start assessment" : "Start mission"}
+        </button>
+      </main>
+    );
+  }
+
   if (screen === "complete") {
     return (
       <main className="celebration-panel">
+        <LocalBackButton
+          className="page-back-button"
+          label="Maths map"
+          onClick={() => setScreen("map")}
+        />
         <p className="eyebrow">
           MISSION COMPLETE
         </p>
@@ -3093,6 +3231,11 @@ export default function MathSection({
   ) {
     return (
       <main className="celebration-panel math-assessment-results">
+        <LocalBackButton
+          className="page-back-button"
+          label="Maths map"
+          onClick={() => setScreen("map")}
+        />
         <p className="eyebrow">
           MISSION COMPLETE
         </p>
@@ -3125,7 +3268,18 @@ export default function MathSection({
           MATHS ASSESSMENT
         </p>
 
-        {skills}
+        <div className="result-list">
+          {assessmentSkillResults
+            .filter((skill) => skill.total > 0)
+            .map((skill) => (
+              <div className="result-row" key={skill.id}>
+                <strong>{skill.name}</strong>
+                <span>{skill.correct}/{skill.total}</span>
+                <span>{skill.percentage}%</span>
+                <span>{skill.status}</span>
+              </div>
+            ))}
+        </div>
 
         <div className="celebration-actions">
           <button
@@ -3150,6 +3304,11 @@ export default function MathSection({
 
   return (
     <main className="math-page math-mission-page">
+      <LocalBackButton
+        className="page-back-button"
+        label="Planet"
+        onClick={() => setScreen("planet")}
+      />
       <div className="math-status-row">
         <button
           className="math-back-button"

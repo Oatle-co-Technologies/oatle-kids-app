@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./AlphabetTracingMission.css";
 import { speak } from "../utils/speech";
 
@@ -157,13 +157,18 @@ function EraserIcon() {
 export default function AlphabetTracingMission({
   onBack,
   onComplete,
+  initialStep = 0,
+  onProgress,
 }) {
   const canvasRef = useRef(null);
 
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);
+  const activePointerIdRef = useRef(null);
 
-  const [letterIndex, setLetterIndex] = useState(0);
+  const [letterIndex, setLetterIndex] = useState(() =>
+    Math.min(Math.max(initialStep, 0), LETTERS.length - 1)
+  );
   const [tool, setTool] = useState("pencil");
 
   const letter = LETTERS[letterIndex];
@@ -225,44 +230,6 @@ export default function AlphabetTracingMission({
   }, [letterIndex]);
 
   /* =========================
-     CLEAR CANVAS
-     ========================= */
-
-  function clearCanvas() {
-    const canvas = canvasRef.current;
-
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-
-    if (!ctx) return;
-
-    const rect = canvas.getBoundingClientRect();
-
-    const dpr = window.devicePixelRatio || 1;
-
-    ctx.clearRect(
-      0,
-      0,
-      rect.width,
-      rect.height
-    );
-
-    /*
-     * Re-establish the high-DPI transform
-     * after clearing.
-     */
-    ctx.setTransform(
-      dpr,
-      0,
-      0,
-      dpr,
-      0,
-      0
-    );
-  }
-
-  /* =========================
      POINTER POSITION
      ========================= */
 
@@ -308,7 +275,13 @@ export default function AlphabetTracingMission({
 
     if (!canvas) return;
 
+    if (
+      activePointerIdRef.current !== null ||
+      (event.pointerType === "touch" && !event.isPrimary)
+    ) return;
+
     canvas.setPointerCapture?.(event.pointerId);
+    activePointerIdRef.current = event.pointerId;
 
     drawingRef.current = true;
 
@@ -352,7 +325,10 @@ export default function AlphabetTracingMission({
   function handlePointerMove(event) {
     event.preventDefault();
 
-    if (!drawingRef.current) return;
+    if (
+      !drawingRef.current ||
+      event.pointerId !== activePointerIdRef.current
+    ) return;
 
     const canvas = canvasRef.current;
 
@@ -388,8 +364,11 @@ export default function AlphabetTracingMission({
   function handlePointerUp(event) {
     event.preventDefault();
 
+    if (event.pointerId !== activePointerIdRef.current) return;
+
     drawingRef.current = false;
     lastPointRef.current = null;
+    activePointerIdRef.current = null;
 
     if (event?.pointerId != null) {
       try {
@@ -419,7 +398,11 @@ export default function AlphabetTracingMission({
     /*
      * Move to the next letter.
      */
-    setLetterIndex((current) => current + 1);
+    setLetterIndex((current) => {
+      const next = current + 1;
+      onProgress?.(next);
+      return next;
+    });
 
     /*
      * The canvas is cleared automatically when

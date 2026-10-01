@@ -266,47 +266,60 @@
   }
 
   .sentence-writing-page {
-    display: block;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(560px, 70dvh) auto;
     min-height: 100dvh;
-    height: 100dvh;
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .sentence-writing-page > *:not(.sentence-portrait-message) {
-    display: none;
+    height: auto;
+    padding: 10px;
+    gap: 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .sentence-writing-page .sentence-portrait-message {
-    display: flex;
+    display: none;
+  }
+
+  .sentence-writing-paper {
+    display: block;
+    grid-column: 1;
+    grid-row: 1;
     width: 100%;
-    height: 100dvh;
-    min-height: 100dvh;
-    padding: 24px;
-    box-sizing: border-box;
+    min-height: 560px;
+    height: 70dvh;
+  }
+
+  .sentence-writing-content {
+    padding: 14px 3%;
+  }
+
+  .sentence-target-display {
+    transform: translateX(-50%) scale(0.48);
+    transform-origin: top center;
+  }
+
+  .sentence-writing-toolbar {
+    display: flex;
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    padding: 8px;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
-    gap: 8px;
-    color: #fff;
-    text-align: center;
-    font-family: "Nunito", sans-serif;
+    gap: 10px;
   }
 
-  .sentence-portrait-message strong {
+  .sentence-writing-toolbar > .sentence-next-button {
     margin: 0;
-    font-size: 28px;
-    line-height: 1.2;
-    font-weight: 800;
   }
 
-  .sentence-portrait-message span {
-    margin: 0;
-    max-width: 420px;
-    font-size: 17px;
-    line-height: 1.5;
-    font-weight: 400;
-    opacity: 0.82;
+  .sentence-writing-toolbar > .scribbler-tool-tools {
+    width: auto;
   }
 }
 
@@ -473,4 +486,51 @@
 .sentence-writing-toolbar > .scribbler-tool-tools {
   flex: 0 0 auto;
   width: 100%;
+}
+
+/* Portrait phones and tablets keep the complete activity available.
+   These final rules intentionally come after the shared toolbar rules. */
+@media (orientation: portrait) {
+  .sentence-writing-page {
+    display: grid;
+  }
+
+  .sentence-writing-page > *:not(.sentence-portrait-message) {
+    display: revert;
+  }
+
+  .sentence-writing-page .sentence-portrait-message,
+  .sentence-writing-header,
+  .sentence-writing-hint {
+    display: none;
+  }
+
+  .sentence-writing-paper {
+    display: block;
+  }
+
+  .sentence-writing-toolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+    padding: 8px;
+    gap: 10px;
+  }
+
+  .sentence-writing-toolbar > .sentence-next-button {
+    margin: 0;
+  }
+
+  .sentence-writing-toolbar > .scribbler-tool-tools {
+    width: auto;
+  }
+}
+
+@media (orientation: portrait) and (min-width: 700px) {
+  .sentence-target-display {
+    transform: translateX(-50%) scale(0.72);
+  }
 }

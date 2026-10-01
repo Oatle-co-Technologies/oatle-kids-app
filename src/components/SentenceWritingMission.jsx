@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./Scribbler.css";
 import "./SentenceWritingMission.css";
 import { speak } from "../utils/speech";
@@ -46,7 +46,6 @@ const TOOLS = {
 };
 
 const FONT_FAMILY = '"Andika", "Comic Sans MS", "Chalkboard SE", sans-serif';
-const GUIDE_COLOR = "rgba(82, 172, 205, 0.30)";
 const DEFAULT_COLOR = "#000000";
 
 /*
@@ -122,6 +121,8 @@ export default function SentenceWritingMission({
   onBack,
   onComplete,
   childProfile,
+  initialStep = 0,
+  onProgress,
 }) {
   const canvasRef = useRef(null);
   const targetCanvasRef = useRef(null);
@@ -129,12 +130,16 @@ export default function SentenceWritingMission({
 
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);
+  const activePointerIdRef = useRef(null);
   const completedRef = useRef(false);
   const hasDrawingRef = useRef(false);
 
-  const [sentenceIndex, setSentenceIndex] = useState(0);
+  const [sentenceIndex, setSentenceIndex] = useState(() =>
+    Math.min(Math.max(initialStep, 0), SENTENCES.length - 1)
+  );
   const [tool, setTool] = useState("pencil");
   const [progress, setProgress] = useState(0);
+  const [hasDrawing, setHasDrawing] = useState(false);
 
   const profile = childProfile || {};
   const current = SENTENCES[sentenceIndex];
@@ -219,7 +224,6 @@ export default function SentenceWritingMission({
     targetCtx.textAlign = "center";
     targetCtx.textBaseline = "alphabetic";
 
-    const guideRect = guideDisplay.getBoundingClientRect();
     const characters = guideDisplay.querySelectorAll(
       ".sentence-uppercase, .sentence-lowercase"
     );
@@ -234,8 +238,6 @@ export default function SentenceWritingMission({
       const fontSize = parseFloat(computed.fontSize) || 170;
       const fontWeight = computed.fontWeight || "700";
       const fontFamily = computed.fontFamily || FONT_FAMILY;
-      const lineHeight = computed.lineHeight;
-
       targetCtx.font =
         `${fontWeight} ${fontSize}px ${fontFamily}`;
 
@@ -427,19 +429,29 @@ export default function SentenceWritingMission({
     const canvas = canvasRef.current;
     if (!canvas || completedRef.current) return;
 
+    if (
+      activePointerIdRef.current !== null ||
+      (event.pointerType === "touch" && !event.isPrimary)
+    ) return;
+
     event.preventDefault();
     canvas.setPointerCapture?.(event.pointerId);
+    activePointerIdRef.current = event.pointerId;
     drawingRef.current = true;
 
     const point = getCanvasPoint(event, canvas);
     lastPointRef.current = point;
     drawPoint(point);
     hasDrawingRef.current = true;
+    setHasDrawing(true);
     setProgress(100);
   };
 
   const handlePointerMove = (event) => {
-    if (!drawingRef.current) return;
+    if (
+      !drawingRef.current ||
+      event.pointerId !== activePointerIdRef.current
+    ) return;
     event.preventDefault();
 
     const events = event.getCoalescedEvents
@@ -469,8 +481,12 @@ export default function SentenceWritingMission({
 
   const releasePointer = (event) => {
     event.preventDefault();
+
+    if (event.pointerId !== activePointerIdRef.current) return;
+
     drawingRef.current = false;
     lastPointRef.current = null;
+    activePointerIdRef.current = null;
 
     const canvas = canvasRef.current;
     if (
@@ -501,6 +517,7 @@ export default function SentenceWritingMission({
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     hasDrawingRef.current = false;
+    setHasDrawing(false);
     setProgress(0);
   };
 
@@ -513,7 +530,11 @@ export default function SentenceWritingMission({
     }
 
     clearWritingCanvas();
-    setSentenceIndex((index) => index + 1);
+    setSentenceIndex((index) => {
+      const next = index + 1;
+      onProgress?.(next);
+      return next;
+    });
   };
 
   return (
@@ -539,7 +560,7 @@ export default function SentenceWritingMission({
         </div>
 
         <div className="sentence-writing-progress">
-          {sentenceIndex + 1} / {SENTENCES.length}
+          {sentenceIndex + 1} / {SENTENCES.length} · {progress}%
         </div>
       </header>
 
@@ -590,7 +611,7 @@ export default function SentenceWritingMission({
           type="button"
           className="sentence-next-button"
           onClick={handleNext}
-          disabled={!hasDrawingRef.current}
+          disabled={!hasDrawing}
           aria-label={
             sentenceIndex === SENTENCES.length - 1
               ? "Complete writing mission"

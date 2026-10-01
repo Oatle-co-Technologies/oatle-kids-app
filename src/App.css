@@ -11,6 +11,49 @@
 
 button {
   font: inherit;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(143, 231, 255, 0.18);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button,
+[role="button"] {
+  /* Mobile WebViews should treat a tap as an immediate activation,
+     not wait to determine whether it is part of a double-tap gesture. */
+  touch-action: manipulation;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid #8fe7ff;
+  outline-offset: 3px;
+}
+
+.reading-image-container {
+  position: relative;
+}
+
+.reading-image.loading {
+  visibility: hidden;
+}
+
+.reading-image.loaded {
+  visibility: visible;
+}
+
+.reading-image-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  color: #c7d2f6;
+  font-weight: 800;
 }
 
 .app {
