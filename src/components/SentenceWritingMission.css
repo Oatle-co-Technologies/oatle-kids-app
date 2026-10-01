@@ -1,34 +1,39 @@
 /* =========================================
    WRITING MISSION 4
-   Preschool handwriting workbook
-   LANDSCAPE ONLY
+   Responsive sentence-tracing workbook
    ========================================= */
-
-/* Base model intentionally untouched. */
 
 .sentence-writing-page {
   width: 100%;
   height: 100dvh;
   min-height: 100dvh;
-  padding: 0 5vw 18px;
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
   box-sizing: border-box;
   display: grid;
   grid-template-columns: minmax(0, 1fr) clamp(62px, 8vw, 84px);
-  grid-template-rows: minmax(0, 1fr);
-  gap: 10px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
   align-items: stretch;
   overflow: hidden;
 }
 
+/* The header remains in the layout so Back and progress never overlap. */
 .sentence-writing-header {
-  display: none;
   grid-column: 1 / -1;
-  width: min(1100px, 100%);
-  margin: 0 auto;
-  grid-template-columns: auto 1fr auto;
-  align-items: end;
-  gap: 20px;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
   color: #fff;
+}
+
+.sentence-writing-header .scribbler-back {
+  position: static;
+  align-self: center;
 }
 
 .sentence-writing-header > div:nth-child(2) {
@@ -37,19 +42,22 @@
 
 .sentence-writing-header span {
   display: block;
-  font-size: 14px;
+  font-size: clamp(10px, 1.4vw, 14px);
   font-weight: 700;
   opacity: 0.9;
 }
 
 .sentence-writing-header h1 {
-  margin: 2px 0 0;
-  font-size: clamp(24px, 3vw, 38px);
+  margin: 1px 0 0;
+  overflow: hidden;
+  font-size: clamp(18px, 2.8vw, 32px);
   line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sentence-writing-progress {
-  font-size: 18px;
+  font-size: clamp(13px, 1.8vw, 18px);
   font-weight: 800;
   white-space: nowrap;
 }
@@ -60,12 +68,12 @@
 
 .sentence-writing-paper {
   grid-column: 1;
-  grid-row: 1;
+  grid-row: 2;
   position: relative;
   width: 100%;
+  height: 100%;
   min-width: 0;
   min-height: 0;
-  height: auto;
   overflow: hidden;
 }
 
@@ -75,7 +83,7 @@
   width: 100%;
   height: 100%;
   margin: 0;
-  padding: 22px 4% 24px;
+  padding: clamp(10px, 2vw, 22px) clamp(10px, 3vw, 34px);
   box-sizing: border-box;
   display: flex;
   align-items: stretch;
@@ -85,21 +93,20 @@
   position: relative;
   width: 100%;
   height: 100%;
+  min-width: 0;
   min-height: 0;
   overflow: hidden;
   background: #fff;
 }
 
-/* =========================================
-   PRESCHOOL HANDWRITING LINES
-   ========================================= */
-
+/* Three handwriting bands give long sentences room to wrap without
+   reducing the letters to an unusable tracing size. */
 .sentence-workbook-lines {
   position: absolute;
-  inset: 0;
+  inset: 3% 0 5%;
   z-index: 1;
   display: grid;
-  grid-template-rows: repeat(12, 1px);
+  grid-template-rows: repeat(9, 1.5px);
   align-content: space-between;
   pointer-events: none;
 }
@@ -107,70 +114,50 @@
 .sentence-workbook-line {
   width: 100%;
   height: 1.5px;
-  background: rgba(83, 166, 198, 0.32);
-  transform: translateY(-0.25px);
+  border-radius: 999px;
+  background: rgba(55, 88, 140, 0.24);
   pointer-events: none;
 }
 
 /* =========================================
-   SENTENCE TRACING LETTERS
+   RESPONSIVE SENTENCE GUIDE
    ========================================= */
 
 .sentence-target-display {
   position: absolute;
-  left: 50%;
-  top: 10px;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: none;
-  height: 188px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0;
-  pointer-events: none;
+  inset: 3% 4% 5%;
   z-index: 2;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  pointer-events: none;
+}
+
+.sentence-target-line {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
   white-space: nowrap;
 }
 
-.sentence-uppercase {
-  width: auto;
-  height: 188px;
-  flex: 0 0 auto;
-  position: relative;
-  top: 50px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  margin: 0;
-  color: rgba(82, 172, 205, 0.30);
-  font-family: "Andika", "Comic Sans MS", "Chalkboard SE", sans-serif;
-  font-size: 185px;
-  font-weight: 700;
-  line-height: 0.65;
-  padding: 0;
-}
-
+.sentence-uppercase,
 .sentence-lowercase {
-  width: auto;
-  height: 100px;
   flex: 0 0 auto;
+  display: inline-block;
   margin: 0;
-  position: relative;
-  top: 100px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  color: rgba(82, 172, 205, 0.30);
-  font-family: "Andika", "Comic Sans MS", "Chalkboard SE", sans-serif;
-  font-size: 130px;
-  font-weight: 700;
-  line-height: 0.55;
   padding: 0;
+  color: rgba(82, 172, 205, 0.32);
+  font-family: "Andika", "Comic Sans MS", "Chalkboard SE", sans-serif;
+  font-size: var(--sentence-font-size, 64px);
+  font-weight: 700;
+  line-height: 0.95;
 }
 
 /* =========================================
-   DRAWING CANVAS
+   DRAWING CANVASES
    ========================================= */
 
 .sentence-writing-area .scribbler-canvas {
@@ -185,6 +172,7 @@
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+  pointer-events: auto;
   cursor: crosshair;
 }
 
@@ -201,270 +189,16 @@
 }
 
 /* =========================================
-   NEXT / TOOLBAR / HINT
+   TOOLBAR
    ========================================= */
-
-.sentence-next-button {
-  position: absolute;
-  right: 18px;
-  bottom: 16px;
-  z-index: 10;
-  width: 52px;
-  height: 52px;
-  border: 0;
-  border-radius: 50%;
-  background: #fff;
-  color: #234a8a;
-  font-size: 28px;
-  line-height: 1;
-  cursor: pointer;
-  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.14);
-}
-
-.sentence-next-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
 
 .sentence-writing-toolbar {
   grid-column: 2;
-  grid-row: 1;
+  grid-row: 2;
   width: 100%;
   height: 100%;
   min-width: 0;
   margin: 0;
-}
-
-.sentence-writing-hint {
-  display: none;
-  grid-column: 1 / -1;
-  margin: 0;
-  color: #fff;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-/* =========================================
-   PORTRAIT MESSAGE
-   ========================================= */
-
-.sentence-portrait-message {
-  display: none;
-}
-
-/* =========================================
-   LANDSCAPE ONLY
-   ========================================= */
-
-@media (orientation: portrait) {
-  /* Mission 4 uses its own portrait message.
-     Disable the generic Scribbler portrait pseudo-element. */
-  .sentence-writing-page::before {
-    content: none !important;
-    display: none !important;
-  }
-
-  .sentence-writing-page {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(560px, 70dvh) auto;
-    min-height: 100dvh;
-    height: auto;
-    padding: 10px;
-    gap: 8px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .sentence-writing-page .sentence-portrait-message {
-    display: none;
-  }
-
-  .sentence-writing-paper {
-    display: block;
-    grid-column: 1;
-    grid-row: 1;
-    width: 100%;
-    min-height: 560px;
-    height: 70dvh;
-  }
-
-  .sentence-writing-content {
-    padding: 14px 3%;
-  }
-
-  .sentence-target-display {
-    transform: translateX(-50%) scale(0.48);
-    transform-origin: top center;
-  }
-
-  .sentence-writing-toolbar {
-    display: flex;
-    grid-column: 1;
-    grid-row: 2;
-    width: 100%;
-    min-width: 0;
-    height: auto;
-    padding: 8px;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .sentence-writing-toolbar > .sentence-next-button {
-    margin: 0;
-  }
-
-  .sentence-writing-toolbar > .scribbler-tool-tools {
-    width: auto;
-  }
-}
-
-/* =========================================
-   TABLET + MOBILE LANDSCAPE
-   =========================================
-   ONLY responsive overrides live here.
-   The base model above is not changed.
-   ========================================= */
-
-@media (orientation: landscape) and (max-width: 1100px) {
-  .sentence-writing-page {
-    height: auto;
-    min-height: 100dvh;
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding: 0 3vw 10px;
-    gap: 7px;
-    grid-template-columns: minmax(0, 1fr) 62px;
-  }
-
-  .sentence-writing-header {
-    gap: 12px;
-  }
-
-  .sentence-writing-header span {
-    font-size: 12px;
-  }
-
-  .sentence-writing-header h1 {
-    font-size: clamp(20px, 3vw, 30px);
-  }
-
-  .sentence-writing-progress {
-    font-size: 15px;
-  }
-
-  .sentence-writing-paper {
-    min-height: 0;
-    height: 100%;
-  }
-
-  .sentence-writing-content {
-    min-height: 100%;
-    height: auto;
-    padding: 12px 3% 16px;
-  }
-
-  /* Scribbler-style spacious lines on mobile/tablet. */
-  .sentence-workbook-lines {
-    padding: 10% 2% 7%;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .sentence-workbook-line {
-    height: 2px;
-    flex: 0 0 2px;
-    border-radius: 999px;
-    background: rgba(55, 88, 140, 0.24);
-    transform: none;
-  }
-
-  /*
-     Responsive letter size.
-     Base 185px / 130px is untouched.
-     ~1100px: 160px / 112px
-     ~900px: 131px / 92px
-     ~700px: 115px / 81px
-  */
-
-  .sentence-uppercase {
-    height: 170px;
-    top: clamp(31px, 3.64vw, 40px);
-    font-size: clamp(115px, 14.5vw, 160px);
-  }
-
-  .sentence-lowercase {
-    height: 90px;
-    top: clamp(62px, 7.27vw, 80px);
-    font-size: clamp(81px, 10.15vw, 112px);
-  }
-
-  .sentence-next-button {
-    right: 10px;
-    bottom: 10px;
-    width: 44px;
-    height: 44px;
-    font-size: 24px;
-  }
-
-  .sentence-writing-hint {
-    font-size: 13px;
-  }
-}
-
-@media (orientation: landscape) and (max-width: 1100px) {
-  .sentence-workbook-lines {
-    position: absolute;
-    inset: 0;
-    padding: 10% 0% 7%;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  .sentence-workbook-line {
-    width: 100%;
-    height: 2px;
-    flex: 0 0 2px;
-    border-radius: 999px;
-    background: rgba(55, 88, 140, 0.24);
-    transform: none;
-  }
-
-  .sentence-workbook-line:nth-child(n+9) {
-    display: none;
-  }
-}
-
-@media (orientation: landscape) and (max-width: 1100px) {
-  .sentence-target-display {
-    transform: translateX(-50%) scaleX(0.7);
-  }
-}
-
-.sentence-writing-area .scribbler-canvas {
-  pointer-events: auto;
-  z-index: 3;
-}
-
-.sentence-workbook-lines,
-.sentence-target-display,
-.sentence-target-canvas {
-  pointer-events: none;
-}
-
-/* Mission 4: keep Next as a dedicated control at the very top
-   of the vertical toolbar, above the pencil/brush/pen/eraser grid. */
-.sentence-writing-toolbar {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -473,14 +207,25 @@
 }
 
 .sentence-writing-toolbar > .sentence-next-button {
-  position: relative;
-  right: auto;
-  bottom: auto;
-  left: auto;
-  top: auto;
-  flex: 0 0 52px;
-  margin: 10px auto 8px;
-  z-index: 20;
+  position: static;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  margin: 8px auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: #234a8a;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.14);
+}
+
+.sentence-writing-toolbar > .sentence-next-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .sentence-writing-toolbar > .scribbler-tool-tools {
@@ -488,39 +233,131 @@
   width: 100%;
 }
 
-/* Portrait phones and tablets keep the complete activity available.
-   These final rules intentionally come after the shared toolbar rules. */
-@media (orientation: portrait) {
+.sentence-writing-hint {
+  display: none;
+}
+
+.sentence-portrait-message {
+  display: none;
+}
+
+/* =========================================
+   PHONE + TABLET LANDSCAPE
+   ========================================= */
+
+@media (orientation: landscape) and (max-width: 1100px) {
   .sentence-writing-page {
-    display: grid;
+    padding: max(4px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right))
+      max(4px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+    grid-template-columns: minmax(0, 1fr) 58px;
+    gap: 6px;
   }
 
-  .sentence-writing-page > *:not(.sentence-portrait-message) {
-    display: revert;
+  .sentence-writing-header {
+    gap: 8px;
   }
 
-  .sentence-writing-page .sentence-portrait-message,
-  .sentence-writing-header,
-  .sentence-writing-hint {
-    display: none;
+  .sentence-writing-header .scribbler-back {
+    padding: 6px 9px;
   }
 
-  .sentence-writing-paper {
-    display: block;
+  .sentence-writing-content {
+    padding: 8px clamp(8px, 2vw, 18px);
   }
 
   .sentence-writing-toolbar {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: auto;
-    padding: 8px;
-    gap: 10px;
+    padding: 5px 3px;
   }
 
   .sentence-writing-toolbar > .sentence-next-button {
+    flex-basis: 42px;
+    width: 42px;
+    height: 42px;
+    margin: 5px auto;
+    font-size: 23px;
+  }
+}
+
+/* =========================================
+   PORTRAIT
+   The activity stays usable, while a small recommendation explains
+   that landscape provides the roomiest writing experience.
+   ========================================= */
+
+@media (orientation: portrait) {
+  .sentence-writing-page::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  .sentence-writing-page {
+    height: auto;
+    min-height: 100dvh;
+    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(500px, 68dvh) auto;
+    gap: 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sentence-writing-header {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .sentence-writing-page .sentence-portrait-message {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    padding: 8px 12px;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 12px;
+    background: rgba(35, 74, 138, 0.92);
+    color: #fff;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .sentence-portrait-message strong {
+    font-size: 14px;
+  }
+
+  .sentence-writing-paper {
+    grid-column: 1;
+    grid-row: 3;
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+  }
+
+  .sentence-writing-content {
+    padding: 12px 10px;
+  }
+
+  .sentence-writing-toolbar {
+    grid-column: 1;
+    grid-row: 4;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+    padding: 7px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .sentence-writing-toolbar > .sentence-next-button {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
     margin: 0;
   }
 
@@ -529,8 +366,22 @@
   }
 }
 
-@media (orientation: portrait) and (min-width: 700px) {
-  .sentence-target-display {
-    transform: translateX(-50%) scale(0.72);
+@media (max-width: 560px) {
+  .sentence-writing-header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .sentence-writing-progress {
+    grid-column: 1 / -1;
+    padding-right: 4px;
+    text-align: right;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sentence-writing-page,
+  .sentence-writing-paper,
+  .sentence-writing-toolbar {
+    scroll-behavior: auto;
   }
 }

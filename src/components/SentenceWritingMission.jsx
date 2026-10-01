@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./Scribbler.css";
 import "./SentenceWritingMission.css";
 import { speak } from "../utils/speech";
@@ -57,7 +57,103 @@ const DEFAULT_COLOR = "#000000";
   The sentence is drawn only in the first row. The rest of the
   paper stays available as additional preschool writing rows.
 */
-const ROWS = 4;
+const ROWS = 3;
+const MAX_SENTENCE_LINES = ROWS;
+const MEASUREMENT_FONT_SIZE = 100;
+
+function measureSentence(text, context) {
+  if (!context) {
+    return Math.max(1, text.length * MEASUREMENT_FONT_SIZE * 0.58);
+  }
+
+  context.font = `700 ${MEASUREMENT_FONT_SIZE}px ${FONT_FAMILY}`;
+  return Math.max(1, context.measureText(text).width);
+}
+
+function balanceSentenceWords(words, lineCount, context) {
+  if (lineCount <= 1 || words.length <= 1) {
+    return [words.join(" ")];
+  }
+
+  const wordCount = words.length;
+  const costs = Array.from({ length: lineCount + 1 }, () =>
+    Array(wordCount + 1).fill(Number.POSITIVE_INFINITY)
+  );
+  const breaks = Array.from({ length: lineCount + 1 }, () =>
+    Array(wordCount + 1).fill(-1)
+  );
+
+  costs[0][0] = 0;
+
+  for (let lines = 1; lines <= lineCount; lines += 1) {
+    for (let end = lines; end <= wordCount; end += 1) {
+      for (let start = lines - 1; start < end; start += 1) {
+        if (!Number.isFinite(costs[lines - 1][start])) continue;
+
+        const line = words.slice(start, end).join(" ");
+        const width = measureSentence(line, context);
+        const cost = Math.max(costs[lines - 1][start], width);
+
+        if (cost < costs[lines][end]) {
+          costs[lines][end] = cost;
+          breaks[lines][end] = start;
+        }
+      }
+    }
+  }
+
+  const lines = [];
+  let end = wordCount;
+
+  for (let lineIndex = lineCount; lineIndex > 0; lineIndex -= 1) {
+    const start = breaks[lineIndex][end];
+    if (start < 0) return [words.join(" ")];
+    lines.unshift(words.slice(start, end).join(" "));
+    end = start;
+  }
+
+  return lines;
+}
+
+function createSentenceLayout(sentence, width, height) {
+  const words = sentence.trim().split(/\s+/).filter(Boolean);
+
+  if (!words.length || width <= 0 || height <= 0) {
+    return { lines: [sentence], fontSize: 64 };
+  }
+
+  const measurementCanvas = document.createElement("canvas");
+  const context = measurementCanvas.getContext("2d");
+  const usableWidth = Math.max(1, width * 0.9);
+  const rowHeight = Math.max(1, (height * 0.88) / ROWS);
+  const heightLimit = Math.min(120, rowHeight * 0.78);
+  const possibleLineCounts = Math.min(MAX_SENTENCE_LINES, words.length);
+
+  let best = null;
+
+  for (let lineCount = 1; lineCount <= possibleLineCounts; lineCount += 1) {
+    const lines = balanceSentenceWords(words, lineCount, context);
+    const widestLine = Math.max(
+      ...lines.map((line) => measureSentence(line, context))
+    );
+    const widthLimit =
+      (usableWidth * MEASUREMENT_FONT_SIZE) / Math.max(1, widestLine);
+    const fontSize = Math.max(8, Math.min(heightLimit, widthLimit));
+
+    if (
+      !best ||
+      fontSize > best.fontSize + 1 ||
+      (Math.abs(fontSize - best.fontSize) <= 1 && lines.length < best.lines.length)
+    ) {
+      best = { lines, fontSize };
+    }
+  }
+
+  return {
+    lines: best?.lines || [sentence],
+    fontSize: Math.round((best?.fontSize || 64) * 10) / 10,
+  };
+}
 
 function PencilIcon() {
   return (
@@ -127,6 +223,7 @@ export default function SentenceWritingMission({
   const canvasRef = useRef(null);
   const targetCanvasRef = useRef(null);
   const guideDisplayRef = useRef(null);
+  const writingAreaRef = useRef(null);
 
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);
@@ -140,10 +237,52 @@ export default function SentenceWritingMission({
   const [tool, setTool] = useState("pencil");
   const [progress, setProgress] = useState(0);
   const [hasDrawing, setHasDrawing] = useState(false);
+  const [sentenceLayout, setSentenceLayout] = useState({
+    lines: [""],
+    fontSize: 64,
+  });
 
   const profile = childProfile || {};
   const current = SENTENCES[sentenceIndex];
   const sentence = current.build(profile);
+  const sentenceLayoutKey = `${sentenceLayout.fontSize}:${sentenceLayout.lines.join("|")}`;
+
+  useLayoutEffect(() => {
+    const writingArea = writingAreaRef.current;
+    if (!writingArea) return undefined;
+
+    let frameId;
+
+    const updateLayout = () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+
+      frameId = window.requestAnimationFrame(() => {
+        const rect = writingArea.getBoundingClientRect();
+        const nextLayout = createSentenceLayout(
+          sentence,
+          rect.width,
+          rect.height
+        );
+
+        setSentenceLayout((currentLayout) => {
+          const currentKey = `${currentLayout.fontSize}:${currentLayout.lines.join("|")}`;
+          const nextKey = `${nextLayout.fontSize}:${nextLayout.lines.join("|")}`;
+          return currentKey === nextKey ? currentLayout : nextLayout;
+        });
+      });
+    };
+
+    const observer = new ResizeObserver(updateLayout);
+    observer.observe(writingArea);
+    updateLayout();
+
+    document.fonts?.ready.then(updateLayout).catch(() => {});
+
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      observer.disconnect();
+    };
+  }, [sentence]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -169,25 +308,32 @@ export default function SentenceWritingMission({
     is controlled by CSS instead of being approximated inside canvas.
   */
   const renderSentenceCharacters = () => {
-    return [...sentence].map((character, index) => {
-      const isUppercase =
-        character !== character.toLowerCase() &&
-        character === character.toUpperCase();
+    return sentenceLayout.lines.map((line, lineIndex) => (
+      <div
+        className="sentence-target-line"
+        key={`${line}-${lineIndex}`}
+      >
+        {[...line].map((character, characterIndex) => {
+          const isUppercase =
+            character !== character.toLowerCase() &&
+            character === character.toUpperCase();
 
-      const className = isUppercase
-        ? "sentence-uppercase"
-        : "sentence-lowercase";
+          const className = isUppercase
+            ? "sentence-uppercase"
+            : "sentence-lowercase";
 
-      return (
-        <span
-          key={`${character}-${index}`}
-          className={className}
-          aria-hidden="true"
-        >
-          {character === " " ? "\u00A0" : character}
-        </span>
-      );
-    });
+          return (
+            <span
+              key={`${character}-${characterIndex}`}
+              className={className}
+              aria-hidden="true"
+            >
+              {character === " " ? "\u00A0" : character}
+            </span>
+          );
+        })}
+      </div>
+    ));
   };
 
   /*
@@ -318,7 +464,7 @@ export default function SentenceWritingMission({
       window.removeEventListener("resize", setup);
       window.removeEventListener("orientationchange", setup);
     };
-  }, [sentenceIndex]);
+  }, [sentenceIndex, sentenceLayoutKey]);
 
   const coverageReached = () => {
     const drawingCanvas = canvasRef.current;
@@ -540,8 +686,8 @@ export default function SentenceWritingMission({
   return (
     <main className="scribbler-page sentence-writing-page">
       <div className="sentence-portrait-message" aria-live="polite">
-        <strong>Turn your screen around</strong>
-        <span>This writing adventure works in landscape mode.</span>
+        <strong>Landscape gives you more writing space</strong>
+        <span>You can continue here, or turn your device for the best experience.</span>
       </div>
 
       <header className="sentence-writing-header">
@@ -566,7 +712,7 @@ export default function SentenceWritingMission({
 
       <section className="scribbler-paper sentence-writing-paper">
         <div className="sentence-writing-content">
-          <div className="sentence-writing-area">
+          <div ref={writingAreaRef} className="sentence-writing-area">
             <div className="sentence-workbook-lines" aria-hidden="true">
               {Array.from({ length: ROWS * 3 }, (_, index) => (
                 <div className="sentence-workbook-line" key={index} />
@@ -577,6 +723,9 @@ export default function SentenceWritingMission({
               ref={guideDisplayRef}
               className="sentence-target-display"
               aria-hidden="true"
+              style={{
+                "--sentence-font-size": `${sentenceLayout.fontSize}px`,
+              }}
             >
               {renderSentenceCharacters()}
             </div>
