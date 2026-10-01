@@ -166,6 +166,17 @@
   gap: 16px;
 }
 
+/* The activity areas intentionally capture touch gestures. Keep a permanent
+   escape route above them so iOS users never have to scroll a canvas to go back. */
+.little-activity-header::before {
+  content: "";
+  width: 164px;
+}
+
+.little-activity-back {
+  z-index: 10001;
+}
+
 .little-activity-header > div {
   min-width: 0;
 }
@@ -488,7 +499,7 @@
 
 @media (max-width: 760px) {
   .little-map-page {
-    padding: 78px 14px 108px;
+    padding: calc(118px + env(safe-area-inset-top)) 14px 108px;
   }
 
   .little-map-header h1 {
@@ -546,6 +557,10 @@
     gap: 8px;
   }
 
+  .little-activity-header::before {
+    width: 48px;
+  }
+
   .little-activity-header .local-back-button span:last-child {
     display: none;
   }
@@ -582,7 +597,6 @@
 
   .little-map-page {
     padding-top: 10px;
-    overflow-y: auto;
   }
 
   .little-map-header .eyebrow {
@@ -629,7 +643,6 @@
 
   .little-activity-page {
     grid-template-rows: auto minmax(210px, 1fr);
-    overflow-y: auto;
   }
 
   .little-scribble-page {

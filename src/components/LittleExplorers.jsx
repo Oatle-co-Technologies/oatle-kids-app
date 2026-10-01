@@ -77,7 +77,11 @@ function playBoop(soundOn, step = 0) {
 function ActivityHeader({ title, instruction, onBack }) {
   return (
     <header className="little-activity-header">
-      <LocalBackButton label="Little Explorers" onClick={onBack} />
+      <LocalBackButton
+        className="page-back-button little-activity-back"
+        label="Little Explorers"
+        onClick={onBack}
+      />
       <div>
         <p className="eyebrow">LITTLE EXPLORERS</p>
         <h1>{title}</h1>
