@@ -292,6 +292,11 @@
   gap: clamp(12px, 2.5vw, 22px);
 }
 
+.balloon-lesson-grid-two {
+  width: min(640px, 100%);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .balloon-lesson-grid > button {
   position: relative;
   min-height: 220px;
@@ -427,6 +432,61 @@
 
 .learning-balloon.wrong {
   animation: wrongBalloonShake 0.35s ease-in-out;
+}
+
+.balloon-break-prompt {
+  position: absolute;
+  top: clamp(10px, 2vh, 18px);
+  left: 50%;
+  z-index: 8;
+  min-width: min(330px, calc(100% - 24px));
+  padding: 8px 16px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 18px;
+  color: #fff;
+  background: rgba(10, 20, 58, 0.9);
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.balloon-break-prompt > span {
+  font-size: 1.1rem;
+}
+
+.balloon-break-prompt strong {
+  font: 900 1.15rem/1 "Nunito", Arial, sans-serif;
+}
+
+.balloon-break-prompt small {
+  color: #d4defc;
+  font-weight: 800;
+}
+
+.break-balloon {
+  width: clamp(50px, 8vw, 76px);
+}
+
+.balloon-break-continue {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  z-index: 10;
+  min-height: 46px;
+  padding: 10px 22px;
+  border: 0;
+  border-radius: 14px;
+  color: #122354;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+  font: 900 0.95rem/1 "Nunito", Arial, sans-serif;
+  transform: translateX(-50%);
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .little-success-card {
@@ -999,6 +1059,11 @@
     gap: 8px;
   }
 
+  .balloon-lesson-grid-two {
+    width: min(580px, 100%);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .balloon-lesson-grid > button {
     min-height: 150px;
     padding: 8px;
@@ -1029,6 +1094,26 @@
     width: 38px;
     height: 38px;
     font-size: 1.45rem;
+  }
+
+  .balloon-break-prompt {
+    top: 4px;
+    padding: 4px 12px;
+  }
+
+  .balloon-break-prompt > span,
+  .balloon-break-prompt small {
+    display: none;
+  }
+
+  .break-balloon {
+    width: 50px;
+  }
+
+  .balloon-break-continue {
+    bottom: 5px;
+    min-height: 36px;
+    padding: 7px 18px;
   }
 }
 
