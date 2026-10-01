@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import "./AlphabetTracingMission.css";
-import { speak } from "../utils/speech";
+import { speak, stopSpeech } from "../utils/speech";
 
 const SHAPES = [
   { id: "circle", name: "Circle" },
@@ -143,6 +143,7 @@ export default function ShapeTracingMission({
   onComplete,
   initialStep = 0,
   onProgress,
+  soundOn = true,
 }) {
   const canvasRef = useRef(null);
   const drawingRef = useRef(false);
@@ -157,14 +158,20 @@ export default function ShapeTracingMission({
   const currentShape = SHAPES[shapeIndex];
 
   useEffect(() => {
+    if (!soundOn) {
+      stopSpeech();
+      return undefined;
+    }
+
     const timer = window.setTimeout(() => {
       speak(`Trace the ${currentShape.name.toLowerCase()}`);
     }, 250);
 
     return () => {
       window.clearTimeout(timer);
+      stopSpeech();
     };
-  }, [currentShape]);
+  }, [currentShape, soundOn]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

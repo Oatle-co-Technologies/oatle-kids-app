@@ -12,7 +12,7 @@ import {
   assessmentQuestions as plutoQuestions,
   assessmentSkills as plutoSkills,
 } from "./data/assessmentQuestions";
-import { speak } from "./utils/speech";
+import { speak, stopSpeech } from "./utils/speech";
 import LoginPage from "./components/LoginPage";
 import { supabase } from "./lib/supabase";
 
@@ -245,6 +245,13 @@ function shuffleArray(items) {
   return shuffled;
 }
 
+const BIG_KIDS_PRAISE = [
+  "Great job!",
+  "Amazing!",
+  "Well done!",
+  "You got it!",
+];
+
 const savedGame = () => {
   try {
     const saved = JSON.parse(
@@ -364,14 +371,9 @@ const writingPlanets = [
 ];
 
 /*
- * Accessibility speech for reading missions.
- *
- * TTS is used for instructions/questions only.
- * It does not narrate greetings, labels, praise, correct/wrong
- * feedback, or answers.
- *
- * Neptune is intentionally silent because the child is meant
- * to read the story independently.
+ * Spoken guidance for reading missions. Questions and instructions
+ * are narrated, while assessment answers stay silent until the child
+ * has made a choice.
  */
 function getSpeechText(planetId, question) {
   if (!question) {
@@ -412,7 +414,7 @@ function getSpeechText(planetId, question) {
       return "Build the sentence.";
 
     case 8:
-      return null;
+      return question.text?.join(" ") || null;
 
     case 9:
       if (
@@ -1026,10 +1028,8 @@ function App() {
   /*
    * Central reading speech.
    *
-   * Mars uses whole-word TTS.
-   * Pluto mirrors the current Reading missions.
-   * Everything else that needs spoken accessibility prompts
-   * continues to use the existing TTS voice.
+   * Mars uses whole-word TTS. Neptune reads each story page aloud.
+   * Pluto keeps reading answers silent because it is an assessment.
    */
   useEffect(() => {
     if (
@@ -1045,20 +1045,21 @@ function App() {
 
     if (isWordOrder) {
       const timer = setTimeout(() => {
-        speak(question.word);
+        speak(`Listen to the word ${question.word}. Put its letters in the right order.`);
       }, 250);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        stopSpeech();
+      };
     }
-
-    const isNeptune = planet.id === 8;
 
     const isPlutoReading =
       planet.id === 9 &&
       (question.skill === "reading" ||
         question.type === "reading");
 
-    if (isNeptune || isPlutoReading) {
+    if (isPlutoReading) {
       return;
     }
 
@@ -1075,13 +1076,105 @@ function App() {
       speak(speechText);
     }, 250);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      stopSpeech();
+    };
   }, [
     screen,
     planet.id,
     progress.question,
+    question,
     soundOn,
   ]);
+
+  /*
+   * The Littles area narrates every important transition. Mirror that
+   * behaviour across the Big Kids menus, maps, planet introductions,
+   * free drawing, and celebrations. Activity questions are handled by
+   * their own focused speech effects so voices never overlap.
+   */
+  useEffect(() => {
+    if (!soundOn || ageGroup !== "big") {
+      return undefined;
+    }
+
+    const selectedWritingPlanet =
+      writingPlanets.find(
+        (item) => item.id === writingActivePlanet
+      ) || writingPlanets[0];
+
+    const completedWritingPlanet =
+      writingPlanets.find(
+        (item) => item.id === writingCelebrationMission
+      ) || selectedWritingPlanet;
+
+    const launchPrompts = {
+      reading:
+        "Reading Adventures. Travel across the planets and build your reading skills.",
+      counting:
+        "Maths Adventures. Count, match, add, and explore numbers among the stars.",
+      writing:
+        "Writing Adventures. Trace letters, numbers, shapes, and sentences.",
+    };
+
+    const prompts = {
+      explore:
+        "Choose a learning adventure. Reading, counting, or writing.",
+      launch: launchPrompts[launchAdventure],
+      map: "Choose a planet for your next reading mission.",
+      planet: `Welcome to planet ${planet.name}. ${planet.description}.`,
+      celebration: `Mission accomplished! You completed your mission on ${planet.name}.`,
+      writingMap:
+        "Choose a writing planet, or open the Scribbler to draw freely.",
+      writingPlanet: `Welcome to planet ${selectedWritingPlanet.name}. ${selectedWritingPlanet.description}.`,
+      writingCelebration: `Mission accomplished! You completed your writing mission on ${completedWritingPlanet.name}.`,
+      scribbler:
+        "Welcome to the Scribbler. Draw, write, erase, and add stickers to your picture.",
+    };
+
+    const prompt = prompts[screen];
+    if (!prompt) {
+      return undefined;
+    }
+
+    const narrationDelay =
+      screen === "celebration" || screen === "writingCelebration"
+        ? 7800
+        : 240;
+
+    const timer = window.setTimeout(() => {
+      speak(prompt);
+    }, narrationDelay);
+
+    return () => {
+      window.clearTimeout(timer);
+      stopSpeech();
+    };
+  }, [
+    ageGroup,
+    launchAdventure,
+    planet.description,
+    planet.name,
+    screen,
+    soundOn,
+    writingActivePlanet,
+    writingCelebrationMission,
+  ]);
+
+  useEffect(() => {
+    if (!soundOn || screen !== "mission" || !feedback) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      speak(feedback);
+    }, 80);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [feedback, screen, soundOn]);
 
   const playWelcomeSound = () => {
     if (!soundOn || welcomeAudioRef.current) {
@@ -1160,6 +1253,12 @@ function App() {
         "visibilitychange",
         handleVisibility
       );
+
+      if (welcomeAudioRef.current) {
+        welcomeAudioRef.current.pause();
+        welcomeAudioRef.current.currentTime = 0;
+        welcomeAudioRef.current = null;
+      }
     };
   }, [screen, soundOn]);
 
@@ -1358,7 +1457,11 @@ function App() {
     ];
 
     setBuiltSentence(nextSentence);
-    setFeedback("");
+    setFeedback(
+      correctWord
+        ? ""
+        : "Almost! Try another word."
+    );
 
     if (
       nextSentence.length !==
@@ -1388,6 +1491,11 @@ function App() {
         ? savePlutoAnswer(true)
         : null;
 
+    setFeedback(
+      BIG_KIDS_PRAISE[
+        progress.question % BIG_KIDS_PRAISE.length
+      ]
+    );
     setIsProcessing(true);
 
     advanceTimer.current = setTimeout(() => {
@@ -1479,6 +1587,7 @@ function App() {
     }
 
     setIsProcessing(true);
+    setFeedback("Great listening! You built the word.");
 
     if (planet.id === 9) {
       const nextScores = savePlutoAnswer(true);
@@ -1529,7 +1638,7 @@ function App() {
       }
 
       if (planet.id === 6) {
-        setFeedback("");
+        setFeedback("Almost! Try another letter.");
       } else {
         setFeedback(
           "Almost! Try another star."
@@ -1539,8 +1648,14 @@ function App() {
       return;
     }
 
-    setFeedback("");
     playSound(correctSound);
+
+    const praise =
+      BIG_KIDS_PRAISE[
+        progress.question % BIG_KIDS_PRAISE.length
+      ];
+
+    setFeedback(praise);
 
     const nextScores =
       planet.id === 9
@@ -1568,6 +1683,7 @@ function App() {
           }));
 
           setRevealedAnswer("");
+          setFeedback("");
           setIsProcessing(false);
 
           return;
@@ -1588,27 +1704,34 @@ function App() {
       return;
     }
 
-    if (
-      progress.question <
-      missionQuestions.length - 1
-    ) {
-      setProgress((current) => ({
-        ...current,
-        question:
-          current.question + 1,
-      }));
+    setIsProcessing(true);
 
-      return;
-    }
+    advanceTimer.current = setTimeout(() => {
+      if (
+        progress.question <
+        missionQuestions.length - 1
+      ) {
+        setProgress((current) => ({
+          ...current,
+          question:
+            current.question + 1,
+        }));
+        setFeedback("");
+        setIsProcessing(false);
+        return;
+      }
 
-    if (planet.id === 9) {
-      finishPlutoAssessment(
-        nextScores
-      );
-    } else {
-      playSound(victorySound);
-      setScreen("celebration");
-    }
+      if (planet.id === 9) {
+        finishPlutoAssessment(
+          nextScores
+        );
+      } else {
+        playSound(victorySound);
+        setScreen("celebration");
+      }
+
+      setIsProcessing(false);
+    }, 1100);
   };
 
   const completeWritingMission = (
@@ -2560,6 +2683,7 @@ function App() {
   ) {
     content = (
       <AlphabetTracingMission
+        soundOn={soundOn}
         onBack={() =>
           setScreen(
             "writingPlanet"
@@ -2581,6 +2705,7 @@ function App() {
   ) {
     content = (
       <NumberTracingMission
+        soundOn={soundOn}
         onBack={() =>
           setScreen(
             "writingPlanet"
@@ -2602,6 +2727,7 @@ function App() {
   ) {
     content = (
       <ShapeTracingMission
+        soundOn={soundOn}
         onBack={() =>
           setScreen(
             "writingPlanet"
@@ -2623,6 +2749,7 @@ function App() {
   ) {
     content = (
       <SentenceWritingMission
+        soundOn={soundOn}
         onBack={() =>
           setScreen(
             "writingPlanet"

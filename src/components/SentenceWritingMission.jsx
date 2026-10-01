@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./Scribbler.css";
 import "./SentenceWritingMission.css";
-import { speak } from "../utils/speech";
+import { speak, stopSpeech } from "../utils/speech";
 
 const SENTENCES = [
   {
@@ -219,6 +219,7 @@ export default function SentenceWritingMission({
   childProfile,
   initialStep = 0,
   onProgress,
+  soundOn = true,
 }) {
   const canvasRef = useRef(null);
   const targetCanvasRef = useRef(null);
@@ -285,14 +286,20 @@ export default function SentenceWritingMission({
   }, [sentence]);
 
   useEffect(() => {
+    if (!soundOn) {
+      stopSpeech();
+      return undefined;
+    }
+
     const timer = window.setTimeout(() => {
       speak("Trace the sentence");
     }, 250);
 
     return () => {
       window.clearTimeout(timer);
+      stopSpeech();
     };
-  }, [sentence]);
+  }, [sentence, soundOn]);
 
   const getCanvasPoint = (event, canvas) => {
     const rect = canvas.getBoundingClientRect();

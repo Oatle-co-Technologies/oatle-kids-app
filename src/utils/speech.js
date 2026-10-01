@@ -1,14 +1,93 @@
-const PREFERRED_VOICES = [
-  "Samantha",
+const APPLE_PREFERRED_VOICES = [
   "Ava",
+  "Allison",
+  "Susan",
+  "Samantha",
   "Karen",
+  "Moira",
+  "Fiona",
+  "Tessa",
   "Victoria",
+];
+
+const PREFERRED_VOICES = [
   "Google US English",
   "Microsoft Aria Online (Natural) - English (United States)",
+  ...APPLE_PREFERRED_VOICES,
 ];
 
 let voices = [];
 let speechSequence = 0;
+let nativeAppleVoiceIndexPromise;
+
+function isAppleDevice() {
+  if (Capacitor.isNativePlatform()) {
+    return Capacitor.getPlatform() === "ios";
+  }
+
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  return (
+    /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
+
+function getAppleVoiceScore(voice) {
+  const name = voice.name.toLowerCase();
+  const identifier = (voice.voiceURI || "").toLowerCase();
+  const language = voice.lang.toLowerCase();
+
+  if (!language.startsWith("en")) {
+    return -1;
+  }
+
+  const preferredIndex = APPLE_PREFERRED_VOICES.findIndex(
+    (preferredName) => name.includes(preferredName.toLowerCase())
+  );
+
+  let score =
+    preferredIndex === -1
+      ? 0
+      : 100 - preferredIndex * 8;
+
+  if (identifier.includes("premium")) score += 24;
+  if (identifier.includes("enhanced")) score += 18;
+  if (identifier.includes("siri")) score += 14;
+  if (language === "en-us") score += 6;
+
+  return score;
+}
+
+function findAppleVoiceIndex(availableVoices) {
+  let bestIndex = -1;
+  let bestScore = -1;
+
+  availableVoices.forEach((voice, index) => {
+    const score = getAppleVoiceScore(voice);
+
+    if (score > bestScore) {
+      bestIndex = index;
+      bestScore = score;
+    }
+  });
+
+  return bestIndex;
+}
+
+async function getNativeAppleVoiceIndex() {
+  if (!nativeAppleVoiceIndexPromise) {
+    nativeAppleVoiceIndexPromise = TextToSpeech.getSupportedVoices()
+      .then(({ voices: supportedVoices }) =>
+        findAppleVoiceIndex(supportedVoices)
+      )
+      .catch(() => -1);
+  }
+
+  return nativeAppleVoiceIndexPromise;
+}
 
 function loadVoices() {
   if (!("speechSynthesis" in window)) {
@@ -35,8 +114,20 @@ function getPreferredVoice() {
     loadVoices();
   }
 
-  // First: explicitly preferred female English voices.
-  for (const preferredName of PREFERRED_VOICES) {
+  if (isAppleDevice()) {
+    const appleVoiceIndex = findAppleVoiceIndex(voices);
+
+    if (appleVoiceIndex >= 0) {
+      return voices[appleVoiceIndex];
+    }
+  }
+
+  const preferredVoices = isAppleDevice()
+    ? APPLE_PREFERRED_VOICES
+    : PREFERRED_VOICES;
+
+  // First: explicitly preferred friendly English voices.
+  for (const preferredName of preferredVoices) {
     const voice = voices.find(
       (item) =>
         item.name === preferredName &&
@@ -113,6 +204,7 @@ function speakWithBrowser(text, sequence) {
   const utterance = new SpeechSynthesisUtterance(text);
 
   const voice = getPreferredVoice();
+  const appleDevice = isAppleDevice();
 
   if (voice) {
     utterance.voice = voice;
@@ -121,9 +213,10 @@ function speakWithBrowser(text, sequence) {
     utterance.lang = "en-US";
   }
 
-  // Clear, unhurried speech without the synthetic high-pitch effect.
-  utterance.rate = 0.78;
-  utterance.pitch = 1.05;
+  // Apple speech needs a little more lift than the Android/browser voice.
+  // The pitch change is intentionally modest so letters and numbers stay clear.
+  utterance.rate = appleDevice ? 0.9 : 0.78;
+  utterance.pitch = appleDevice ? 1.18 : 1.05;
   utterance.volume = 1;
 
   window.speechSynthesis.speak(utterance);
@@ -137,16 +230,28 @@ async function speakWithNativeEngine(text, sequence) {
       return;
     }
 
+    const appleDevice = isAppleDevice();
+    const appleVoiceIndex = appleDevice
+      ? await getNativeAppleVoiceIndex()
+      : -1;
+
+    if (sequence !== speechSequence) {
+      return;
+    }
+
     await TextToSpeech.speak({
       text,
       lang: "en-US",
-      rate: 0.8,
-      pitch: 1.0,
+      rate: appleDevice ? 0.95 : 0.8,
+      pitch: appleDevice ? 1.18 : 1.0,
       volume: 1.0,
       category: "playback",
+      ...(appleVoiceIndex >= 0
+        ? { voice: appleVoiceIndex }
+        : {}),
       queueStrategy: QueueStrategy.Flush,
     });
-  } catch (error) {
+  } catch {
     // A device without an installed native voice can still try the web
     // speech engine. This keeps browser testing and older devices usable.
     if (sequence === speechSequence) {

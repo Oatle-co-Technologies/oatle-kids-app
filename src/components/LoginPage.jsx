@@ -27,6 +27,13 @@ function LoginPage({ onLogin }) {
 
     return isAndroid && !isNativeApp && !isStandalone;
   });
+  const [chromeLaunchUrl] = useState(() => {
+    const currentUrl = new URL(window.location.href);
+    const fallbackUrl = encodeURIComponent(currentUrl.href);
+    const path = `${currentUrl.host}${currentUrl.pathname}${currentUrl.search}`;
+
+    return `intent://${path}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${fallbackUrl};end`;
+  });
 
   useEffect(() => {
     const handleInstallReady = (event) => {
@@ -148,22 +155,33 @@ function LoginPage({ onLogin }) {
 
         {showAndroidInstall && (
           <section className="pwa-install-panel" aria-label="Install Oatle Kids">
-            <p>Want Oatle Kids on this phone?</p>
+            <p>Want Oatle Kids on this device?</p>
             <button
               className="pwa-install-button"
               type="button"
               onClick={handleInstall}
             >
-              {installPrompt
-                ? "Install Oatle Kids"
-                : "How to install"}
+              Install Oatle Kids
             </button>
             {showInstallHelp && (
-              <p className="pwa-install-help">
-                Open this page in Chrome, tap the three-dot menu, then choose
-                <strong> Install app</strong> or
-                <strong> Add to Home screen</strong>.
-              </p>
+              <div className="pwa-install-help">
+                <p>
+                  This browser has not made Android&apos;s install window
+                  available yet. Open the page directly in Chrome, then tap
+                  <strong> Install Oatle Kids</strong> again.
+                </p>
+                <a
+                  className="pwa-open-chrome-button"
+                  href={chromeLaunchUrl}
+                >
+                  Open in Chrome
+                </a>
+                <p>
+                  If you are already in Chrome, refresh once. You can also use
+                  Chrome&apos;s three-dot menu and choose
+                  <strong> Add to Home screen</strong>.
+                </p>
+              </div>
             )}
           </section>
         )}

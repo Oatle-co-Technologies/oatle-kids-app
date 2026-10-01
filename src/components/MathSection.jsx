@@ -17,7 +17,7 @@ import wrongSound from "../sounds/wrong.mp3";
 import victorySound from "../sounds/victory.mp3";
 import blastoffSound from "../sounds/blastoff.mp3";
 import AbacusHelper from "./AbacusHelper";
-import { speak } from "../utils/speech";
+import { speak, stopSpeech } from "../utils/speech";
 import LocalBackButton from "./LocalBackButton";
 
 const defaultProgress = {
@@ -2635,6 +2635,8 @@ export default function MathSection({
   const [isProcessing, setIsProcessing] =
     useState(false);
 
+  const questionNarrationDelayRef = useRef(250);
+
   const [
     assessmentAnswers,
     setAssessmentAnswers,
@@ -2696,19 +2698,76 @@ export default function MathSection({
       return;
     }
 
+    const narrationDelay = questionNarrationDelayRef.current;
+    questionNarrationDelayRef.current = 250;
+
     const timer = window.setTimeout(() => {
       speak(question.prompt);
-    }, 250);
+    }, narrationDelay);
 
     return () => {
       window.clearTimeout(timer);
+      stopSpeech();
     };
   }, [
     screen,
     mission.id,
     progress.question,
+    question,
     soundOn,
   ]);
+
+  useEffect(() => {
+    if (!soundOn) {
+      return undefined;
+    }
+
+    const prompts = {
+      map: "Choose a planet for your next maths mission.",
+      planet: `Welcome to ${mission.title}. ${mission.description}.`,
+      complete: `Mission accomplished! You completed your maths mission on ${mission.title}.`,
+      "assessment-results":
+        "Mission accomplished! You completed your final maths assessment.",
+    };
+
+    const prompt = prompts[screen];
+    if (!prompt) {
+      return undefined;
+    }
+
+    const narrationDelay =
+      screen === "complete" || screen === "assessment-results"
+        ? 7800
+        : 240;
+
+    const timer = window.setTimeout(() => {
+      speak(prompt);
+    }, narrationDelay);
+
+    return () => {
+      window.clearTimeout(timer);
+      stopSpeech();
+    };
+  }, [
+    mission.description,
+    mission.title,
+    screen,
+    soundOn,
+  ]);
+
+  useEffect(() => {
+    if (!soundOn || screen !== "mission" || !feedback) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      speak(feedback);
+    }, 80);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [feedback, screen, soundOn]);
 
   const shuffledOptions =
     useMemo(() => {
@@ -2928,6 +2987,7 @@ export default function MathSection({
   };
 
   const beginMission = () => {
+    questionNarrationDelayRef.current = soundOn ? 5800 : 250;
     playSound(blastoffSound);
     setFeedback("");
     setIsProcessing(false);
@@ -3026,7 +3086,7 @@ export default function MathSection({
 
       setFeedback(
         correct
-          ? "Great exploring!"
+          ? "Great job!"
           : isAssessment
             ? `Not quite. The correct answer is ${question.answer}.`
             : "Almost! Try another answer."
@@ -3063,7 +3123,7 @@ export default function MathSection({
 
       window.setTimeout(
         advanceQuestion,
-        isAssessment && !correct ? 1400 : 700
+        isAssessment && !correct ? 2400 : 1100
       );
     };
 
@@ -3078,7 +3138,7 @@ export default function MathSection({
       );
 
       setFeedback(
-        "Great sorting!"
+        "Great job!"
       );
 
       setIsProcessing(
@@ -3087,7 +3147,7 @@ export default function MathSection({
 
       window.setTimeout(
         advanceQuestion,
-        700
+        1100
       );
     };
 

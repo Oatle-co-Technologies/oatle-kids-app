@@ -8,6 +8,12 @@ export function clearDeferredInstallPrompt() {
   deferredInstallPrompt = null;
 }
 
+function requestOfflineAssets(registration) {
+  registration.active?.postMessage({
+    type: "CACHE_OFFLINE_ASSETS",
+  });
+}
+
 window.addEventListener("beforeinstallprompt", (event) => {
   event.preventDefault();
   deferredInstallPrompt = event;
@@ -36,6 +42,15 @@ if ("serviceWorker" in navigator) {
             error
           );
         });
+
+        navigator.serviceWorker.ready
+          .then(requestOfflineAssets)
+          .catch((error) => {
+            console.warn(
+              "Oatle Kids offline cache request failed:",
+              error
+            );
+          });
       })
       .catch((error) => {
         console.error(
@@ -44,4 +59,13 @@ if ("serviceWorker" in navigator) {
         );
       });
   });
+
+  navigator.serviceWorker.addEventListener(
+    "controllerchange",
+    () => {
+      navigator.serviceWorker.ready
+        .then(requestOfflineAssets)
+        .catch(() => {});
+    }
+  );
 }

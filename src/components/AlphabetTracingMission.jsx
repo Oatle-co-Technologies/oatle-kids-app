@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./AlphabetTracingMission.css";
-import { speak } from "../utils/speech";
+import { speak, stopSpeech } from "../utils/speech";
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -159,6 +159,7 @@ export default function AlphabetTracingMission({
   onComplete,
   initialStep = 0,
   onProgress,
+  soundOn = true,
 }) {
   const canvasRef = useRef(null);
 
@@ -178,14 +179,20 @@ export default function AlphabetTracingMission({
      ========================= */
 
   useEffect(() => {
+    if (!soundOn) {
+      stopSpeech();
+      return undefined;
+    }
+
     const timer = window.setTimeout(() => {
       speak(`Trace the uppercase and lowercase ${letter}`);
     }, 250);
 
     return () => {
       window.clearTimeout(timer);
+      stopSpeech();
     };
-  }, [letter]);
+  }, [letter, soundOn]);
 
   /* =========================
      CANVAS SETUP

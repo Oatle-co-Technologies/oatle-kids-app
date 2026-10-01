@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import "./AlphabetTracingMission.css";
-import { speak } from "../utils/speech";
+import { speak, stopSpeech } from "../utils/speech";
 
 const NUMBERS = Array.from({ length: 21 }, (_, index) => index);
 
@@ -130,6 +130,7 @@ export default function NumberTracingMission({
   onComplete,
   initialStep = 0,
   onProgress,
+  soundOn = true,
 }) {
   const canvasRef = useRef(null);
 
@@ -149,14 +150,20 @@ export default function NumberTracingMission({
      ========================= */
 
   useEffect(() => {
+    if (!soundOn) {
+      stopSpeech();
+      return undefined;
+    }
+
     const timer = window.setTimeout(() => {
       speak(`Trace the number ${currentNumber}`);
     }, 250);
 
     return () => {
       window.clearTimeout(timer);
+      stopSpeech();
     };
-  }, [currentNumber]);
+  }, [currentNumber, soundOn]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
