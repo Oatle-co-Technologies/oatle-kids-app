@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 
 import { questions } from "./data/questions";
@@ -761,6 +761,15 @@ function App() {
 
   const advanceTimer = useRef(null);
   const welcomeAudioRef = useRef(null);
+
+  useLayoutEffect(() => {
+    // React swaps screens without a browser navigation, so mobile WebViews
+    // otherwise retain the previous screen's scroll position.
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    document.querySelector(".app")?.scrollTo(0, 0);
+  }, [screen]);
 
   useEffect(() => {
     let mounted = true;
@@ -3740,13 +3749,14 @@ function App() {
     );
   }
 
+  const showBottomNav =
+    user && hasAccess && screen !== "scribbler";
+
   return (
-    <div className="app">
+    <div className={`app ${showBottomNav ? "app-with-bottom-nav" : ""}`}>
       {content}
 
-      {user &&
-        hasAccess &&
-        screen !== "scribbler" && (
+      {showBottomNav && (
           <AppNav
             onHome={() =>
               setScreen("home")

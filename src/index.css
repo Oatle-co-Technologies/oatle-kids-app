@@ -1,3 +1,12 @@
 html { background: #080d28; }
-body { margin: 0; min-width: 320px; font-family: Nunito, Arial, sans-serif; }
-#root { min-height: 100vh; }
+body {
+  margin: 0;
+  min-width: 320px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  font-family: Nunito, Arial, sans-serif;
+}
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}

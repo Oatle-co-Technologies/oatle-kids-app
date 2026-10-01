@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -2620,6 +2621,13 @@ export default function MathSection({
 
   const [screen, setScreen] =
     useState("map");
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    document.querySelector(".app")?.scrollTo(0, 0);
+  }, [screen]);
 
   const [feedback, setFeedback] =
     useState("");
