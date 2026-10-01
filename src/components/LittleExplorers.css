@@ -386,12 +386,43 @@
 }
 
 .little-scribble-page {
-  grid-template-rows: auto minmax(420px, 1fr) auto;
+  --little-scribbler-nav-height: 82px;
+  height: calc(100dvh - var(--little-scribbler-nav-height) - env(safe-area-inset-bottom));
+  min-height: 0;
+  padding: max(8px, env(safe-area-inset-top)) 8px 8px;
+  grid-template-columns: minmax(0, 1fr) clamp(86px, 12vw, 102px);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+  overflow: hidden;
+}
+
+.little-scribble-page .little-activity-header {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+.little-scribble-page .little-activity-header .eyebrow,
+.little-scribble-page .little-activity-header p:last-child {
+  display: none;
+}
+
+.little-scribble-page .little-activity-header h1 {
+  font-size: clamp(1.25rem, 4vw, 1.8rem);
 }
 
 .little-scribble-space {
-  min-height: 420px;
-  background: linear-gradient(160deg, #172e69, #24134f 62%, #0b163c);
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  border-color: rgba(36, 66, 118, 0.22);
+  border-radius: 18px;
+  background: #fffdf5;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.24),
+    inset 0 0 0 1px rgba(36, 66, 118, 0.08);
 }
 
 .little-scribble-space canvas {
@@ -406,10 +437,37 @@
   user-select: none;
 }
 
+.little-canvas-sticker-mode {
+  cursor: copy;
+}
+
+.little-scribble-sticker-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.little-sticker-on-canvas {
+  position: absolute;
+  width: clamp(42px, 8vw, 68px);
+  height: clamp(42px, 8vw, 68px);
+  display: block;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.3));
+}
+
+.little-sticker-on-canvas svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .little-scribble-stars {
   position: absolute;
   inset: 8% 7% auto;
-  color: rgba(255, 255, 255, 0.26);
+  color: rgba(47, 84, 150, 0.15);
   font-size: clamp(1.2rem, 4vw, 2.6rem);
   letter-spacing: clamp(12px, 5vw, 60px);
   text-align: center;
@@ -417,48 +475,115 @@
 }
 
 .little-drawing-tools {
-  width: min(760px, 100%);
-  margin: 0 auto;
-  padding: 8px 12px;
+  grid-column: 2;
+  grid-row: 2;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 7px 5px;
+  box-sizing: border-box;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 9px;
+  justify-content: flex-start;
+  gap: 7px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 20px;
+  border-radius: 16px;
   background: rgba(10, 18, 48, 0.94);
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 
-.little-drawing-tools > button:not(.little-clear-drawing) {
-  width: 46px;
-  height: 46px;
+.little-drawing-main-tools {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 34px);
+  place-items: center;
+  gap: 5px;
+}
+
+.little-colour-button {
+  width: 34px;
+  height: 34px;
   padding: 0;
-  border: 4px solid transparent;
-  border-radius: 50%;
+  border: 3px solid transparent;
+  border-radius: 11px;
   background: var(--drawing-color);
   box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.12);
   cursor: pointer;
   touch-action: manipulation;
 }
 
-.little-drawing-tools > button.selected {
+.little-colour-button.selected,
+.little-eraser-tool.selected,
+.little-sticker-tool.selected {
   border-color: #fff;
-  transform: scale(1.12);
+  box-shadow: 0 0 0 2px rgba(143, 231, 255, 0.75);
 }
 
+.little-eraser-tool,
 .little-clear-drawing {
-  min-height: 46px;
-  padding: 7px 13px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 5px;
   display: inline-flex;
+  justify-content: center;
   align-items: center;
   gap: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
   color: #fff;
   background: rgba(255, 255, 255, 0.09);
   font: 900 0.85rem/1 system-ui, sans-serif;
   cursor: pointer;
+  touch-action: manipulation;
+}
+
+.little-eraser-tool svg {
+  width: 23px;
+  height: 23px;
+}
+
+.little-eraser-tool span,
+.little-clear-drawing span {
+  display: none;
+}
+
+.little-clear-drawing {
+  border-width: 1px;
+}
+
+.little-sticker-tools {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 6px 0 2px;
+  display: grid;
+  grid-template-columns: repeat(2, 34px);
+  gap: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.little-sticker-tool {
+  width: 34px;
+  height: 34px;
+  padding: 4px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.09);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.little-sticker-tool svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 @keyframes littlePlanetArrive {
@@ -549,7 +674,11 @@
   }
 
   .little-scribble-page {
-    grid-template-rows: auto minmax(500px, 68dvh) auto;
+    height: calc(100dvh - var(--little-scribbler-nav-height) - env(safe-area-inset-bottom));
+    min-height: 0;
+    padding: max(8px, env(safe-area-inset-top)) 6px 6px;
+    grid-template-columns: minmax(0, 1fr) 86px;
+    grid-template-rows: auto minmax(0, 1fr);
   }
 
   .little-activity-header {
@@ -579,13 +708,22 @@
   }
 
   .balloon-space,
-  .star-trail-space,
-  .little-scribble-space {
+  .star-trail-space {
     min-height: 500px;
+  }
+
+  .little-scribble-space {
+    min-height: 0;
   }
 
   .space-balloon {
     width: clamp(68px, 22vw, 88px);
+  }
+}
+
+@media (max-width: 700px) {
+  .little-scribble-page {
+    --little-scribbler-nav-height: 72px;
   }
 }
 
@@ -646,7 +784,11 @@
   }
 
   .little-scribble-page {
-    grid-template-rows: auto minmax(210px, 1fr) auto;
+    height: calc(100dvh - var(--little-scribbler-nav-height) - env(safe-area-inset-bottom));
+    min-height: 0;
+    padding: max(5px, env(safe-area-inset-top)) 5px 5px;
+    grid-template-columns: minmax(0, 1fr) 86px;
+    grid-template-rows: auto minmax(0, 1fr);
   }
 
   .little-activity-header h1 {
@@ -659,9 +801,12 @@
   }
 
   .balloon-space,
-  .star-trail-space,
-  .little-scribble-space {
+  .star-trail-space {
     min-height: 210px;
+  }
+
+  .little-scribble-space {
+    min-height: 0;
   }
 
   .space-balloon {

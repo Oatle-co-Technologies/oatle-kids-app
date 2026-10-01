@@ -1,5 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import LocalBackButton from "./LocalBackButton";
+import {
+  EraserIcon,
+  ScribblerStickerPicker,
+  StickerShape,
+} from "./Scribbler";
 import { speak, stopSpeech } from "../utils/speech";
 import "./LittleExplorers.css";
 
@@ -101,6 +106,9 @@ export default function LittleExplorers({
   const [popped, setPopped] = useState([]);
   const [trailStep, setTrailStep] = useState(0);
   const [drawingColor, setDrawingColor] = useState(DRAWING_COLORS[0]);
+  const [drawingTool, setDrawingTool] = useState("draw");
+  const [selectedSticker, setSelectedSticker] = useState(null);
+  const [stickers, setStickers] = useState([]);
 
   const canvasRef = useRef(null);
   const activePointerRef = useRef(null);
@@ -254,24 +262,38 @@ export default function LittleExplorers({
     const context = canvasRef.current?.getContext("2d");
     if (!context) return;
 
+    context.save();
+    context.globalCompositeOperation =
+      drawingTool === "eraser" ? "destination-out" : "source-over";
     context.fillStyle = drawingColor;
     context.beginPath();
-    context.arc(point.x, point.y, 7, 0, Math.PI * 2);
+    context.arc(
+      point.x,
+      point.y,
+      drawingTool === "eraser" ? 15 : 7,
+      0,
+      Math.PI * 2
+    );
     context.fill();
+    context.restore();
   };
 
   const drawLine = (from, to) => {
     const context = canvasRef.current?.getContext("2d");
     if (!context) return;
 
+    context.save();
+    context.globalCompositeOperation =
+      drawingTool === "eraser" ? "destination-out" : "source-over";
     context.strokeStyle = drawingColor;
-    context.lineWidth = 14;
+    context.lineWidth = drawingTool === "eraser" ? 30 : 14;
     context.lineCap = "round";
     context.lineJoin = "round";
     context.beginPath();
     context.moveTo(from.x, from.y);
     context.lineTo(to.x, to.y);
     context.stroke();
+    context.restore();
   };
 
   const handleDrawStart = (event) => {
@@ -281,11 +303,26 @@ export default function LittleExplorers({
     ) return;
 
     event.preventDefault();
+    const point = getCanvasPoint(event);
+
+    if (selectedSticker) {
+      setStickers((current) => [
+        ...current,
+        {
+          id: `${selectedSticker.type}-${Date.now()}-${Math.random()}`,
+          type: selectedSticker.type,
+          color: selectedSticker.color,
+          x: point.x,
+          y: point.y,
+        },
+      ]);
+      completeActivity("scribble");
+      return;
+    }
+
     canvasRef.current?.setPointerCapture?.(event.pointerId);
     activePointerRef.current = event.pointerId;
     drawingRef.current = true;
-
-    const point = getCanvasPoint(event);
     lastPointRef.current = point;
     drawDot(point);
   };
@@ -334,6 +371,9 @@ export default function LittleExplorers({
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.restore();
     context.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+    setStickers([]);
+    setSelectedSticker(null);
+    setDrawingTool("draw");
   };
 
   if (screen === "balloons") {
@@ -448,14 +488,26 @@ export default function LittleExplorers({
       <main className="little-explorers-page little-activity-page little-scribble-page">
         <ActivityHeader
           title="Magic Space Scribbler"
-          instruction="Move your finger and make colourful space trails."
+          instruction="Draw, erase, and add stickers to your space picture."
           onBack={showMap}
         />
 
         <section className="little-scribble-space">
           <div className="little-scribble-stars" aria-hidden="true">✦ · ✧ · ✦</div>
+          <div className="little-scribble-sticker-layer" aria-hidden="true">
+            {stickers.map((sticker) => (
+              <span
+                key={sticker.id}
+                className="little-sticker-on-canvas"
+                style={{ left: sticker.x, top: sticker.y }}
+              >
+                <StickerShape type={sticker.type} color={sticker.color} />
+              </span>
+            ))}
+          </div>
           <canvas
             ref={canvasRef}
+            className={selectedSticker ? "little-canvas-sticker-mode" : ""}
             aria-label="Draw colourful space trails"
             onPointerDown={handleDrawStart}
             onPointerMove={handleDrawMove}
@@ -465,22 +517,63 @@ export default function LittleExplorers({
           />
         </section>
 
-        <div className="little-drawing-tools" aria-label="Drawing colours">
-          {DRAWING_COLORS.map((color) => (
+        <div className="little-drawing-tools" aria-label="Scribbler tools">
+          <div className="little-drawing-main-tools" aria-label="Drawing colours and eraser">
+            {DRAWING_COLORS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                className={`little-colour-button ${
+                  drawingColor === color &&
+                  drawingTool === "draw" &&
+                  !selectedSticker
+                    ? "selected"
+                    : ""
+                }`}
+                style={{ "--drawing-color": color }}
+                onClick={() => {
+                  setDrawingColor(color);
+                  setDrawingTool("draw");
+                  setSelectedSticker(null);
+                }}
+                aria-label={`Use ${color} colour`}
+                aria-pressed={
+                  drawingColor === color &&
+                  drawingTool === "draw" &&
+                  !selectedSticker
+                }
+              />
+            ))}
+
             <button
-              key={color}
+              className={`little-eraser-tool ${drawingTool === "eraser" ? "selected" : ""}`}
               type="button"
-              className={drawingColor === color ? "selected" : ""}
-              style={{ "--drawing-color": color }}
-              onClick={() => setDrawingColor(color)}
-              aria-label={`Use ${color} colour`}
-              aria-pressed={drawingColor === color}
-            />
-          ))}
-          <button className="little-clear-drawing" type="button" onClick={clearDrawing}>
-            ↻
-            <span>Clear</span>
-          </button>
+              onClick={() => {
+                setDrawingTool("eraser");
+                setSelectedSticker(null);
+              }}
+              aria-label="Eraser"
+              aria-pressed={drawingTool === "eraser"}
+            >
+              <EraserIcon />
+              <span>Eraser</span>
+            </button>
+
+            <button className="little-clear-drawing" type="button" onClick={clearDrawing}>
+              ↻
+              <span>Clear</span>
+            </button>
+          </div>
+
+          <ScribblerStickerPicker
+            className="little-sticker-tools"
+            buttonClassName="little-sticker-tool"
+            selectedSticker={selectedSticker}
+            onSelect={(sticker) => {
+              setSelectedSticker(sticker);
+              setDrawingTool("draw");
+            }}
+          />
         </div>
       </main>
     );

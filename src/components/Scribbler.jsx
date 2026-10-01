@@ -56,7 +56,7 @@ const STICKERS = [
   { name: "Ball", type: "ball", color: "#ff9f43" },
 ];
 
-function StickerShape({ type, color }) {
+export function StickerShape({ type, color }) {
   if (type === "star") {
     return (
       <svg viewBox="0 0 48 48" aria-hidden="true">
@@ -582,6 +582,33 @@ function StickerShape({ type, color }) {
   );
 }
 
+export function ScribblerStickerPicker({
+  selectedSticker,
+  onSelect,
+  className = "scribbler-sticker-tools",
+  buttonClassName = "scribbler-sticker",
+}) {
+  return (
+    <div className={className} aria-label="Stickers">
+      {STICKERS.map((sticker) => (
+        <button
+          key={sticker.type}
+          type="button"
+          className={`${buttonClassName} ${
+            selectedSticker?.type === sticker.type ? "selected" : ""
+          }`}
+          onClick={() => onSelect(sticker)}
+          aria-label={`${sticker.name} sticker`}
+          aria-pressed={selectedSticker?.type === sticker.type}
+          title={sticker.name}
+        >
+          <StickerShape type={sticker.type} color={sticker.color} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function PencilIcon() {
   return (
     <svg
@@ -678,7 +705,7 @@ function BrushIcon() {
   );
 }
 
-function EraserIcon() {
+export function EraserIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -1401,52 +1428,13 @@ export default function Scribbler({ onBack }) {
           )}
         </div>
 
-        <div
-          className="scribbler-sticker-tools"
-          aria-label="Stickers"
-        >
-          {STICKERS.map(
-            (sticker) => (
-              <button
-                key={
-                  sticker.type
-                }
-                type="button"
-                className={`scribbler-sticker ${
-                  selectedSticker?.type ===
-                  sticker.type
-                    ? "selected"
-                    : ""
-                }`}
-                onClick={() => {
-                  setSelectedSticker(
-                    sticker
-                  );
-                  setTool(
-                    "pencil"
-                  );
-                }}
-                aria-label={`${sticker.name} sticker`}
-                aria-pressed={
-                  selectedSticker?.type ===
-                  sticker.type
-                }
-                title={
-                  sticker.name
-                }
-              >
-                <StickerShape
-                  type={
-                    sticker.type
-                  }
-                  color={
-                    sticker.color
-                  }
-                />
-              </button>
-            )
-          )}
-        </div>
+        <ScribblerStickerPicker
+          selectedSticker={selectedSticker}
+          onSelect={(sticker) => {
+            setSelectedSticker(sticker);
+            setTool("pencil");
+          }}
+        />
       </aside>
     </main>
   );
