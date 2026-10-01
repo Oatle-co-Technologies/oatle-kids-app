@@ -96,6 +96,7 @@
 .little-adventure-shapes { border-color: rgba(255, 212, 92, 0.62); }
 .little-adventure-trail { border-color: rgba(85, 198, 255, 0.62); }
 .little-adventure-scribble { border-color: rgba(168, 117, 232, 0.62); }
+.little-adventure-discovery { border-color: rgba(102, 226, 139, 0.7); }
 
 .little-map-header {
   width: min(820px, 100%);
@@ -565,6 +566,7 @@
 .balloon-space,
 .shape-pop-space,
 .star-trail-space,
+.discovery-space,
 .little-scribble-space {
   position: relative;
   width: min(1180px, 100%);
@@ -580,6 +582,131 @@
     radial-gradient(circle at 43% 82%, #9be8ff 0 1.5px, transparent 2.5px),
     linear-gradient(160deg, #142b68, #211151 65%, #0c1233);
   box-shadow: 0 24px 54px rgba(0, 0, 0, 0.28);
+}
+
+.discovery-space {
+  padding: clamp(94px, 15vh, 126px) clamp(14px, 4vw, 46px) 24px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+}
+
+.discovery-prompt {
+  position: absolute;
+  top: clamp(12px, 3vh, 24px);
+  left: 50%;
+  z-index: 8;
+  width: min(520px, calc(100% - 24px));
+  min-height: 68px;
+  padding: 10px 18px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 18px;
+  color: #fff;
+  background: rgba(10, 20, 58, 0.92);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.discovery-prompt span {
+  color: #8fe7ff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.discovery-prompt strong {
+  font: 900 clamp(1.15rem, 2.8vw, 1.55rem)/1.1 "Nunito", Arial, sans-serif;
+}
+
+.discovery-choice-grid {
+  width: min(940px, 100%);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: clamp(12px, 2.4vw, 24px);
+}
+
+.discovery-sizes-grid {
+  width: min(700px, 100%);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.discovery-choice {
+  min-height: clamp(180px, 30vh, 270px);
+  padding: clamp(14px, 2.4vw, 24px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 3px solid rgba(143, 231, 255, 0.3);
+  border-radius: clamp(20px, 3vw, 30px);
+  color: #fff;
+  background: linear-gradient(150deg, rgba(38, 68, 139, 0.94), rgba(24, 31, 88, 0.96));
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.discovery-choice:active {
+  transform: scale(0.95);
+}
+
+.discovery-choice.wrong {
+  border-color: #ff8094;
+  animation: wrongBalloonShake 0.35s ease-in-out;
+}
+
+.discovery-choice.correct {
+  border-color: #66e28b;
+  background: linear-gradient(150deg, rgba(43, 130, 89, 0.96), rgba(22, 77, 68, 0.98));
+  transform: scale(1.04);
+}
+
+.discovery-object-group {
+  width: 100%;
+  min-height: 126px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, 0.8vw, 10px);
+}
+
+.discovery-object-group i {
+  font-style: normal;
+  font-size: clamp(2.25rem, 5.8vw, 4.4rem);
+  line-height: 1;
+  filter: drop-shadow(0 7px 5px rgba(0, 0, 0, 0.3));
+}
+
+.discovery-size-object {
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  filter: drop-shadow(0 12px 8px rgba(0, 0, 0, 0.3));
+}
+
+.discovery-size-big {
+  font-size: clamp(7rem, 17vw, 12rem);
+}
+
+.discovery-size-small {
+  font-size: clamp(3.4rem, 8vw, 5.5rem);
+}
+
+.discovery-choice > strong {
+  font: 900 clamp(1.05rem, 2.6vw, 1.45rem)/1 "Nunito", Arial, sans-serif;
 }
 
 .shape-pop-prompt {
@@ -1601,8 +1728,30 @@
 
   .balloon-space,
   .shape-pop-space,
-  .star-trail-space {
+  .star-trail-space,
+  .discovery-space {
     min-height: 500px;
+  }
+
+  .discovery-space {
+    padding: 96px 10px 18px;
+  }
+
+  .discovery-choice-grid {
+    gap: 9px;
+  }
+
+  .discovery-choice {
+    min-height: 210px;
+    padding: 10px 6px;
+  }
+
+  .discovery-object-group {
+    min-height: 110px;
+  }
+
+  .discovery-object-group i {
+    font-size: clamp(1.6rem, 8vw, 3rem);
   }
 
   .little-scribble-space {
@@ -1728,7 +1877,7 @@
   .little-adventure-grid {
     width: min(1120px, 100%);
     margin-top: 8px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 8px;
   }
 
@@ -1826,8 +1975,46 @@
 
   .balloon-space,
   .shape-pop-space,
-  .star-trail-space {
+  .star-trail-space,
+  .discovery-space {
     min-height: 210px;
+  }
+
+  .discovery-space {
+    padding: 64px 12px 8px;
+  }
+
+  .discovery-prompt {
+    top: 5px;
+    min-height: 50px;
+    padding: 5px 12px;
+  }
+
+  .discovery-prompt strong {
+    font-size: 1rem;
+  }
+
+  .discovery-choice {
+    min-height: 128px;
+    padding: 6px;
+    border-radius: 16px;
+  }
+
+  .discovery-object-group {
+    min-height: 74px;
+    gap: 2px;
+  }
+
+  .discovery-object-group i {
+    font-size: clamp(1.5rem, 5vw, 2.6rem);
+  }
+
+  .discovery-size-big {
+    font-size: clamp(4.8rem, 15vh, 7rem);
+  }
+
+  .discovery-size-small {
+    font-size: clamp(2.5rem, 8vh, 4rem);
   }
 
   .little-scribble-space {

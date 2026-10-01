@@ -279,6 +279,33 @@ const TRAIL_PATTERNS = {
 
 const TRAIL_PATTERN_KEYS = Object.keys(TRAIL_PATTERNS);
 
+const DISCOVERY_LESSONS = {
+  counting: {
+    kind: "counting",
+    title: "Count the Space Objects",
+    progressId: "discovery-counting-1-5",
+    rounds: [
+      { target: 1, symbol: "⭐", prompt: "Tap one star", choices: [2, 1, 3] },
+      { target: 2, symbol: "🚀", prompt: "Tap two rockets", choices: [3, 1, 2] },
+      { target: 3, symbol: "🌙", prompt: "Tap three moons", choices: [3, 4, 2] },
+      { target: 4, symbol: "🪐", prompt: "Tap four planets", choices: [5, 4, 3] },
+      { target: 5, symbol: "⭐", prompt: "Tap five stars", choices: [4, 6, 5] },
+    ],
+  },
+  sizes: {
+    kind: "sizes",
+    title: "Big and Small",
+    progressId: "discovery-big-and-small",
+    rounds: [
+      { target: "big", symbol: "🚀", name: "rocket", prompt: "Tap the big rocket", choices: ["small", "big"] },
+      { target: "small", symbol: "⭐", name: "star", prompt: "Tap the small star", choices: ["big", "small"] },
+      { target: "big", symbol: "🌙", name: "moon", prompt: "Tap the big moon", choices: ["big", "small"] },
+      { target: "small", symbol: "🪐", name: "planet", prompt: "Tap the small planet", choices: ["small", "big"] },
+      { target: "big", symbol: "☀️", name: "sun", prompt: "Tap the big sun", choices: ["small", "big"] },
+    ],
+  },
+};
+
 const PLANET_ART = [
   { name: "Mercury", image: mercuryImage, colour: "#c7b8aa" },
   { name: "Venus", image: venusImage, colour: "#efb75f" },
@@ -353,6 +380,32 @@ const LITTLE_ADVENTURES = [
         progressId: "scribble",
         missionTitle: "Magic Space Scribbler",
         description: "We are going to draw, scribble and make a space picture.",
+      },
+    ],
+  },
+  {
+    id: "discovery",
+    title: "Discovery Adventure",
+    icon: "🔭",
+    description: "Count space objects and discover big and small.",
+    planets: [
+      {
+        ...PLANET_ART[0],
+        id: 1,
+        activity: "discovery",
+        discoveryLesson: "counting",
+        progressId: DISCOVERY_LESSONS.counting.progressId,
+        missionTitle: "Count the Space Objects",
+        description: "We are going to count space objects from one to five.",
+      },
+      {
+        ...PLANET_ART[1],
+        id: 2,
+        activity: "discovery",
+        discoveryLesson: "sizes",
+        progressId: DISCOVERY_LESSONS.sizes.progressId,
+        missionTitle: "Big and Small",
+        description: "We are going to find big and small space objects.",
       },
     ],
   },
@@ -487,6 +540,9 @@ export default function LittleExplorers({
   const [wrongShape, setWrongShape] = useState(null);
   const [trailPattern, setTrailPattern] = useState(null);
   const [trailStep, setTrailStep] = useState(0);
+  const [discoveryRound, setDiscoveryRound] = useState(0);
+  const [wrongDiscoveryChoice, setWrongDiscoveryChoice] = useState(null);
+  const [correctDiscoveryChoice, setCorrectDiscoveryChoice] = useState(null);
   const [drawingColor, setDrawingColor] = useState(DRAWING_COLORS[0]);
   const [drawingTool, setDrawingTool] = useState("draw");
   const [selectedSticker, setSelectedSticker] = useState(null);
@@ -608,6 +664,8 @@ export default function LittleExplorers({
       trail: trailPattern
         ? TRAIL_PATTERNS[trailPattern].prompt
         : "Choose a star trail pattern.",
+      discovery:
+        DISCOVERY_LESSONS[activePlanet.discoveryLesson]?.rounds[discoveryRound]?.prompt,
       scribble: "Draw anything you like in space!",
     };
 
@@ -629,6 +687,8 @@ export default function LittleExplorers({
     shapeRound,
     soundOn,
     trailPattern,
+    discoveryRound,
+    activePlanet.discoveryLesson,
   ]);
 
   useEffect(() => () => {
@@ -719,6 +779,9 @@ export default function LittleExplorers({
     setShapePopped([]);
     setWrongShape(null);
     setTrailPattern(null);
+    setDiscoveryRound(0);
+    setWrongDiscoveryChoice(null);
+    setCorrectDiscoveryChoice(null);
     setScreen("map");
   };
 
@@ -761,6 +824,11 @@ export default function LittleExplorers({
       setShapeRound(planet.shapeRound);
       setShapePopped([]);
       setWrongShape(null);
+    }
+    if (planet.activity === "discovery") {
+      setDiscoveryRound(0);
+      setWrongDiscoveryChoice(null);
+      setCorrectDiscoveryChoice(null);
     }
     setScreen(planet.activity);
   };
@@ -937,6 +1005,44 @@ export default function LittleExplorers({
       if (balloonTimerRef.current) window.clearTimeout(balloonTimerRef.current);
       balloonTimerRef.current = window.setTimeout(continueBalloonLesson, 500);
     }
+  };
+
+  const chooseDiscoveryAnswer = (choice, index) => {
+    if (correctDiscoveryChoice !== null) return;
+
+    const lesson = DISCOVERY_LESSONS[activePlanet.discoveryLesson];
+    const round = lesson.rounds[discoveryRound];
+
+    if (choice !== round.target) {
+      setWrongDiscoveryChoice(index);
+      if (soundOn) speak("Try again.");
+      if (balloonTimerRef.current) window.clearTimeout(balloonTimerRef.current);
+      balloonTimerRef.current = window.setTimeout(
+        () => setWrongDiscoveryChoice(null),
+        650
+      );
+      return;
+    }
+
+    setWrongDiscoveryChoice(null);
+    setCorrectDiscoveryChoice(index);
+    playBoop(soundOn, discoveryRound + 2);
+    if (soundOn) {
+      speak(BALLOON_PRAISE[discoveryRound % BALLOON_PRAISE.length]);
+    }
+
+    if (balloonTimerRef.current) window.clearTimeout(balloonTimerRef.current);
+    balloonTimerRef.current = window.setTimeout(() => {
+      if (discoveryRound < lesson.rounds.length - 1) {
+        setDiscoveryRound((current) => current + 1);
+        setCorrectDiscoveryChoice(null);
+        return;
+      }
+
+      completePlanet();
+      playVictorySong();
+      celebratePlanet(500, false);
+    }, 800);
   };
 
   const showTrailMenu = () => {
@@ -1322,6 +1428,69 @@ export default function LittleExplorers({
               </div>
             </div>
           )}
+        </section>
+      </main>
+    );
+  }
+
+  if (screen === "discovery") {
+    const lesson = DISCOVERY_LESSONS[activePlanet.discoveryLesson];
+    const round = lesson.rounds[discoveryRound];
+
+    return (
+      <main className="little-explorers-page little-activity-page">
+        <ActivityHeader
+          title={lesson.title}
+          instruction={round.prompt}
+          backLabel={`${activeAdventure.title} map`}
+          onBack={showMap}
+        />
+
+        <section
+          className={`discovery-space discovery-${lesson.kind}-space`}
+          aria-label={lesson.title}
+        >
+          <div className="discovery-prompt" aria-live="polite">
+            <span>Round {discoveryRound + 1} of {lesson.rounds.length}</span>
+            <strong>{round.prompt}</strong>
+          </div>
+
+          <div className={`discovery-choice-grid discovery-${lesson.kind}-grid`}>
+            {round.choices.map((choice, index) => (
+              <button
+                key={`${discoveryRound}-${choice}-${index}`}
+                type="button"
+                className={`discovery-choice ${
+                  wrongDiscoveryChoice === index ? "wrong" : ""
+                } ${correctDiscoveryChoice === index ? "correct" : ""}`}
+                onClick={() => chooseDiscoveryAnswer(choice, index)}
+                disabled={correctDiscoveryChoice !== null}
+                aria-label={
+                  lesson.kind === "counting"
+                    ? `${choice} ${choice === 1 ? "object" : "objects"}`
+                    : `${choice} ${round.name}`
+                }
+              >
+                {lesson.kind === "counting" ? (
+                  <span className="discovery-object-group" aria-hidden="true">
+                    {Array.from({ length: choice }, (_, objectIndex) => (
+                      <i key={objectIndex}>{round.symbol}</i>
+                    ))}
+                  </span>
+                ) : (
+                  <>
+                    <span
+                      className={`discovery-size-object discovery-size-${choice}`}
+                      aria-hidden="true"
+                    >
+                      {round.symbol}
+                    </span>
+                    <strong>{choice === "big" ? "Big" : "Small"}</strong>
+                  </>
+                )}
+              </button>
+            ))}
+          </div>
         </section>
       </main>
     );
