@@ -1067,3 +1067,74 @@
 .math-status-row {
   display: none !important;
 }
+
+/* Lightweight maths motion uses only transforms and opacity. */
+.math-number-display,
+.math-feature-display,
+.math-introduction-visual,
+.math-count-display,
+.math-group-display,
+.math-equal-groups,
+.math-arithmetic-display,
+.math-sharing-display {
+  animation: mathVisualArrive 0.4s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.math-answer-button {
+  animation: mathAnswerArrive 0.32s cubic-bezier(.2, .8, .2, 1) backwards;
+}
+
+.math-answer-button:nth-child(2) { animation-delay: 0.04s; }
+.math-answer-button:nth-child(3) { animation-delay: 0.08s; }
+.math-answer-button:nth-child(4) { animation-delay: 0.12s; }
+
+.math-object,
+.math-small-group .math-shape {
+  animation: mathObjectBob 2.6s ease-in-out infinite;
+}
+
+.math-object:nth-child(even),
+.math-small-group .math-shape:nth-child(even) {
+  animation-delay: -1.3s;
+}
+
+.math-sort-zone {
+  animation: mathZoneGlow 3.2s ease-in-out infinite;
+}
+
+@keyframes mathVisualArrive {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes mathAnswerArrive {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes mathObjectBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes mathZoneGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(143, 231, 255, 0); }
+  50% { box-shadow: 0 0 18px rgba(143, 231, 255, 0.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .math-number-display,
+  .math-feature-display,
+  .math-introduction-visual,
+  .math-count-display,
+  .math-group-display,
+  .math-equal-groups,
+  .math-arithmetic-display,
+  .math-sharing-display,
+  .math-answer-button,
+  .math-object,
+  .math-small-group .math-shape,
+  .math-sort-zone {
+    animation: none;
+  }
+}
