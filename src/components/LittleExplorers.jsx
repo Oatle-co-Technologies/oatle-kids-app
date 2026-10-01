@@ -6,9 +6,11 @@ import {
   StickerShape,
 } from "./Scribbler";
 import { speak, stopSpeech } from "../utils/speech";
+import victorySound from "../sounds/victory.mp3";
 import "./LittleExplorers.css";
 
 const LITTLE_PROGRESS_KEY = "oatle-little-explorers-progress";
+const LITTLE_STARTED_KEY = "oatle-little-explorers-started";
 const BALLOON_SESSION_KEY = "oatle-balloon-learning-session";
 
 const BALLOON_POSITIONS = [
@@ -280,6 +282,39 @@ const TRAIL_PATTERNS = {
 
 const TRAIL_PATTERN_KEYS = Object.keys(TRAIL_PATTERNS);
 
+const LITTLE_PLANETS = [
+  {
+    id: 1,
+    activity: "balloons",
+    name: "Mercury",
+    missionTitle: "Learning Balloons",
+    description: "Pop balloons with numbers, letters, colours and shapes.",
+    badge: "🎈",
+    colour: "#ff875f",
+    shade: "#b94362",
+  },
+  {
+    id: 2,
+    activity: "trail",
+    name: "Venus",
+    missionTitle: "Star Trail Patterns",
+    description: "Guide the little rocket along five bright star trails.",
+    badge: "⭐",
+    colour: "#ffd45c",
+    shade: "#e77855",
+  },
+  {
+    id: 3,
+    activity: "scribble",
+    name: "Earth",
+    missionTitle: "Magic Space Scribbler",
+    description: "Draw, erase and decorate a colourful space picture.",
+    badge: "🖍️",
+    colour: "#55c6ff",
+    shade: "#3776d1",
+  },
+];
+
 const DRAWING_COLORS = [
   "#ffd45c",
   "#55c6ff",
@@ -294,6 +329,15 @@ let sharedAudioContext;
 function readProgress() {
   try {
     const saved = JSON.parse(localStorage.getItem(LITTLE_PROGRESS_KEY));
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+function readStartedPlanets() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LITTLE_STARTED_KEY));
     return Array.isArray(saved) ? saved : [];
   } catch {
     return [];
@@ -349,6 +393,21 @@ function playBoop(soundOn, step = 0) {
   oscillator.stop(now + 0.17);
 }
 
+function LittlePlanetVisual({ planet, className = "" }) {
+  return (
+    <span
+      className={`little-cartoon-planet little-cartoon-planet-${planet.activity} ${className}`}
+      style={{ "--little-planet-colour": planet.colour, "--little-planet-shade": planet.shade }}
+      aria-hidden="true"
+    >
+      <i className="little-planet-crater little-planet-crater-one" />
+      <i className="little-planet-crater little-planet-crater-two" />
+      <i className="little-planet-face">⌣</i>
+      <i className="little-planet-badge">{planet.badge}</i>
+    </span>
+  );
+}
+
 function ActivityHeader({ title, instruction, onBack, backLabel = "Little Explorers" }) {
   return (
     <header className="little-activity-header">
@@ -373,6 +432,8 @@ export default function LittleExplorers({
 }) {
   const [screen, setScreen] = useState("map");
   const [completed, setCompleted] = useState(readProgress);
+  const [startedPlanets, setStartedPlanets] = useState(readStartedPlanets);
+  const [activePlanetActivity, setActivePlanetActivity] = useState("balloons");
   const [popped, setPopped] = useState([]);
   const [balloonCategory, setBalloonCategory] = useState(null);
   const [balloonMode, setBalloonMode] = useState(null);
@@ -394,6 +455,11 @@ export default function LittleExplorers({
   const lastPointRef = useRef(null);
   const canvasSizedRef = useRef(false);
   const balloonTimerRef = useRef(null);
+  const celebrationTimerRef = useRef(null);
+  const victoryAudioRef = useRef(null);
+  const activePlanet = LITTLE_PLANETS.find(
+    (planet) => planet.activity === activePlanetActivity
+  ) || LITTLE_PLANETS[0];
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
@@ -411,11 +477,51 @@ export default function LittleExplorers({
     });
   };
 
+  const playVictorySong = () => {
+    if (!soundOn) return;
+
+    victoryAudioRef.current?.pause();
+    const effect = new Audio(victorySound);
+    effect.volume = 0.55;
+    victoryAudioRef.current = effect;
+    effect.play().catch(() => {});
+  };
+
+  const celebratePlanet = (activity, delay = 0, playSong = true) => {
+    if (celebrationTimerRef.current) window.clearTimeout(celebrationTimerRef.current);
+
+    if (playSong) playVictorySong();
+    setActivePlanetActivity(activity);
+
+    if (delay > 0) {
+      celebrationTimerRef.current = window.setTimeout(() => setScreen("celebration"), delay);
+      return;
+    }
+
+    setScreen("celebration");
+  };
+
+  const openPlanet = (activity) => {
+    setActivePlanetActivity(activity);
+    setScreen("planet");
+  };
+
+  const markPlanetStarted = (activity) => {
+    setStartedPlanets((current) => {
+      if (current.includes(activity)) return current;
+      const next = [...current, activity];
+      localStorage.setItem(LITTLE_STARTED_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
   useEffect(() => {
     if (!soundOn) return undefined;
 
     const prompts = {
       map: "Choose a little space adventure.",
+      planet: `Welcome to planet ${activePlanet.name}. ${activePlanet.missionTitle}.`,
+      celebration: null,
       balloons: balloonBreak
         ? "Bubble break! Pop the balloons!"
         : balloonMode
@@ -429,14 +535,29 @@ export default function LittleExplorers({
       scribble: "Draw anything you like in space!",
     };
 
-    const timer = window.setTimeout(() => speak(prompts[screen]), 220);
+    const prompt = prompts[screen];
+    if (!prompt) return undefined;
+
+    const timer = window.setTimeout(() => speak(prompt), 220);
 
     return () => window.clearTimeout(timer);
-  }, [balloonBreak, balloonCategory, balloonMode, balloonRound, screen, soundOn, trailPattern]);
+  }, [
+    activePlanet.name,
+    activePlanet.missionTitle,
+    balloonBreak,
+    balloonCategory,
+    balloonMode,
+    balloonRound,
+    screen,
+    soundOn,
+    trailPattern,
+  ]);
 
   useEffect(() => () => {
     stopSpeech();
     if (balloonTimerRef.current) window.clearTimeout(balloonTimerRef.current);
+    if (celebrationTimerRef.current) window.clearTimeout(celebrationTimerRef.current);
+    victoryAudioRef.current?.pause();
   }, []);
 
   useEffect(() => {
@@ -506,6 +627,26 @@ export default function LittleExplorers({
     setBalloonMode(null);
     setTrailPattern(null);
     setScreen("map");
+  };
+
+  const startPlanetMission = () => {
+    markPlanetStarted(activePlanetActivity);
+    startActivity(activePlanetActivity);
+  };
+
+  const unlockNextPlanet = () => {
+    const currentIndex = LITTLE_PLANETS.findIndex(
+      (planet) => planet.activity === activePlanetActivity
+    );
+    const nextPlanet = LITTLE_PLANETS[currentIndex + 1];
+
+    if (!nextPlanet) {
+      showMap();
+      return;
+    }
+
+    setActivePlanetActivity(nextPlanet.activity);
+    setScreen("planet");
   };
 
   const startActivity = (activity) => {
@@ -590,17 +731,15 @@ export default function LittleExplorers({
 
   const completeBalloonLesson = (mode) => {
     const progressId = BALLOON_LESSONS[mode].progressId;
+    const next = completed.includes(progressId) ? [...completed] : [...completed, progressId];
+    const allLessonsDone = BALLOON_LESSON_KEYS.every((key) =>
+      next.includes(BALLOON_LESSONS[key].progressId)
+    );
 
-    setCompleted((current) => {
-      const next = current.includes(progressId) ? [...current] : [...current, progressId];
-      const allLessonsDone = BALLOON_LESSON_KEYS.every((key) =>
-        next.includes(BALLOON_LESSONS[key].progressId)
-      );
-
-      if (allLessonsDone && !next.includes("balloons")) next.push("balloons");
-      localStorage.setItem(LITTLE_PROGRESS_KEY, JSON.stringify(next));
-      return next;
-    });
+    if (allLessonsDone && !next.includes("balloons")) next.push("balloons");
+    localStorage.setItem(LITTLE_PROGRESS_KEY, JSON.stringify(next));
+    setCompleted(next);
+    return allLessonsDone;
   };
 
   const finishBalloonRound = (lesson, round) => {
@@ -609,8 +748,14 @@ export default function LittleExplorers({
       if (balloonRound === lesson.rounds.length - 1) {
         setBalloonFinished(true);
         saveBalloonSession(balloonMode, null);
-        completeBalloonLesson(balloonMode);
-        if (soundOn) speak(`${lesson.title} complete! Amazing!`);
+        const planetComplete = completeBalloonLesson(balloonMode);
+        playVictorySong();
+
+        if (planetComplete) {
+          celebratePlanet("balloons", 650, false);
+        } else if (soundOn) {
+          window.setTimeout(() => speak(`${lesson.title} complete! Amazing!`), 1000);
+        }
         return;
       }
 
@@ -722,17 +867,15 @@ export default function LittleExplorers({
 
   const completeTrailPattern = (pattern) => {
     const progressId = TRAIL_PATTERNS[pattern].progressId;
+    const next = completed.includes(progressId) ? [...completed] : [...completed, progressId];
+    const allPatternsDone = TRAIL_PATTERN_KEYS.every((key) =>
+      next.includes(TRAIL_PATTERNS[key].progressId)
+    );
 
-    setCompleted((current) => {
-      const next = current.includes(progressId) ? [...current] : [...current, progressId];
-      const allPatternsDone = TRAIL_PATTERN_KEYS.every((key) =>
-        next.includes(TRAIL_PATTERNS[key].progressId)
-      );
-
-      if (allPatternsDone && !next.includes("trail")) next.push("trail");
-      localStorage.setItem(LITTLE_PROGRESS_KEY, JSON.stringify(next));
-      return next;
-    });
+    if (allPatternsDone && !next.includes("trail")) next.push("trail");
+    localStorage.setItem(LITTLE_PROGRESS_KEY, JSON.stringify(next));
+    setCompleted(next);
+    return allPatternsDone;
   };
 
   const tapTrailStar = (index) => {
@@ -745,10 +888,16 @@ export default function LittleExplorers({
     playBoop(soundOn, next + 1);
 
     if (next === pattern.stars.length) {
-      completeTrailPattern(trailPattern);
-      window.setTimeout(() => {
-        if (soundOn) speak(`${pattern.title} complete! Well done!`);
-      }, 260);
+      const planetComplete = completeTrailPattern(trailPattern);
+      playVictorySong();
+
+      if (planetComplete) {
+        celebratePlanet("trail", 650, false);
+      } else {
+        window.setTimeout(() => {
+          if (soundOn) speak(`${pattern.title} complete! Well done!`);
+        }, 1000);
+      }
     }
   };
 
@@ -818,7 +967,6 @@ export default function LittleExplorers({
           y: point.y,
         },
       ]);
-      completeActivity("scribble");
       return;
     }
 
@@ -860,7 +1008,6 @@ export default function LittleExplorers({
       canvasRef.current.releasePointerCapture(event.pointerId);
     }
 
-    completeActivity("scribble");
   };
 
   const clearDrawing = () => {
@@ -878,6 +1025,71 @@ export default function LittleExplorers({
     setDrawingTool("draw");
   };
 
+  const finishScribble = () => {
+    completeActivity("scribble");
+    celebratePlanet("scribble", 280);
+  };
+
+  if (screen === "planet") {
+    const missionStarted = startedPlanets.includes(activePlanet.activity);
+    const missionComplete = completed.includes(activePlanet.activity);
+
+    return (
+      <main className="little-explorers-page little-planet-overview">
+        <LocalBackButton
+          className="page-back-button"
+          label="Planet map"
+          onClick={showMap}
+        />
+
+        <LittlePlanetVisual planet={activePlanet} className="little-overview-planet" />
+        <p className="eyebrow">PLANET {activePlanet.id}</p>
+        <h1>Welcome to Planet {activePlanet.name}</h1>
+        <strong>{activePlanet.missionTitle}</strong>
+        <p>{activePlanet.description}</p>
+
+        <button className="primary-button" type="button" onClick={startPlanetMission}>
+          {missionComplete
+            ? "Play mission again"
+            : missionStarted
+              ? "Return to mission"
+              : "Start mission"}
+        </button>
+      </main>
+    );
+  }
+
+  if (screen === "celebration") {
+    const activePlanetIndex = LITTLE_PLANETS.findIndex(
+      (planet) => planet.activity === activePlanet.activity
+    );
+    const hasNextPlanet = activePlanetIndex < LITTLE_PLANETS.length - 1;
+
+    return (
+      <main className="little-explorers-page little-planet-celebration">
+        <LocalBackButton
+          className="page-back-button"
+          label="Planet map"
+          onClick={showMap}
+        />
+
+        <p className="eyebrow">MISSION COMPLETE</p>
+        <h1>Mission accomplished!</h1>
+        <p>You completed your little mission on Planet {activePlanet.name}.</p>
+        <LittlePlanetVisual planet={activePlanet} className="little-celebration-planet" />
+        <strong>{activePlanet.missionTitle}</strong>
+
+        <button
+          className={hasNextPlanet ? "primary-button" : "secondary-button"}
+          type="button"
+          onClick={hasNextPlanet ? unlockNextPlanet : showMap}
+        >
+          {hasNextPlanet ? "Unlock next planet →" : "Back to planet map"}
+        </button>
+      </main>
+    );
+  }
+
   if (screen === "balloons") {
     if (!balloonMode) {
       const category = balloonCategory ? BALLOON_CATEGORIES[balloonCategory] : null;
@@ -888,7 +1100,7 @@ export default function LittleExplorers({
           <ActivityHeader
             title={category?.title || "Balloon Learning"}
             instruction={category ? "Choose where to begin." : "Choose a little learning game."}
-            backLabel={category ? "Balloon games" : "Little Explorers"}
+            backLabel={category ? "Balloon games" : "Planet map"}
             onBack={category ? showBalloonMenu : showMap}
           />
 
@@ -1076,6 +1288,7 @@ export default function LittleExplorers({
           <ActivityHeader
             title="Star Trail Patterns"
             instruction="Choose a trail and follow its shape."
+            backLabel="Planet map"
             onBack={showMap}
           />
 
@@ -1164,6 +1377,7 @@ export default function LittleExplorers({
         <ActivityHeader
           title="Magic Space Scribbler"
           instruction="Draw, erase, and add stickers to your space picture."
+          backLabel="Planet map"
           onBack={showMap}
         />
 
@@ -1249,6 +1463,11 @@ export default function LittleExplorers({
               setDrawingTool("draw");
             }}
           />
+
+          <button className="little-finish-drawing" type="button" onClick={finishScribble}>
+            ✓
+            <span>Done</span>
+          </button>
         </div>
       </main>
     );
@@ -1263,36 +1482,41 @@ export default function LittleExplorers({
       />
 
       <header className="little-map-header">
-        <p className="eyebrow">AGES 2–3 · LITTLE EXPLORERS</p>
-        <h1>First Space Adventures</h1>
-        <p>Big buttons, happy boops and lots of room to explore.</p>
+        <p className="eyebrow">YOUR LITTLE JOURNEY</p>
+        <h1>Planet Map</h1>
+        <p>Complete each cartoon planet to unlock the next destination.</p>
       </header>
 
-      <section className="little-planet-grid" aria-label="Little Explorer activities">
-        <button type="button" onClick={() => startActivity("balloons")}>
-          <span className="little-planet little-planet-balloon" aria-hidden="true">🎈</span>
-          <strong>Learning Balloons</strong>
-          <small>Numbers, letters, colours and shapes</small>
-          {BALLOON_LESSON_KEYS.every((key) =>
-            completed.includes(BALLOON_LESSONS[key].progressId)
-          ) && <b aria-label="Completed">✓</b>}
-        </button>
+      <section className="little-planet-grid" aria-label="Little Explorer planet map">
+        {LITTLE_PLANETS.map((planet, index) => {
+          const previousPlanet = LITTLE_PLANETS[index - 1];
+          const locked = Boolean(
+            previousPlanet && !completed.includes(previousPlanet.activity)
+          );
+          const isComplete = completed.includes(planet.activity);
 
-        <button type="button" onClick={() => startActivity("trail")}>
-          <span className="little-planet little-planet-trail" aria-hidden="true">⭐</span>
-          <strong>Star Trail Patterns</strong>
-          <small>Five shapes for the rocket</small>
-          {TRAIL_PATTERN_KEYS.every((key) =>
-            completed.includes(TRAIL_PATTERNS[key].progressId)
-          ) && <b aria-label="Completed">✓</b>}
-        </button>
-
-        <button type="button" onClick={() => startActivity("scribble")}>
-          <span className="little-planet little-planet-scribble" aria-hidden="true">🖍️</span>
-          <strong>Magic Scribbler</strong>
-          <small>Draw colourful space trails</small>
-          {completed.includes("scribble") && <b aria-label="Completed">✓</b>}
-        </button>
+          return (
+            <button
+              key={planet.activity}
+              type="button"
+              className={locked ? "locked" : ""}
+              style={{ "--little-map-border": planet.colour }}
+              disabled={locked}
+              onClick={() => openPlanet(planet.activity)}
+            >
+              {locked ? (
+                <span className="little-planet-lock" aria-hidden="true">🔒</span>
+              ) : (
+                <LittlePlanetVisual planet={planet} />
+              )}
+              <strong>{planet.name}</strong>
+              <small>
+                {locked ? "Complete the previous planet" : planet.missionTitle}
+              </small>
+              {isComplete && <b aria-label="Completed">✓</b>}
+            </button>
+          );
+        })}
       </section>
 
       <p className="little-grownup-note">

@@ -1768,6 +1768,8 @@ function App() {
     setWritingActivePlanet(1);
     setWritingCelebrationMission(null);
     localStorage.removeItem("oatle-little-explorers-progress");
+    localStorage.removeItem("oatle-little-explorers-started");
+    localStorage.removeItem("oatle-balloon-learning-session");
 
     setScreen(ageGroup === "little" ? "littleExplorers" : "home");
   };
