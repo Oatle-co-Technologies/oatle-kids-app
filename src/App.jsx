@@ -327,25 +327,22 @@ const savedWritingProgress = () => {
   }
 };
 
+const EMPTY_CHILD_PROFILE = {
+  name: "",
+  age: "",
+  favouriteColour: "",
+  siblings: "",
+};
+
 const savedChildProfile = () => {
   try {
     return (
       JSON.parse(
         localStorage.getItem("oatle-child-profile")
-      ) || {
-        name: "",
-        age: "",
-        favouriteColour: "",
-        siblings: "",
-      }
+      ) || { ...EMPTY_CHILD_PROFILE }
     );
   } catch {
-    return {
-      name: "",
-      age: "",
-      favouriteColour: "",
-      siblings: "",
-    };
+    return { ...EMPTY_CHILD_PROFILE };
   }
 };
 
@@ -851,6 +848,8 @@ function App() {
 
         if (event === "SIGNED_OUT") {
           localStorage.removeItem("oatle-age-group");
+          localStorage.removeItem("oatle-child-profile");
+          setChildProfile({ ...EMPTY_CHILD_PROFILE });
           setAgeGroup(null);
           setScreen("home");
         }
@@ -3930,7 +3929,7 @@ function App() {
           </h2>
 
           <p className="page-intro">
-            Add a few details about the child. These are used to personalize writing adventures.
+            Add only the details needed to personalize writing adventures. Use a nickname rather than a full name. These details stay on this device and are cleared when you log out.
           </p>
 
           <label className="profile-field">
@@ -3952,6 +3951,7 @@ function App() {
                 )
               }
               autoComplete="off"
+              maxLength="24"
             />
           </label>
 
@@ -3999,6 +3999,7 @@ function App() {
                 )
               }
               autoComplete="off"
+              maxLength="24"
             />
           </label>
 
