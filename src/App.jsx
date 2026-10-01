@@ -3,7 +3,10 @@ import "./App.css";
 
 import { questions } from "./data/questions";
 import { lowercaseQuestions } from "./data/lowercaseQuestions";
-import { matchingQuestions } from "./data/matchingQuestions";
+import {
+  createMatchingQuestions,
+  matchingQuestions,
+} from "./data/matchingQuestions";
 import { wordOrderQuestions } from "./data/wordOrderQuestions";
 import { readingQuestions } from "./data/readingQuestions";
 import { sentenceQuestions } from "./data/sentenceQuestions";
@@ -249,6 +252,13 @@ const BIG_KIDS_PRAISE = [
   "Amazing!",
   "Well done!",
   "You got it!",
+];
+
+const READING_BREAK_INTERVAL = 6;
+const READING_BREAK_BALLOONS = [
+  { id: 1, colour: "#ff6f91", label: "Pink balloon" },
+  { id: 2, colour: "#ffd45c", label: "Yellow balloon" },
+  { id: 3, colour: "#55c6ff", label: "Blue balloon" },
 ];
 
 function stopAudioRef(audioRef) {
@@ -799,8 +809,15 @@ function App() {
     useState(false);
   const [revealedAnswer, setRevealedAnswer] =
     useState("");
+  const [readingMissionRun, setReadingMissionRun] =
+    useState(0);
+  const [completedReadingBreaks, setCompletedReadingBreaks] =
+    useState([]);
+  const [poppedReadingBreakBalloons, setPoppedReadingBreakBalloons] =
+    useState([]);
 
   const advanceTimer = useRef(null);
+  const readingBreakTimer = useRef(null);
   const welcomeAudioRef = useRef(null);
   const victoryAudioRef = useRef(null);
   const effectAudioRef = useRef(null);
@@ -899,18 +916,33 @@ function App() {
     ) || planets[0];
 
   const missionQuestions = useMemo(
-    () =>
-      planet.id === 8
+    () => {
+      // Starting Earth again creates a fresh 26-letter case mix.
+      void readingMissionRun;
+
+      return planet.id === 8
         ? planet.questions
         : planet.id === 9
           ? plutoQuestions
-          : shuffleArray(planet.questions),
-    [planet.id, planet.questions]
+          : planet.id === 3
+            ? shuffleArray(createMatchingQuestions())
+            : shuffleArray(planet.questions);
+    },
+    [planet.id, planet.questions, readingMissionRun]
   );
 
   const question =
     missionQuestions[progress.question] ||
     missionQuestions[0];
+
+  const readingBreakKey = `${planet.id}-${progress.question}`;
+  const readingBreakDue =
+    screen === "mission" &&
+    planet.id >= 1 &&
+    planet.id <= 7 &&
+    progress.question > 0 &&
+    progress.question % READING_BREAK_INTERVAL === 0 &&
+    !completedReadingBreaks.includes(readingBreakKey);
 
   const [loadedQuestionImage, setLoadedQuestionImage] =
     useState(null);
@@ -1051,6 +1083,17 @@ function App() {
       return;
     }
 
+    if (readingBreakDue) {
+      const timer = setTimeout(() => {
+        speak("Space break! Pop all three balloons, then keep exploring.");
+      }, 250);
+
+      return () => {
+        clearTimeout(timer);
+        stopSpeech();
+      };
+    }
+
     const isWordOrder =
       planet.id === 4 || question.type === "word-order";
 
@@ -1096,6 +1139,7 @@ function App() {
     planet.id,
     progress.question,
     question,
+    readingBreakDue,
     soundOn,
   ]);
 
@@ -1260,6 +1304,9 @@ function App() {
       stopAudioRef(welcomeAudioRef);
       stopAudioRef(victoryAudioRef);
       stopAudioRef(effectAudioRef);
+      if (readingBreakTimer.current) {
+        window.clearTimeout(readingBreakTimer.current);
+      }
     };
   }, []);
 
@@ -1287,6 +1334,30 @@ function App() {
     });
   };
 
+  const popReadingBreakBalloon = (balloonId) => {
+    if (poppedReadingBreakBalloons.includes(balloonId)) return;
+
+    const next = [...poppedReadingBreakBalloons, balloonId];
+    setPoppedReadingBreakBalloons(next);
+    playSound(correctSound);
+
+    if (next.length !== READING_BREAK_BALLOONS.length) return;
+
+    if (readingBreakTimer.current) {
+      window.clearTimeout(readingBreakTimer.current);
+    }
+
+    readingBreakTimer.current = window.setTimeout(() => {
+      setCompletedReadingBreaks((current) =>
+        current.includes(readingBreakKey)
+          ? current
+          : [...current, readingBreakKey]
+      );
+      setPoppedReadingBreakBalloons([]);
+      readingBreakTimer.current = null;
+    }, 500);
+  };
+
   const goToPlanet = (id) => {
     setProgress((current) => {
       const saved = savedGame();
@@ -1309,6 +1380,7 @@ function App() {
     setBuiltWord([]);
     setIsProcessing(false);
     setRevealedAnswer("");
+    setPoppedReadingBreakBalloons([]);
 
     if (advanceTimer.current) {
       clearTimeout(advanceTimer.current);
@@ -3052,6 +3124,12 @@ function App() {
                 ? "Return to mission"
                 : "Start mission",
           () => {
+            if (planet.id === 3 && progress.question === 0) {
+              setReadingMissionRun((current) => current + 1);
+            }
+
+            setPoppedReadingBreakBalloons([]);
+
             setProgress((current) => ({
               ...current,
               startedMissions: {
@@ -3150,7 +3228,33 @@ function App() {
           </div>
         </div>
 
-        {planet.id === 8 ? (
+        {readingBreakDue ? (
+          <section className="reading-space-break" aria-label="Space balloon break">
+            <p className="eyebrow">QUICK SPACE BREAK</p>
+            <h2>Pop all three balloons!</h2>
+            <p>Then your reading mission will continue.</p>
+
+            <div className="reading-break-balloons">
+              {READING_BREAK_BALLOONS.map((balloon) => (
+                <button
+                  key={balloon.id}
+                  type="button"
+                  className={`reading-break-balloon ${
+                    poppedReadingBreakBalloons.includes(balloon.id)
+                      ? "popped"
+                      : ""
+                  }`}
+                  style={{ "--reading-balloon-colour": balloon.colour }}
+                  onClick={() => popReadingBreakBalloon(balloon.id)}
+                  disabled={poppedReadingBreakBalloons.includes(balloon.id)}
+                  aria-label={`Pop the ${balloon.label}`}
+                >
+                  <span aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : planet.id === 8 ? (
           <>
             <p className="eyebrow">
               ATLI AND THE LOST MAP
