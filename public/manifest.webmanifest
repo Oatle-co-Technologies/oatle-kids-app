@@ -2,6 +2,7 @@
   "name": "Oatle Kids — Space Learning Adventures",
   "short_name": "Oatle Kids",
   "description": "A playful space adventure where kids learn reading, writing, phonics, math, and more.",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

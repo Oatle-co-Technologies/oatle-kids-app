@@ -73,7 +73,7 @@ Built with:
 
 Play Atli's Space Game:
 
-**https://atli-s-space-game.vercel.app/**
+**https://www.oatlekids.co.za/**
 
 ## 🏢 About
 

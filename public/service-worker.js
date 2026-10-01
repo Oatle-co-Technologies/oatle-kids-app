@@ -1,4 +1,4 @@
-const CACHE_NAME = "oatle-kids-v1";
+const CACHE_NAME = "oatle-kids-v2";
 
 const APP_SHELL = [
   "/",

@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import {
+  clearDeferredInstallPrompt,
+  getDeferredInstallPrompt,
+} from "../pwa";
 
 function LoginPage({ onLogin }) {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -8,6 +12,68 @@ function LoginPage({ onLogin }) {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(
+    getDeferredInstallPrompt
+  );
+  const [showInstallHelp, setShowInstallHelp] = useState(false);
+  const [showAndroidInstall, setShowAndroidInstall] = useState(() => {
+    const isNativeApp = Boolean(
+      window.Capacitor?.isNativePlatform?.()
+    );
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+    const isAndroid = /Android/i.test(window.navigator.userAgent);
+
+    return isAndroid && !isNativeApp && !isStandalone;
+  });
+
+  useEffect(() => {
+    const handleInstallReady = (event) => {
+      setInstallPrompt(event.detail);
+      setShowInstallHelp(false);
+      setShowAndroidInstall(true);
+    };
+
+    const handleAppInstalled = () => {
+      setInstallPrompt(null);
+      setShowInstallHelp(false);
+      setShowAndroidInstall(false);
+    };
+
+    window.addEventListener(
+      "oatle-install-ready",
+      handleInstallReady
+    );
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener(
+        "oatle-install-ready",
+        handleInstallReady
+      );
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) {
+      setShowInstallHelp(true);
+      return;
+    }
+
+    try {
+      await installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+
+      setShowInstallHelp(choice.outcome !== "accepted");
+    } catch {
+      setShowInstallHelp(true);
+    } finally {
+      clearDeferredInstallPrompt();
+      setInstallPrompt(null);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -79,6 +145,28 @@ function LoginPage({ onLogin }) {
             ? "Create an account to start your space learning adventure."
             : "Log in to continue your space learning adventure."}
         </p>
+
+        {showAndroidInstall && (
+          <section className="pwa-install-panel" aria-label="Install Oatle Kids">
+            <p>Want Oatle Kids on this phone?</p>
+            <button
+              className="pwa-install-button"
+              type="button"
+              onClick={handleInstall}
+            >
+              {installPrompt
+                ? "Install Oatle Kids"
+                : "How to install"}
+            </button>
+            {showInstallHelp && (
+              <p className="pwa-install-help">
+                Open this page in Chrome, tap the three-dot menu, then choose
+                <strong> Install app</strong> or
+                <strong> Add to Home screen</strong>.
+              </p>
+            )}
+          </section>
+        )}
 
         <form onSubmit={handleSubmit} className="login-form">
           <label>
