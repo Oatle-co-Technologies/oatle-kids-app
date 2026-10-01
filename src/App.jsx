@@ -754,6 +754,7 @@ function App() {
     useState(null);
 
   const [screen, setScreen] = useState("home");
+  const [ageGroup, setAgeGroup] = useState(null);
   const [launchAdventure, setLaunchAdventure] =
     useState("reading");
 
@@ -806,10 +807,16 @@ function App() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         if (!mounted) return;
 
         setUser(session?.user ?? null);
+
+        if (event === "SIGNED_OUT") {
+          setAgeGroup(null);
+          setScreen("home");
+        }
+
         setAuthLoading(false);
       }
     );
@@ -1754,7 +1761,12 @@ function App() {
     setWritingCelebrationMission(null);
     localStorage.removeItem("oatle-little-explorers-progress");
 
-    setScreen("home");
+    setScreen(ageGroup === "little" ? "littleExplorers" : "home");
+  };
+
+  const selectAgeGroup = (group) => {
+    setAgeGroup(group);
+    setScreen(group === "little" ? "littleExplorers" : "home");
   };
 
   // PayFast test checkout
@@ -1986,7 +1998,8 @@ function App() {
       <LoginPage
         onLogin={(loggedInUser) => {
           setUser(loggedInUser);
-          setScreen("home");
+          setAgeGroup(null);
+          setScreen("ageSelect");
         }}
       />
     );
@@ -2124,11 +2137,56 @@ function App() {
               await supabase.auth.signOut();
               setUser(null);
               setHasAccess(false);
+              setAgeGroup(null);
             }}
             type="button"
           >
             Return to login
           </button>
+        </div>
+      </main>
+    );
+  } else if (!ageGroup) {
+    content = (
+      <main className="age-choice-page">
+        <div className="age-choice-panel">
+          <p className="eyebrow">CHOOSE AN ADVENTURE</p>
+          <h1>How old is your little explorer?</h1>
+          <p className="age-choice-intro">
+            Pick the age group that fits the child playing today.
+          </p>
+
+          <div className="age-choice-grid" aria-label="Choose a child age group">
+            <button
+              className="age-choice-card age-choice-little"
+              onClick={() => selectAgeGroup("little")}
+              type="button"
+            >
+              <span className="age-choice-icon">
+                <LittleExplorerIcon />
+              </span>
+              <strong>Ages 2–3</strong>
+              <span>Little Space Adventures</span>
+              <small>Big taps, happy boops and playful exploring</small>
+            </button>
+
+            <button
+              className="age-choice-card age-choice-big"
+              onClick={() => selectAgeGroup("big")}
+              type="button"
+            >
+              <span className="age-choice-icon">
+                <BookIcon />
+              </span>
+              <strong>Ages 4–7</strong>
+              <span>Space Learning Adventures</span>
+              <small>Reading, counting, writing and assessments</small>
+            </button>
+          </div>
+
+          <p className="age-choice-note">
+            You can change age groups later in Settings.
+          </p>
         </div>
       </main>
     );
@@ -2211,20 +2269,6 @@ function App() {
             <small>Ages 4+</small>
           </button>
 
-          <button
-            className="adventure-card little-explorers-card"
-            onClick={() => setScreen("littleExplorers")}
-            type="button"
-          >
-            <span className="adventure-card-icon">
-              <LittleExplorerIcon />
-            </span>
-
-            <strong>
-              Little Explorers
-            </strong>
-            <small>Ages 2–3</small>
-          </button>
         </div>
       </main>
     );
@@ -2233,7 +2277,16 @@ function App() {
   ) {
     content = (
       <LittleExplorers
-        onBack={() => setScreen("explore")}
+        backLabel={ageGroup === "little" ? "Age groups" : "Explore"}
+        onBack={() => {
+          if (ageGroup === "little") {
+            setAgeGroup(null);
+            setScreen("ageSelect");
+            return;
+          }
+
+          setScreen("explore");
+        }}
         soundOn={soundOn}
       />
     );
@@ -3785,10 +3838,22 @@ function App() {
 
         <button
           className="secondary-button"
+          onClick={() => {
+            setAgeGroup(null);
+            setScreen("ageSelect");
+          }}
+          type="button"
+        >
+          Change child age group
+        </button>
+
+        <button
+          className="secondary-button"
           onClick={async () => {
             await supabase.auth.signOut();
             setUser(null);
             setHasAccess(false);
+            setAgeGroup(null);
             setScreen("home");
           }}
           type="button"
@@ -3800,7 +3865,7 @@ function App() {
   }
 
   const showBottomNav =
-    user && hasAccess && screen !== "scribbler";
+    user && hasAccess && ageGroup && screen !== "scribbler";
 
   return (
     <div className={`app ${showBottomNav ? "app-with-bottom-nav" : ""}`}>
@@ -3809,10 +3874,10 @@ function App() {
       {showBottomNav && (
           <AppNav
             onHome={() =>
-              setScreen("home")
+              setScreen(ageGroup === "little" ? "littleExplorers" : "home")
             }
             onExplore={() =>
-              setScreen("explore")
+              setScreen(ageGroup === "little" ? "littleExplorers" : "explore")
             }
             onSettings={() =>
               setScreen("settings")

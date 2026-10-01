@@ -1417,6 +1417,235 @@ button:focus-visible,
 }
 
 /* =========================================================
+   AGE GROUP CHOICE
+   ========================================================= */
+
+.age-choice-page {
+  min-height: 100dvh;
+  padding: max(34px, env(safe-area-inset-top)) 20px 42px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background:
+    radial-gradient(circle at 14% 18%, rgba(85, 198, 255, 0.22) 0 2px, transparent 3px),
+    radial-gradient(circle at 82% 22%, rgba(255, 212, 92, 0.22) 0 2px, transparent 3px),
+    radial-gradient(circle at 72% 82%, rgba(255, 111, 145, 0.16) 0 2px, transparent 3px),
+    linear-gradient(155deg, #14265f 0%, #080d28 56%, #28104b 100%);
+}
+
+.age-choice-panel {
+  width: min(900px, 100%);
+  text-align: center;
+}
+
+.age-choice-panel .eyebrow {
+  margin: 0 0 10px;
+  color: #8fe7ff;
+}
+
+.age-choice-panel h1 {
+  max-width: 760px;
+  margin: 0 auto;
+  font-size: clamp(2.2rem, 6vw, 4.4rem);
+  line-height: 0.98;
+}
+
+.age-choice-intro {
+  margin: 16px auto 30px;
+  color: #d4defb;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  font-weight: 700;
+}
+
+.age-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(16px, 3vw, 26px);
+}
+
+.age-choice-card {
+  position: relative;
+  min-height: 330px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 2px solid rgba(143, 231, 255, 0.24);
+  border-radius: 32px;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(31, 51, 111, 0.95), rgba(10, 17, 50, 0.96));
+  box-shadow: 0 24px 54px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.age-choice-card:hover,
+.age-choice-card:focus-visible {
+  transform: translateY(-7px);
+  border-color: #8fe7ff;
+  box-shadow: 0 28px 62px rgba(0, 0, 0, 0.34), 0 0 34px rgba(85, 198, 255, 0.15);
+}
+
+.age-choice-card:active {
+  transform: scale(0.98);
+}
+
+.age-choice-little {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 111, 145, 0.22), transparent 48%),
+    linear-gradient(180deg, rgba(41, 49, 112, 0.96), rgba(16, 18, 60, 0.97));
+}
+
+.age-choice-icon {
+  width: 126px;
+  height: 126px;
+  margin-bottom: 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #0a1740;
+  background: linear-gradient(145deg, #fff, #dcecff);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28), 0 0 0 7px rgba(143, 231, 255, 0.08);
+}
+
+.age-choice-icon svg {
+  width: 76px;
+  height: 76px;
+}
+
+.age-choice-card strong {
+  font: 800 clamp(1.7rem, 4vw, 2.4rem)/1 "Pixelify Sans", sans-serif;
+  color: #ffdb64;
+}
+
+.age-choice-card > span:not(.age-choice-icon) {
+  font: 800 clamp(1.15rem, 2.3vw, 1.45rem)/1.1 "Pixelify Sans", sans-serif;
+}
+
+.age-choice-card small {
+  max-width: 310px;
+  color: #c7d2f6;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.age-choice-note {
+  margin: 22px 0 0;
+  color: #b9c6ee;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+@media (max-width: 650px) {
+  .age-choice-page {
+    padding: max(24px, env(safe-area-inset-top)) 14px 28px;
+  }
+
+  .age-choice-panel h1 {
+    font-size: clamp(2.1rem, 10vw, 3rem);
+  }
+
+  .age-choice-intro {
+    margin-bottom: 20px;
+  }
+
+  .age-choice-grid {
+    grid-template-columns: 1fr;
+    width: min(430px, 100%);
+    margin: 0 auto;
+  }
+
+  .age-choice-card {
+    min-height: 190px;
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    column-gap: 15px;
+    text-align: left;
+  }
+
+  .age-choice-icon {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    width: 104px;
+    height: 104px;
+    margin: 0;
+  }
+
+  .age-choice-icon svg {
+    width: 64px;
+    height: 64px;
+  }
+
+  .age-choice-card strong,
+  .age-choice-card > span:not(.age-choice-icon),
+  .age-choice-card small {
+    grid-column: 2;
+  }
+
+  .age-choice-card strong {
+    font-size: 1.65rem;
+  }
+
+  .age-choice-card > span:not(.age-choice-icon) {
+    font-size: 1.05rem;
+  }
+
+  .age-choice-card small {
+    font-size: 0.78rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .age-choice-page {
+    padding: 8px 18px 12px;
+  }
+
+  .age-choice-panel h1 {
+    font-size: 2.1rem;
+  }
+
+  .age-choice-panel .eyebrow,
+  .age-choice-note {
+    display: none;
+  }
+
+  .age-choice-intro {
+    margin: 6px auto 10px;
+    font-size: 0.88rem;
+  }
+
+  .age-choice-card {
+    min-height: 210px;
+    padding: 10px 18px;
+  }
+
+  .age-choice-icon {
+    width: 88px;
+    height: 88px;
+    margin-bottom: 2px;
+  }
+
+  .age-choice-icon svg {
+    width: 54px;
+    height: 54px;
+  }
+
+  .age-choice-card strong {
+    font-size: 1.55rem;
+  }
+
+  .age-choice-card > span:not(.age-choice-icon) {
+    font-size: 1rem;
+  }
+}
+
+/* =========================================================
    EXPLORE / ADVENTURE HUB
    ========================================================= */
 
@@ -1773,27 +2002,22 @@ button:focus-visible,
 }
 
 .adventure-card:nth-child(1) {
-  left: 1%;
+  left: 4%;
   top: 42px;
   animation-delay: 0s;
 }
 
 .adventure-card:nth-child(2) {
-  left: 26%;
-  top: 178px;
+  left: 50%;
+  top: 170px;
+  transform: translateX(-50%);
   animation-delay: -1.2s;
 }
 
 .adventure-card:nth-child(3) {
-  right: 26%;
+  right: 4%;
   top: 48px;
   animation-delay: -2.4s;
-}
-
-.adventure-card:nth-child(4) {
-  right: 1%;
-  top: 178px;
-  animation-delay: -3.2s;
 }
 
 .adventure-card:hover {
@@ -1804,8 +2028,16 @@ button:focus-visible,
     0 0 45px rgba(143, 231, 255, 0.2);
 }
 
+.adventure-card:nth-child(2):hover {
+  transform: translateX(-50%) translateY(-9px) scale(1.06);
+}
+
 .adventure-card:active {
   transform: scale(0.97);
+}
+
+.adventure-card:nth-child(2):active {
+  transform: translateX(-50%) scale(0.97);
 }
 
 .adventure-card-icon {
@@ -1864,19 +2096,6 @@ button:focus-visible,
     0 8px 18px rgba(0, 0, 0, 0.24);
 }
 
-.adventure-card:nth-child(4) .adventure-card-icon {
-  box-shadow:
-    0 0 0 5px rgba(255, 111, 145, 0.12),
-    0 8px 18px rgba(0, 0, 0, 0.24);
-}
-
-.adventure-card.little-explorers-card {
-  background:
-    radial-gradient(circle at 35% 25%, rgba(255, 212, 92, 0.2), transparent 34%),
-    radial-gradient(circle at 70% 75%, rgba(255, 111, 145, 0.22), transparent 42%),
-    rgba(20, 22, 67, 0.82);
-}
-
 @keyframes missionFloat {
   0%,
   100% {
@@ -1904,7 +2123,7 @@ button:focus-visible,
   }
 
   .adventure-grid {
-    height: 650px;
+    height: 500px;
     width: min(390px, 100%);
     margin-top: 20px;
   }
@@ -1947,20 +2166,15 @@ button:focus-visible,
   }
 
   .adventure-card:nth-child(2) {
-    left: auto;
-    right: 2%;
-    top: 188px;
+    left: 50%;
+    right: auto;
+    top: 190px;
   }
 
   .adventure-card:nth-child(3) {
-    left: 2%;
-    right: auto;
-    top: 324px;
-  }
-
-  .adventure-card:nth-child(4) {
     right: 2%;
-    top: 460px;
+    left: auto;
+    top: 328px;
   }
 
   .adventure-card-icon {

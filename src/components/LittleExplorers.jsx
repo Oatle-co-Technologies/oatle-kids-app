@@ -87,7 +87,11 @@ function ActivityHeader({ title, instruction, onBack }) {
   );
 }
 
-export default function LittleExplorers({ onBack, soundOn = true }) {
+export default function LittleExplorers({
+  backLabel = "Explore",
+  onBack,
+  soundOn = true,
+}) {
   const [screen, setScreen] = useState("map");
   const [completed, setCompleted] = useState(readProgress);
   const [popped, setPopped] = useState([]);
@@ -482,7 +486,7 @@ export default function LittleExplorers({ onBack, soundOn = true }) {
     <main className="little-explorers-page little-map-page">
       <LocalBackButton
         className="page-back-button"
-        label="Explore"
+        label={backLabel}
         onClick={onBack}
       />
 
