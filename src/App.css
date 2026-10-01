@@ -2416,6 +2416,18 @@ button:focus-visible,
   }
 }
 
+/* Keep mission progress below the fixed Back control on phones
+   and tablets in either orientation. */
+@media (max-width: 900px) {
+  .mission-panel {
+    padding-top: calc(84px + env(safe-area-inset-top));
+  }
+
+  .mission-panel > .journey-track {
+    margin-top: 0;
+  }
+}
+
 
 /* =========================================================
    NEPTUNE STORY — FUTURISTIC FLOWING LAYOUT

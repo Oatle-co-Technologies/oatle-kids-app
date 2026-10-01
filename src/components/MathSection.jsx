@@ -25,6 +25,7 @@ const defaultProgress = {
   question: 0,
   assessmentResults: {},
   missions: {},
+  startedMissions: {},
 };
 
 const MATH_ASSESSMENT_ATTEMPT_KEY =
@@ -2922,6 +2923,13 @@ export default function MathSection({
     playSound(blastoffSound);
     setFeedback("");
     setIsProcessing(false);
+    setProgress((current) => ({
+      ...current,
+      startedMissions: {
+        ...current.startedMissions,
+        [current.activeMission]: true,
+      },
+    }));
     setScreen("mission");
   };
 
@@ -3143,6 +3151,12 @@ export default function MathSection({
   }
 
   if (screen === "planet") {
+    const missionStarted = Boolean(
+      progress.startedMissions?.[mission.id] ||
+      (progress.missions?.[mission.id] || 0) > 0 ||
+      (progress.activeMission === mission.id && progress.question > 0)
+    );
+
     return (
       <main className="planet-overview math-planet-overview">
         <LocalBackButton
@@ -3164,7 +3178,13 @@ export default function MathSection({
         </p>
 
         <button className="primary-button" onClick={beginMission} type="button">
-          {mission.assessment ? "Start assessment" : "Start mission"}
+          {mission.assessment
+            ? missionStarted
+              ? "Return to assessment"
+              : "Start assessment"
+            : missionStarted
+              ? "Return to mission"
+              : "Start mission"}
         </button>
       </main>
     );

@@ -256,6 +256,7 @@ const savedGame = () => {
         activePlanet: 1,
         question: 0,
         missions: {},
+        startedMissions: {},
       };
     }
 
@@ -264,6 +265,7 @@ const savedGame = () => {
       activePlanet: 1,
       question: 0,
       missions: {},
+      startedMissions: {},
       ...saved,
     };
   } catch {
@@ -272,6 +274,7 @@ const savedGame = () => {
       activePlanet: 1,
       question: 0,
       missions: {},
+      startedMissions: {},
     };
   }
 };
@@ -285,12 +288,14 @@ const savedWritingProgress = () => {
     return {
       unlocked: 1,
       missions: {},
+      startedMissions: {},
       ...(saved || {}),
     };
   } catch {
     return {
       unlocked: 1,
       missions: {},
+      startedMissions: {},
     };
   }
 };
@@ -1592,9 +1597,7 @@ function App() {
       planetId
     );
 
-    setScreen(
-      selectedPlanet.mission
-    );
+    setScreen("writingPlanet");
   };
 
   const unlockNextWritingPlanet = () => {
@@ -1707,11 +1710,13 @@ function App() {
       activePlanet: 1,
       question: 0,
       missions: {},
+      startedMissions: {},
     });
 
     setWritingProgress({
       unlocked: 1,
       missions: {},
+      startedMissions: {},
     });
 
     setWritingActivePlanet(1);
@@ -2280,6 +2285,11 @@ function App() {
       ) ||
       writingPlanets[0];
 
+    const writingMissionStarted = Boolean(
+      writingProgress.startedMissions?.[selectedWritingPlanet.id] ||
+      (writingProgress.missions?.[selectedWritingPlanet.id] || 0) > 0
+    );
+
     content = (
       <main className="planet-overview writing-planet-overview">
         <LocalBackButton
@@ -2315,8 +2325,18 @@ function App() {
         </p>
 
         {action(
-          "Start mission",
+          writingMissionStarted
+            ? "Return to mission"
+            : "Start mission",
           () => {
+            setWritingProgress((current) => ({
+              ...current,
+              startedMissions: {
+                ...current.startedMissions,
+                [selectedWritingPlanet.id]: true,
+              },
+            }));
+
             setScreen(
               selectedWritingPlanet.mission
             );
@@ -2734,6 +2754,12 @@ function App() {
   } else if (
     screen === "planet"
   ) {
+    const readingMissionStarted = Boolean(
+      progress.startedMissions?.[planet.id] ||
+      (progress.missions?.[planet.id] || 0) > 0 ||
+      (progress.activePlanet === planet.id && progress.question > 0)
+    );
+
     content = (
       <main className="planet-overview">
         <LocalBackButton
@@ -2763,11 +2789,25 @@ function App() {
 
         {action(
           planet.id === 8
-            ? "Read story"
+            ? readingMissionStarted
+              ? "Return to story"
+              : "Read story"
             : planet.id === 9
-              ? "Start assessment"
-              : "Start mission",
+              ? readingMissionStarted
+                ? "Return to assessment"
+                : "Start assessment"
+              : readingMissionStarted
+                ? "Return to mission"
+                : "Start mission",
           () => {
+            setProgress((current) => ({
+              ...current,
+              startedMissions: {
+                ...current.startedMissions,
+                [planet.id]: true,
+              },
+            }));
+
             if (planet.id === 9) {
               startPlutoAssessment();
             } else {
