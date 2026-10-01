@@ -14,12 +14,88 @@
     linear-gradient(160deg, #111b4a 0%, #080d28 58%, #180c37 100%);
 }
 
-.little-map-page {
+.little-map-page,
+.little-adventure-page {
   padding-top: clamp(78px, 10vh, 108px);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
+.little-adventure-grid {
+  width: min(920px, 100%);
+  margin: clamp(28px, 5vw, 48px) auto 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(14px, 2.4vw, 24px);
+}
+
+.little-adventure-card {
+  position: relative;
+  min-height: 220px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-items: center;
+  column-gap: 20px;
+  border: 2px solid rgba(143, 231, 255, 0.34);
+  border-radius: 24px;
+  color: #fff;
+  background: linear-gradient(145deg, rgba(27, 43, 101, 0.96), rgba(15, 24, 66, 0.96));
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  text-align: left;
+  touch-action: manipulation;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.little-adventure-card:hover,
+.little-adventure-card:focus-visible {
+  transform: translateY(-6px);
+  border-color: #8fe7ff;
+}
+
+.little-adventure-card:active {
+  transform: scale(0.97);
+}
+
+.little-adventure-card > span {
+  grid-column: 1;
+  grid-row: 1 / 4;
+  width: 82px;
+  height: 82px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: rgba(143, 231, 255, 0.14);
+  font-size: 3rem;
+}
+
+.little-adventure-card > strong {
+  align-self: end;
+  font: 800 clamp(1.3rem, 2.7vw, 1.8rem)/1.05 "Pixelify Sans", sans-serif;
+}
+
+.little-adventure-card > small {
+  color: #c8d6ff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.little-adventure-card > b {
+  align-self: start;
+  color: #8fe7ff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.little-adventure-balloons { border-color: rgba(255, 111, 145, 0.62); }
+.little-adventure-shapes { border-color: rgba(255, 212, 92, 0.62); }
+.little-adventure-trail { border-color: rgba(85, 198, 255, 0.62); }
+.little-adventure-scribble { border-color: rgba(168, 117, 232, 0.62); }
 
 .little-map-header {
   width: min(820px, 100%);
@@ -81,6 +157,14 @@
   animation-delay: 0.16s;
 }
 
+.little-planet-grid > button:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+.little-planet-grid > button:nth-child(5) {
+  animation-delay: 0.32s;
+}
+
 .little-planet-grid > button:hover,
 .little-planet-grid > button:focus-visible {
   transform: translateY(-7px);
@@ -131,7 +215,7 @@
   box-shadow: 0 5px 14px rgba(0, 0, 0, 0.24);
 }
 
-.little-cartoon-planet,
+.little-planet-visual,
 .little-planet-lock {
   position: relative;
   grid-column: 1;
@@ -141,6 +225,36 @@
   display: block;
   place-self: center;
   border-radius: 50%;
+}
+
+.little-planet-visual {
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle, color-mix(in srgb, var(--little-planet-colour) 22%, transparent), transparent 68%);
+  animation: littlePlanetFloat 3.8s ease-in-out infinite;
+}
+
+.little-planet-visual::before {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  z-index: -1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--little-planet-colour) 22%, transparent);
+  filter: blur(12px);
+}
+
+.little-planet-visual img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  filter:
+    saturate(0.82)
+    contrast(0.92)
+    drop-shadow(0 14px 12px rgba(0, 0, 0, 0.28))
+    drop-shadow(0 0 10px color-mix(in srgb, var(--little-planet-colour) 30%, transparent));
 }
 
 .little-cartoon-planet {
@@ -177,6 +291,18 @@
   border-right-color: rgba(255, 246, 188, 0.28);
   border-radius: 50%;
   transform: rotate(-13deg);
+}
+
+.little-cartoon-planet-shapes::after {
+  content: "●  ■  ▲";
+  position: absolute;
+  left: 13%;
+  top: 34%;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.78);
+  font: 900 1.05rem/1 "Nunito", Arial, sans-serif;
+  letter-spacing: 0.28rem;
+  transform: rotate(-12deg);
 }
 
 .little-cartoon-planet-scribble::after {
@@ -437,6 +563,7 @@
 }
 
 .balloon-space,
+.shape-pop-space,
 .star-trail-space,
 .little-scribble-space {
   position: relative;
@@ -453,6 +580,122 @@
     radial-gradient(circle at 43% 82%, #9be8ff 0 1.5px, transparent 2.5px),
     linear-gradient(160deg, #142b68, #211151 65%, #0c1233);
   box-shadow: 0 24px 54px rgba(0, 0, 0, 0.28);
+}
+
+.shape-pop-prompt {
+  position: absolute;
+  top: clamp(12px, 3vh, 24px);
+  left: 50%;
+  z-index: 8;
+  width: min(460px, calc(100% - 24px));
+  min-height: 68px;
+  padding: 10px 78px 10px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 18px;
+  color: #fff;
+  background: rgba(10, 20, 58, 0.92);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.shape-pop-prompt > span {
+  color: #8fe7ff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.shape-pop-prompt > strong {
+  font: 900 clamp(1rem, 2.6vw, 1.35rem)/1.05 "Nunito", Arial, sans-serif;
+}
+
+.shape-pop-target {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  display: block;
+  background: var(--shape-colour);
+  filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.22));
+  transform: translateY(-50%);
+}
+
+.shape-pop-piece {
+  position: absolute;
+  left: var(--shape-x);
+  top: var(--shape-y);
+  width: clamp(82px, 11vw, 118px);
+  height: clamp(82px, 11vw, 118px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  transform: translate(-50%, -50%);
+  animation: shapePieceFloat 2.8s var(--shape-delay) ease-in-out infinite;
+}
+
+.shape-pop-piece:active {
+  animation: none;
+  transform: translate(-50%, -50%) scale(0.88);
+}
+
+.shape-pop-piece.popped {
+  animation: shapePiecePop 0.3s ease-out forwards;
+  pointer-events: none;
+}
+
+.shape-pop-piece.wrong {
+  animation: wrongBalloonShake 0.35s ease-in-out;
+}
+
+.shape-pop-visual {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 68%;
+  height: 68%;
+  display: block;
+  background:
+    linear-gradient(140deg, rgba(255, 255, 255, 0.48), transparent 42%),
+    var(--shape-colour);
+  box-shadow: inset -8px -9px 0 rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 10px 7px rgba(0, 0, 0, 0.28));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.shape-pop-circle {
+  border-radius: 50%;
+}
+
+.shape-pop-triangle {
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.shape-pop-rectangle {
+  width: 82%;
+  height: 50%;
+}
+
+.shape-pop-star {
+  clip-path: polygon(
+    50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 94%,
+    50% 72%, 21% 94%, 32% 57%, 2% 35%, 39% 35%
+  );
+}
+
+.shape-pop-target.shape-pop-rectangle {
+  width: 54px;
+  height: 32px;
 }
 
 .space-balloon {
@@ -1206,6 +1449,17 @@
   100% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(20deg); }
 }
 
+@keyframes shapePieceFloat {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0) rotate(-2deg); }
+  50% { transform: translate(-50%, -50%) translateY(-9px) rotate(3deg); }
+}
+
+@keyframes shapePiecePop {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  60% { opacity: 1; transform: translate(-50%, -50%) scale(1.28) rotate(-8deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.15) rotate(24deg); }
+}
+
 @keyframes wrongBalloonShake {
   0%, 100% { transform: translate(-50%, -50%); }
   25% { transform: translate(calc(-50% - 8px), -50%); }
@@ -1228,7 +1482,8 @@
 }
 
 @media (max-width: 760px) {
-  .little-map-page {
+  .little-map-page,
+  .little-adventure-page {
     padding: calc(118px + env(safe-area-inset-top)) 14px 108px;
   }
 
@@ -1251,12 +1506,30 @@
     text-align: left;
   }
 
-  .little-cartoon-planet,
+  .little-planet-visual,
   .little-planet-lock {
     grid-column: 1;
     grid-row: 1 / 3;
     width: 92px;
     margin: 0;
+  }
+
+  .little-adventure-grid {
+    width: min(410px, 100%);
+    grid-template-columns: 1fr;
+  }
+
+  .little-adventure-card {
+    min-height: 132px;
+    padding: 14px 18px;
+    grid-template-columns: 84px minmax(0, 1fr);
+    column-gap: 14px;
+  }
+
+  .little-adventure-card > span {
+    width: 72px;
+    height: 72px;
+    font-size: 2.4rem;
   }
 
   .little-planet-lock {
@@ -1327,6 +1600,7 @@
   }
 
   .balloon-space,
+  .shape-pop-space,
   .star-trail-space {
     min-height: 500px;
   }
@@ -1337,6 +1611,11 @@
 
   .space-balloon {
     width: clamp(68px, 22vw, 88px);
+  }
+
+  .shape-pop-piece {
+    width: clamp(72px, 22vw, 94px);
+    height: clamp(72px, 22vw, 94px);
   }
 
   .shape-learning-balloon {
@@ -1405,7 +1684,8 @@
     padding: 5px 8px 90px;
   }
 
-  .little-map-page {
+  .little-map-page,
+  .little-adventure-page {
     padding-top: 10px;
   }
 
@@ -1439,10 +1719,41 @@
     column-gap: 8px;
   }
 
-  .little-cartoon-planet,
+  .little-planet-visual,
   .little-planet-lock {
     width: 72px;
     margin-bottom: 2px;
+  }
+
+  .little-adventure-grid {
+    width: min(1120px, 100%);
+    margin-top: 8px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .little-adventure-card {
+    min-height: 150px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    text-align: center;
+  }
+
+  .little-adventure-card > span {
+    width: 54px;
+    height: 54px;
+    font-size: 1.8rem;
+  }
+
+  .little-adventure-card > strong {
+    font-size: 1rem;
+  }
+
+  .little-adventure-card > small {
+    font-size: 0.7rem;
   }
 
   .little-planet-lock {
@@ -1514,6 +1825,7 @@
   }
 
   .balloon-space,
+  .shape-pop-space,
   .star-trail-space {
     min-height: 210px;
   }
@@ -1524,6 +1836,28 @@
 
   .space-balloon {
     width: clamp(54px, 8vw, 76px);
+  }
+
+  .shape-pop-prompt {
+    top: 6px;
+    min-height: 52px;
+    padding: 6px 62px 6px 12px;
+  }
+
+  .shape-pop-target {
+    right: 12px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .shape-pop-target.shape-pop-rectangle {
+    width: 44px;
+    height: 27px;
+  }
+
+  .shape-pop-piece {
+    width: clamp(64px, 9vw, 82px);
+    height: clamp(64px, 9vw, 82px);
   }
 
   .balloon-lesson-grid {
@@ -1627,7 +1961,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .little-planet-grid > button,
-  .little-cartoon-planet,
+  .little-planet-visual,
   .little-planet,
   .space-balloon,
   .trail-star,
