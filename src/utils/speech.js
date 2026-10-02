@@ -1,3 +1,9 @@
+import { Capacitor } from "@capacitor/core";
+import {
+  QueueStrategy,
+  TextToSpeech,
+} from "@capacitor-community/text-to-speech";
+
 const APPLE_PREFERRED_VOICES = [
   "Ava",
   "Allison",
@@ -19,6 +25,30 @@ const PREFERRED_VOICES = [
 let voices = [];
 let speechSequence = 0;
 let nativeAppleVoiceIndexPromise;
+let browserUtterance = null;
+let browserStartTimer = null;
+let browserRetryTimer = null;
+let browserNeedsGesture = false;
+let pendingBrowserSpeech = null;
+
+function isAndroidBrowser() {
+  return (
+    typeof navigator !== "undefined" &&
+    /Android/i.test(navigator.userAgent)
+  );
+}
+
+function clearBrowserTimers() {
+  if (browserStartTimer) {
+    window.clearTimeout(browserStartTimer);
+    browserStartTimer = null;
+  }
+
+  if (browserRetryTimer) {
+    window.clearTimeout(browserRetryTimer);
+    browserRetryTimer = null;
+  }
+}
 
 function isAppleDevice() {
   if (Capacitor.isNativePlatform()) {
@@ -126,6 +156,34 @@ function getPreferredVoice() {
     ? APPLE_PREFERRED_VOICES
     : PREFERRED_VOICES;
 
+  // Installed Android PWAs must keep working without a network connection.
+  // Prefer a voice that is actually installed on the device before an online
+  // Google voice that Chrome may list but fail to start silently.
+  if (isAndroidBrowser()) {
+    const localPreferredVoice = voices.find(
+      (voice) =>
+        voice.localService &&
+        voice.lang.toLowerCase().startsWith("en") &&
+        preferredVoices.some(
+          (preferredName) => voice.name === preferredName
+        )
+    );
+
+    if (localPreferredVoice) {
+      return localPreferredVoice;
+    }
+
+    const localEnglishVoice = voices.find(
+      (voice) =>
+        voice.localService &&
+        voice.lang.toLowerCase().startsWith("en")
+    );
+
+    if (localEnglishVoice) {
+      return localEnglishVoice;
+    }
+  }
+
   // First: explicitly preferred friendly English voices.
   for (const preferredName of preferredVoices) {
     const voice = voices.find(
@@ -186,7 +244,11 @@ function getPreferredVoice() {
   );
 }
 
-function speakWithBrowser(text, sequence) {
+function speakWithBrowser(
+  text,
+  sequence,
+  { useDefaultVoice = false, isRetry = false } = {}
+) {
   if (
     typeof window === "undefined" ||
     !("speechSynthesis" in window) ||
@@ -195,31 +257,121 @@ function speakWithBrowser(text, sequence) {
     return;
   }
 
-  window.speechSynthesis.cancel();
+  const synthesis = window.speechSynthesis;
+
+  clearBrowserTimers();
+  synthesis.cancel();
 
   if (sequence !== speechSequence) {
     return;
   }
 
-  const utterance = new SpeechSynthesisUtterance(text);
+  pendingBrowserSpeech = { text, sequence };
 
-  const voice = getPreferredVoice();
-  const appleDevice = isAppleDevice();
+  const beginSpeech = () => {
+    browserStartTimer = null;
 
-  if (voice) {
-    utterance.voice = voice;
-    utterance.lang = voice.lang;
-  } else {
-    utterance.lang = "en-US";
-  }
+    if (sequence !== speechSequence) {
+      return;
+    }
 
-  // Apple speech needs a little more lift than the Android/browser voice.
-  // The pitch change is intentionally modest so letters and numbers stay clear.
-  utterance.rate = appleDevice ? 0.9 : 0.78;
-  utterance.pitch = appleDevice ? 1.18 : 1.05;
-  utterance.volume = 1;
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voice = useDefaultVoice ? null : getPreferredVoice();
+    const appleDevice = isAppleDevice();
+    let started = false;
 
-  window.speechSynthesis.speak(utterance);
+    browserUtterance = utterance;
+
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    } else {
+      utterance.lang = "en-US";
+    }
+
+    // Apple speech needs a little more lift than the Android/browser voice.
+    // The pitch change is intentionally modest so letters and numbers stay clear.
+    utterance.rate = appleDevice ? 0.9 : 0.78;
+    utterance.pitch = appleDevice ? 1.18 : 1.05;
+    utterance.volume = 1;
+
+    utterance.onstart = () => {
+      started = true;
+      browserNeedsGesture = false;
+      pendingBrowserSpeech = null;
+
+      if (browserRetryTimer) {
+        window.clearTimeout(browserRetryTimer);
+        browserRetryTimer = null;
+      }
+    };
+
+    utterance.onend = () => {
+      if (browserUtterance === utterance) {
+        browserUtterance = null;
+      }
+    };
+
+    utterance.onerror = (event) => {
+      if (browserUtterance === utterance) {
+        browserUtterance = null;
+      }
+
+      if (
+        sequence !== speechSequence ||
+        event.error === "canceled" ||
+        event.error === "interrupted"
+      ) {
+        return;
+      }
+
+      if (event.error === "not-allowed") {
+        browserNeedsGesture = true;
+        return;
+      }
+
+      if (!isRetry) {
+        speakWithBrowser(text, sequence, {
+          useDefaultVoice: true,
+          isRetry: true,
+        });
+      }
+    };
+
+    // resume() clears a paused state left behind when an Android PWA was sent
+    // to the background and later reopened.
+    synthesis.resume();
+    synthesis.speak(utterance);
+
+    browserRetryTimer = window.setTimeout(() => {
+      browserRetryTimer = null;
+
+      if (started || sequence !== speechSequence) {
+        return;
+      }
+
+      if (!isRetry) {
+        speakWithBrowser(text, sequence, {
+          useDefaultVoice: true,
+          isRetry: true,
+        });
+        return;
+      }
+
+      // Some Android browsers block automatic speech without raising an
+      // error. Preserve the line and replay it on the child's next tap.
+      synthesis.cancel();
+      browserUtterance = null;
+      browserNeedsGesture = true;
+    }, 1400);
+  };
+
+  // Chrome on Android can drop speech when cancel() and speak() happen in the
+  // same task. A tiny delay lets the cancellation settle first.
+  browserStartTimer = window.setTimeout(
+    beginSpeech,
+    isAndroidBrowser() ? 70 : 0
+  );
 }
 
 async function speakWithNativeEngine(text, sequence) {
@@ -262,6 +414,10 @@ async function speakWithNativeEngine(text, sequence) {
 
 export function stopSpeech() {
   speechSequence += 1;
+  clearBrowserTimers();
+  browserUtterance = null;
+  browserNeedsGesture = false;
+  pendingBrowserSpeech = null;
 
   if (Capacitor.isNativePlatform()) {
     TextToSpeech.stop().catch(() => {});
@@ -287,8 +443,28 @@ export function speak(text) {
 
   speakWithBrowser(text, sequence);
 }
-import { Capacitor } from "@capacitor/core";
-import {
-  QueueStrategy,
-  TextToSpeech,
-} from "@capacitor-community/text-to-speech";
+
+if (
+  typeof window !== "undefined" &&
+  "speechSynthesis" in window
+) {
+  const resumeBrowserSpeech = () => {
+    window.speechSynthesis.resume();
+
+    if (!browserNeedsGesture || !pendingBrowserSpeech) {
+      return;
+    }
+
+    const { text, sequence } = pendingBrowserSpeech;
+    browserNeedsGesture = false;
+    speakWithBrowser(text, sequence, {
+      useDefaultVoice: true,
+      isRetry: true,
+    });
+  };
+
+  window.addEventListener("pointerdown", resumeBrowserSpeech, {
+    passive: true,
+  });
+  window.addEventListener("keydown", resumeBrowserSpeech);
+}
