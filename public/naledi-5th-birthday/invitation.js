@@ -11,8 +11,8 @@ function fitPhone(){
  svg.setAttribute('viewBox','0 0 1080 '+canvasHeight);
  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
  originalChildren[0].setAttribute('height',canvasHeight);
- if(balloonGroup)balloonGroup.setAttribute('transform','translate(0 '+Math.max(320,120+(canvasHeight-1350)*.24)+')');
- if(imageRect){imageRect.setAttribute('x','64');imageRect.setAttribute('width','1056');imageRect.setAttribute('height','1120');imageRect.setAttribute('y',Math.max(230,160+(canvasHeight-1350)*.24));}
+ if(balloonGroup)balloonGroup.setAttribute('transform','translate(0 '+Math.max(460,180+(canvasHeight-1350)*.24)+')');
+ if(imageRect){imageRect.setAttribute('x','64');imageRect.setAttribute('width','1056');imageRect.setAttribute('height','1120');imageRect.setAttribute('y',Math.max(310,240+(canvasHeight-1350)*.24));}
 }
 let detailNodes;
 function fitDetails(){
