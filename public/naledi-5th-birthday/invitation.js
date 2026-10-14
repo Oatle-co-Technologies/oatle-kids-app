@@ -3,10 +3,7 @@ document.getElementById('open').addEventListener('click',()=>{opening.hidden=tru
 document.getElementById('back').addEventListener('click',()=>{details.hidden=true;opening.hidden=false;fitPhone();document.getElementById('open').focus({preventScroll:true});window.scrollTo(0,0)});
 const svg=opening.querySelector('svg');
 const originalChildren=[...svg.children];
-const headingGroup=document.createElementNS('http://www.w3.org/2000/svg','g');
-svg.insertBefore(headingGroup,originalChildren[1]);
-originalChildren.slice(1,7).forEach(el=>headingGroup.appendChild(el));
-headingGroup.setAttribute('transform','translate(497 140) scale(1.6) translate(-497 -140)');
+const balloonGroup=svg.querySelector('.birthday-balloons');
 const imageRect=originalChildren.find(e=>e.tagName==='rect'&&e.getAttribute('fill')?.startsWith('url('));
 let canvasHeight=1350;
 function fitPhone(){
@@ -14,6 +11,7 @@ function fitPhone(){
  svg.setAttribute('viewBox','0 0 1080 '+canvasHeight);
  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
  originalChildren[0].setAttribute('height',canvasHeight);
+ if(balloonGroup)balloonGroup.setAttribute('transform','translate(0 '+Math.max(320,120+(canvasHeight-1350)*.24)+')');
  if(imageRect){imageRect.setAttribute('x','64');imageRect.setAttribute('width','1056');imageRect.setAttribute('height','1120');imageRect.setAttribute('y',Math.max(230,160+(canvasHeight-1350)*.24));}
 }
 let detailNodes;
