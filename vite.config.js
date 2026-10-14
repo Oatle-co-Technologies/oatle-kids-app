@@ -35,6 +35,7 @@ function oatleOfflinePrecache() {
         )
         .filter((filePath) =>
           filePath !== 'service-worker.js' &&
+          !filePath.startsWith('naledi-5th-birthday/') &&
           !filePath.split('/').some((part) => part.startsWith('.'))
         )
         .map((filePath) =>
