@@ -108,6 +108,15 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Standalone invitation: never cache it as the React app shell.
+  const requestPath = new URL(request.url).pathname;
+  if (
+    requestPath === "/naledi-5th-birthday" ||
+    requestPath.startsWith("/naledi-5th-birthday/")
+  ) {
+    return;
+  }
+
   // Keep the React app available offline.
   if (request.mode === "navigate") {
     event.respondWith(

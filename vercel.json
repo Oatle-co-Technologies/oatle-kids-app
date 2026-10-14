@@ -29,5 +29,15 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/naledi-5th-birthday",
+      "destination": "/naledi-5th-birthday/index.html"
+    },
+    {
+      "source": "/naledi-5th-birthday/",
+      "destination": "/naledi-5th-birthday/index.html"
+    }
   ]
 }
