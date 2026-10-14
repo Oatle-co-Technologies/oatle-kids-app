@@ -48,4 +48,18 @@ The current domain redirects to `www.oatlekids.co.za`; the existing redirect is 
 4. Check opening, reveal, Back and snow on the public route, including a physical iPhone in Safari and WhatsApp's browser. Phone-sized desktop viewports do not establish physical iOS compatibility.
 5. Paste the new link into a WhatsApp draft and wait for the preview before sending. WhatsApp can cache earlier responses, and a crawler simulation does not prove its final preview rendering. No WhatsApp message was sent during this work.
 
-At handoff the production route remains undeployed, so public metadata/image retrieval and actual WhatsApp preview are not yet verified. Direct Vercel inspection/deployment was blocked by automatic approval review: CLI diagnostic telemetry to Sentry and saved-token access were rejected. Deployment needs explicit owner approval/access before retrying through an approved Vercel workflow.
+## Production deployment completed — 14 October 2026
+
+After explicit owner approval, the existing Vercel login was refreshed through its OAuth endpoint and a direct REST API deployment succeeded without CLI diagnostic telemetry, paid services, or hosting/account configuration changes.
+
+- Existing project: `oatlekids` (`prj_TB9ASkKoGmPXr00eveDynunDcKgX`).
+- Deployment: `dpl_6xUMKVcy9XBsmiJ4eZXA5CiJaKQk`, READY, production aliases assigned.
+- Published source: `deploy/naledi-invitation` commit `71da642`, based on the previously live `e0d776e` plus the invitation change. This preserves the live React application and excludes the unrelated unshipped speech update on main.
+- Final invitation: https://oatlekids.co.za/naledi-5th-birthday/ . The existing redirect to www is retained.
+- Public page, script, and image returned HTTP 200 without authentication using a WhatsApp-style user agent. Their bytes match the prepared source files exactly.
+- All required OG tags were verified in the server-delivered HTML. Public preview is an 80,992-byte, 1200 × 630 JPEG.
+- Live browser verification confirmed opening, changing snow transforms, reveal, Back, and no console warnings/errors.
+- Main app HTML is byte-identical to its pre-deployment response; all existing security headers remain intact.
+- Physical iPhone and actual WhatsApp preview rendering remain untested. No WhatsApp message was sent.
+
+The Git integration's Hobby/private-organisation limitation still applies to future automatic builds. Direct deployment to the existing project succeeded; no plan upgrade or repository visibility change was made.
