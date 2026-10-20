@@ -3,16 +3,12 @@ document.getElementById('open').addEventListener('click',()=>{opening.hidden=tru
 document.getElementById('back').addEventListener('click',()=>{details.hidden=true;opening.hidden=false;fitPhone();document.getElementById('open').focus({preventScroll:true});window.scrollTo(0,0)});
 const svg=opening.querySelector('svg');
 const originalChildren=[...svg.children];
-const balloonGroup=svg.querySelector('.birthday-balloons');
-const imageRect=originalChildren.find(e=>e.tagName==='rect'&&e.getAttribute('fill')?.startsWith('url('));
 let canvasHeight=1350;
 function fitPhone(){
  const box=opening.getBoundingClientRect();if(!box.width||!box.height)return;canvasHeight=Math.max(1350,1080*box.height/box.width);
  svg.setAttribute('viewBox','0 0 1080 '+canvasHeight);
  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
  originalChildren[0].setAttribute('height',canvasHeight);
- if(balloonGroup)balloonGroup.setAttribute('transform','translate(0 '+(canvasHeight*.805-122)+')');
- if(imageRect){imageRect.setAttribute('x','64');imageRect.setAttribute('width','1056');imageRect.setAttribute('height','1120');imageRect.setAttribute('y',Math.max(230,160+(canvasHeight-1350)*.24));}
 }
 let detailNodes;
 function fitDetails(){
