@@ -1,6 +1,5 @@
 const opening=document.getElementById('opening'),details=document.getElementById('details');
 document.getElementById('open').addEventListener('click',()=>{opening.hidden=true;details.hidden=false;fitDetails();details.classList.add('reveal');details.focus({preventScroll:true});window.scrollTo(0,0)});
-document.getElementById('back').addEventListener('click',()=>{details.hidden=true;opening.hidden=false;fitPhone();document.getElementById('open').focus({preventScroll:true});window.scrollTo(0,0)});
 const svg=opening.querySelector('svg');
 const originalChildren=[...svg.children];
 let canvasHeight=1350;
@@ -12,7 +11,7 @@ function fitPhone(){
 }
 let detailNodes;
 function fitDetails(){
- const ds=details.querySelector('svg');const h=Math.max(1350,1080*(window.innerHeight-64)/document.querySelector('main').getBoundingClientRect().width);
+ const ds=details.querySelector('svg');const h=Math.max(1350,1080*window.innerHeight/document.querySelector('main').getBoundingClientRect().width);
  ds.setAttribute('viewBox','0 0 1080 '+h);ds.setAttribute('preserveAspectRatio','xMidYMid meet');
  const group=ds.querySelector('g');const nodes=detailNodes||(detailNodes=[...group.children]);nodes[0].setAttribute('height',h);
  ds.querySelectorAll('clipPath rect').forEach(r=>r.setAttribute('height',h));
