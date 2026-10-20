@@ -15,10 +15,9 @@ function fitDetails(){
  const ds=details.querySelector('svg');const h=Math.max(1350,1080*(window.innerHeight-64)/document.querySelector('main').getBoundingClientRect().width);
  ds.setAttribute('viewBox','0 0 1080 '+h);ds.setAttribute('preserveAspectRatio','xMidYMid meet');
  const group=ds.querySelector('g');const nodes=detailNodes||(detailNodes=[...group.children]);nodes[0].setAttribute('height',h);
- if(!ds.querySelector('.details-heading')){const titleGroup=document.createElementNS('http://www.w3.org/2000/svg','g');titleGroup.setAttribute('class','details-heading');titleGroup.setAttribute('transform','translate(499 170) scale(1.6) translate(-499 -170)');group.appendChild(titleGroup);nodes.slice(202,208).forEach(e=>titleGroup.appendChild(e));}
  ds.querySelectorAll('clipPath rect').forEach(r=>r.setAttribute('height',h));
  nodes.forEach((e,i)=>{if(i>=1&&i<=198&&e.getAttribute('d')?.includes('13')){const first=e.getAttribute('d').match(/^M[\d.]+ ([\d.]+)/);if(first&&Number(first[1])>1200)e.setAttribute('transform','translate(0 '+(h-1350)+')')}});
- if(nodes[199])nodes[199].setAttribute('y',150+(h-1350)*.24);
+ if(nodes[199])nodes[199].setAttribute('y',205+(h-1350)*.24);
  if(nodes[200])nodes[200].setAttribute('transform','translate(0 '+(835+(h-1350)*.63)+')');
  if(nodes[201])nodes[201].setAttribute('transform','translate(0 '+(h-1350)*.16+')');
  if(nodes[208])nodes[208].setAttribute('transform','translate(0 '+(1190+(h-1350)*.80)+')');
