@@ -27,12 +27,12 @@ main{width:min(100%,540px);margin:0 auto}
 /* Parent's photo-led opening design. */
 #opening{position:relative;isolation:isolate}
 #opening>svg{position:absolute;inset:0;z-index:-1;pointer-events:none}
-.portrait-content{box-sizing:border-box;height:100svh;min-height:520px;padding:clamp(14px,2.5svh,24px) 24px max(18px,env(safe-area-inset-bottom));display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;justify-items:center;gap:clamp(9px,1.7svh,17px);text-align:center}
+.portrait-content{box-sizing:border-box;height:100svh;min-height:520px;padding:clamp(14px,2.5svh,24px) 24px max(18px,env(safe-area-inset-bottom));display:grid;grid-template-rows:auto minmax(0,min(34svh,300px)) auto auto;align-content:center;justify-items:center;gap:clamp(10px,2svh,18px);text-align:center}
 .royal-title{margin:0;color:#633A91;font-family:Georgia,'Times New Roman',serif;font-weight:400;line-height:.98}
 .royal-title span{display:block;font-size:clamp(25px,4.2svh,38px);letter-spacing:.11em;text-transform:uppercase}
 .royal-title em{display:block;margin-top:7px;font-size:clamp(39px,6.5svh,59px);font-weight:700;letter-spacing:-.035em;font-style:normal}
 .naledi-portrait{display:flex;align-items:center;justify-content:center;min-height:0;width:100%;margin:0}
-.naledi-portrait img{display:block;max-width:100%;width:auto;height:100%;max-height:340px;aspect-ratio:1/1;object-fit:cover;object-position:50% 37%;border:3px solid #fff;border-radius:10px;box-shadow:0 4px 18px #633a9120}
+.naledi-portrait img{display:block;max-width:100%;width:auto;height:100%;max-height:300px;aspect-ratio:1/1;object-fit:cover;object-position:50% 37%;border:3px solid #fff;border-radius:10px;box-shadow:0 4px 18px #633a9120}
 .princess-name{margin:0;color:#633A91;font-family:Georgia,'Times New Roman',serif;font-size:clamp(28px,4.4svh,38px);font-weight:700;line-height:1.1}
 .portrait-message{margin:0;max-width:330px;color:#633A91;font-size:clamp(15px,2.3svh,19px);line-height:1.45;text-wrap:balance}
 #opening .open{position:static;display:block;margin:0;width:min(100%,300px);height:52px;min-height:48px;font-size:clamp(18px,2.6svh,22px);flex-shrink:0}

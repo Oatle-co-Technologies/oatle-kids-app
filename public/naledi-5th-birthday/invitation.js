@@ -27,5 +27,5 @@ fitPhone();window.addEventListener('resize',fitPhone);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const flakes=[...opening.querySelectorAll('.flake')].map((el,i)=>({el,y:el.getBBox().y,x:el.getBBox().x,speed:45+(i*17%40),soft:i%3===0}));
 let start;
-function snow(t){if(start===undefined)start=t;const seconds=(t-start)/1000;if(!opening.hidden&&!reduced.matches){for(const f of flakes){const y=((f.y*canvasHeight/1350+30+seconds*f.speed)%(canvasHeight+60))-30;f.el.setAttribute('transform','translate(0 '+(y-f.y)+')');const overText=(y<300)||(y>canvasHeight*.77&&y<canvasHeight*.91&&f.x>160&&f.x<900);f.el.setAttribute('opacity',overText?'.14':(f.soft?'.3':'.85'))}}requestAnimationFrame(snow)}requestAnimationFrame(snow);
+function snow(t){if(start===undefined)start=t;const seconds=(t-start)/1000;if(!opening.hidden&&!reduced.matches){for(const f of flakes){const y=((f.y*canvasHeight/1350+30+seconds*f.speed)%(canvasHeight+60))-30;f.el.setAttribute('transform','translate(0 '+(y-f.y)+')');const overText=(y<300)||(y>canvasHeight*.77&&y<canvasHeight*.91&&f.x>160&&f.x<900);f.el.setAttribute('opacity',overText?'.32':(f.soft?'.3':'.85'))}}requestAnimationFrame(snow)}requestAnimationFrame(snow);
 reduced.addEventListener('change',()=>{if(reduced.matches)flakes.forEach(f=>f.el.removeAttribute('transform'))});
