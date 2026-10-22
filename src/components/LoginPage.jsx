@@ -9,6 +9,7 @@ function LoginPage({ onLogin }) {
   const [isSignUp, setIsSignUp] = useState(() => new URLSearchParams(window.location.search).get("signup") === "1");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -200,18 +201,34 @@ function LoginPage({ onLogin }) {
             />
           </label>
 
-          <label>
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Your password"
-              autoComplete={isSignUp ? "new-password" : "current-password"}
-              minLength={6}
-              required
-            />
-          </label>
+          <div className="login-password-field">
+            <label htmlFor="login-password">Password</label>
+            <div className="login-password-input">
+              <input
+                id="login-password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Your password"
+                autoComplete={isSignUp ? "new-password" : "current-password"}
+                minLength={6}
+                required
+              />
+              <button
+                className="login-password-toggle"
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-controls="login-password"
+                onClick={() => setShowPassword((visible) => !visible)}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                  <circle cx="12" cy="12" r="3" />
+                  {showPassword && <path d="m3 3 18 18" />}
+                </svg>
+              </button>
+            </div>
+          </div>
 
           {error && <p className="login-error">{error}</p>}
 
@@ -260,6 +277,7 @@ function LoginPage({ onLogin }) {
               setMessage("");
               setEmail("");
               setPassword("");
+              setShowPassword(false);
             }}
           >
             {isSignUp ? "Log in" : "Sign up"}
