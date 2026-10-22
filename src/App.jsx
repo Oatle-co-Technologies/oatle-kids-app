@@ -761,6 +761,7 @@ function App() {
   // Deployment trigger check
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoMessage, setPromoMessage] = useState("");
@@ -1976,6 +1977,10 @@ function App() {
 
   // PayFast test checkout
   const startPayfastCheckout = async () => {
+    if (!termsAccepted) {
+      setPaymentError("Please accept the subscription terms before continuing.");
+      return;
+    }
     setPaymentLoading(true);
     setPaymentError("");
 
@@ -2247,12 +2252,24 @@ function App() {
             Subscribe for R99/month, or enter a promo code to get access.
           </p>
 
+          <label className="checkout-consent">
+            <input
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={(event) => {
+                setTermsAccepted(event.target.checked);
+                setPaymentError("");
+              }}
+            />
+            <span>I agree to the <a href="/terms.html" target="_blank" rel="noopener noreferrer">Terms</a>, <a href="/refund-policy.html" target="_blank" rel="noopener noreferrer">Refund</a>, <a href="/cancellation-policy.html" target="_blank" rel="noopener noreferrer">Cancellation</a>, <a href="/delivery-policy.html" target="_blank" rel="noopener noreferrer">Delivery</a> and <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy</a> policies, and understand that this is a recurring R99 monthly subscription.</span>
+          </label>
+
           <button
             className="primary-button"
             onClick={
               startPayfastCheckout
             }
-            disabled={paymentLoading}
+            disabled={paymentLoading || !termsAccepted}
             type="button"
           >
             {paymentLoading

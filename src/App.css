@@ -3048,3 +3048,4 @@ button:focus-visible,
 .login-password-toggle:hover { color: #8fe7ff; background: rgba(143,231,255,.1); }
 .login-password-toggle:focus-visible { outline: 2px solid #8fe7ff; outline-offset: -3px; }
 .login-password-input input::-ms-reveal { display: none; }
+.checkout-consent{display:flex;align-items:flex-start;gap:10px;text-align:left;margin:20px 0 16px;padding:14px;border:1px solid rgba(143,231,255,.35);border-radius:14px;background:rgba(17,26,66,.65);font-size:12px;line-height:1.55;color:#d5def7}.checkout-consent input{flex:0 0 auto;width:18px;height:18px;margin-top:2px;accent-color:#66ff66}.checkout-consent a{color:#8fe7ff;text-underline-offset:2px}.checkout-consent:focus-within{outline:3px solid #8fe7ff;outline-offset:3px}
