@@ -6,7 +6,7 @@ import {
 } from "../pwa";
 
 function LoginPage({ onLogin }) {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(() => new URLSearchParams(window.location.search).get("signup") === "1");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -134,6 +134,7 @@ function LoginPage({ onLogin }) {
   return (
     <main className="login-page">
       <div className="login-card">
+        <a href="/" style={{ display: "inline-block", marginBottom: "16px" }}>← About Oatle Kids</a>
           <div className="login-logo">
   <img
     src="/icons/oatle-kids-512.png"

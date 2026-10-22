@@ -1,7 +1,8 @@
-const CACHE_NAME = "oatle-kids-v4";
+const CACHE_NAME = "oatle-kids-v5";
 
 const APP_SHELL = self.__OATLE_PRECACHE_MANIFEST__ || [
   "/",
+  "/app.html",
   "/manifest.webmanifest",
   "/icons/oatle-kids-192.png",
   "/icons/oatle-kids-512.png",
@@ -11,6 +12,7 @@ const APP_SHELL = self.__OATLE_PRECACHE_MANIFEST__ || [
 const REQUIRED_SHELL = APP_SHELL.filter(
   (url) =>
     url === "/" ||
+    url === "/app.html" ||
     url.endsWith(".js") ||
     url.endsWith(".css") ||
     url === "/manifest.webmanifest" ||
@@ -126,12 +128,12 @@ self.addEventListener("fetch", (event) => {
 
           if (response.ok) {
             const cache = await caches.open(CACHE_NAME);
-            await cache.put("/", response.clone());
+            await cache.put(requestPath, response.clone());
           }
 
           return response;
         } catch {
-          return (await caches.match("/")) || Response.error();
+          return (await caches.match(requestPath)) || Response.error();
         }
       })()
     );

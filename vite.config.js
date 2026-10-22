@@ -65,4 +65,5 @@ function oatleOfflinePrecache() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), oatleOfflinePrecache()],
+  build: { rollupOptions: { input: { marketing: resolve('index.html'), app: resolve('app.html') } } },
 })
