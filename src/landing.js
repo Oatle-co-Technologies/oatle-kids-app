@@ -5,3 +5,5 @@ const installed = window.matchMedia('(display-mode: standalone)').matches || win
 if (authCallback || installed) window.location.replace(`/app.html${window.location.search}${window.location.hash}`)
 // Update older installed service workers when a returning visitor opens the homepage.
 if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistration('/').then(registration => registration?.update()).catch(() => {})
+
+import './kids-chat.js'
