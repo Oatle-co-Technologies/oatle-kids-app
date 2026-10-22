@@ -37,3 +37,6 @@ body.marketing::before { content: ""; position: fixed; inset: 0; pointer-events:
 .marketing .price { color: #ffdb64; font-family: Nunito, Arial, sans-serif; }
 .marketing .skip { background: #111a42; color: white; }
 .marketing :focus-visible { outline-color: #8fe7ff; }
+
+.marketing .founder-signature { margin-block: 24px; color: #ffdb64; font-size: 20px; font-weight: 800; }
+.marketing .founder-signature span { font-size: 13px; font-weight: 600; color: #c7d2f6; }
