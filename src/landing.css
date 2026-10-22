@@ -30,10 +30,10 @@ body.marketing::before { content: ""; position: fixed; inset: 0; pointer-events:
 .marketing .number-art span:last-child, .marketing .trace-art { color: #66ff66; }
 .marketing .trace-art { font-family: "Pixelify Sans", sans-serif; }
 .marketing .age-section { background: #111a42cc; border-block: 1px solid #8fe7ff25; }
-.marketing .age-badge { background: #080d28; color: #ffdb64; border: 1px solid #8fe7ff44; font-family: "Pixelify Sans", sans-serif; }
+.marketing .age-badge { background: #080d28; color: #ffdb64; border: 1px solid #8fe7ff44; font-family: Nunito, Arial, sans-serif; }
 .marketing .age-options article+article, .marketing .how li, .marketing .faq details, .marketing .footer { border-color: #8fe7ff33; }
 .marketing .how li>span { color: #ffdb64; }
 .marketing .pricing-section { background: linear-gradient(135deg, #111a42, #271644); border-block: 1px solid #8fe7ff33; }
-.marketing .price { color: #ffdb64; font-family: "Pixelify Sans", sans-serif; }
+.marketing .price { color: #ffdb64; font-family: Nunito, Arial, sans-serif; }
 .marketing .skip { background: #111a42; color: white; }
 .marketing :focus-visible { outline-color: #8fe7ff; }
