@@ -135,7 +135,7 @@ function LoginPage({ onLogin }) {
   return (
     <main className="login-page">
       <div className="login-card">
-        <a href="/" style={{ display: "inline-block", marginBottom: "16px" }}>← About Oatle Kids</a>
+        <a href="/" style={{ display: "inline-block", marginBottom: "16px" }}>About Oatle Kids</a>
           <div className="login-logo">
   <img
     src="/icons/oatle-kids-512.png"
