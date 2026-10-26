@@ -244,8 +244,8 @@ function LoginPage({ onLogin }) {
                 ? "Creating..."
                 : "Launching..."
               : isSignUp
-                ? "Create Account 🚀"
-                : "Log In 🚀"}
+                ? "Create Account"
+                : "Log In"}
           </button>
         </form>
 
