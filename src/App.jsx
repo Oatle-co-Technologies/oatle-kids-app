@@ -17,6 +17,7 @@ import {
 } from "./data/assessmentQuestions";
 import { speak, stopSpeech } from "./utils/speech";
 import LoginPage from "./components/LoginPage";
+import PasswordRecovery from "./components/PasswordRecovery";
 import { supabase } from "./lib/supabase";
 
 import { generateOptions } from "./utils/generateOptions";
@@ -750,6 +751,10 @@ function PlanetVisual({
 }
 
 function App() {
+  const [passwordRecovery, setPasswordRecovery] = useState(() =>
+    new URLSearchParams(window.location.search).get("reset") === "1" ||
+    new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery"
+  );
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -845,6 +850,7 @@ function App() {
       (event, session) => {
         if (!mounted) return;
 
+        if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
         setUser(session?.user ?? null);
 
         if (event === "SIGNED_OUT") {
@@ -2203,6 +2209,14 @@ function App() {
         </div>
       </main>
     );
+  } else if (passwordRecovery) {
+    content = <PasswordRecovery user={user} onDone={() => {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("reset");
+      url.hash = "";
+      window.history.replaceState(null, "", url.pathname + url.search);
+      setPasswordRecovery(false);
+    }} />;
   } else if (!user) {
     content = (
       <LoginPage
