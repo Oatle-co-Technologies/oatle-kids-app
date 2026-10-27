@@ -1,89 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PasswordField from "./PasswordField";
 import { supabase } from "../lib/supabase";
-import {
-  clearDeferredInstallPrompt,
-  getDeferredInstallPrompt,
-} from "../pwa";
-
 function LoginPage({ onLogin }) {
-  const [isSignUp, setIsSignUp] = useState(() => new URLSearchParams(window.location.search).get("signup") === "1");
+  const isSignUp = false;
   const [isResetRequest, setIsResetRequest] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState(
-    getDeferredInstallPrompt
-  );
-  const [showInstallHelp, setShowInstallHelp] = useState(false);
-  const [showAndroidInstall, setShowAndroidInstall] = useState(() => {
-    const isNativeApp = Boolean(
-      window.Capacitor?.isNativePlatform?.()
-    );
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      window.navigator.standalone === true;
-    const isAndroid = /Android/i.test(window.navigator.userAgent);
-
-    return isAndroid && !isNativeApp && !isStandalone;
-  });
-  const [chromeLaunchUrl] = useState(() => {
-    const currentUrl = new URL(window.location.href);
-    const fallbackUrl = encodeURIComponent(currentUrl.href);
-    const path = `${currentUrl.host}${currentUrl.pathname}${currentUrl.search}`;
-
-    return `intent://${path}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${fallbackUrl};end`;
-  });
-
-  useEffect(() => {
-    const handleInstallReady = (event) => {
-      setInstallPrompt(event.detail);
-      setShowInstallHelp(false);
-      setShowAndroidInstall(true);
-    };
-
-    const handleAppInstalled = () => {
-      setInstallPrompt(null);
-      setShowInstallHelp(false);
-      setShowAndroidInstall(false);
-    };
-
-    window.addEventListener(
-      "oatle-install-ready",
-      handleInstallReady
-    );
-    window.addEventListener("appinstalled", handleAppInstalled);
-
-    return () => {
-      window.removeEventListener(
-        "oatle-install-ready",
-        handleInstallReady
-      );
-      window.removeEventListener("appinstalled", handleAppInstalled);
-    };
-  }, []);
-
-  const handleInstall = async () => {
-    if (!installPrompt) {
-      setShowInstallHelp(true);
-      return;
-    }
-
-    try {
-      await installPrompt.prompt();
-      const choice = await installPrompt.userChoice;
-
-      setShowInstallHelp(choice.outcome !== "accepted");
-    } catch {
-      setShowInstallHelp(true);
-    } finally {
-      clearDeferredInstallPrompt();
-      setInstallPrompt(null);
-    }
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -103,32 +28,6 @@ function LoginPage({ onLogin }) {
       } finally {
         setLoading(false);
       }
-      return;
-    }
-
-    if (isSignUp) {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      setLoading(false);
-
-      if (signUpError) {
-        setError(signUpError.message);
-        return;
-      }
-
-      if (data.session && data.user) {
-        onLogin(data.user);
-        return;
-      }
-
-      setMessage(
-        "Check your inbox for a confirmation link. If you already have an account, log in or use Forgot password."
-      );
-
-      setIsSignUp(false);
       return;
     }
 
@@ -160,51 +59,19 @@ function LoginPage({ onLogin }) {
   />
 </div>
         <p className="eyebrow">
-          {isResetRequest ? "ACCOUNT RECOVERY" : isSignUp ? "JOIN THE ADVENTURE" : "WELCOME, CAPTAIN"}
+          {isResetRequest ? "ACCOUNT RECOVERY" : isSignUp ? "JOIN THE ADVENTURE" : "PRIVATE TESTING"}
         </p>
 
-        <h1>{isResetRequest ? "Forgot your password?" : isSignUp ? "Create your account!" : "Welcome back!"}</h1>
+        <h1>{isResetRequest ? "Forgot your password?" : isSignUp ? "Create your account!" : "Invited testers only"}</h1>
 
         <p className="login-intro">
           {isResetRequest
             ? "Enter your account email and we’ll send you a password reset link."
             : isSignUp
             ? "Create an account to start your space learning adventure."
-            : "Log in to continue your space learning adventure."}
+            : "Oatle Kids is in private testing. Log in with the account you have been given access to."}
         </p>
 
-        {showAndroidInstall && (
-          <section className="pwa-install-panel" aria-label="Install Oatle Kids">
-            <p>Want Oatle Kids on this device?</p>
-            <button
-              className="pwa-install-button"
-              type="button"
-              onClick={handleInstall}
-            >
-              Install Oatle Kids
-            </button>
-            {showInstallHelp && (
-              <div className="pwa-install-help">
-                <p>
-                  This browser has not made Android&apos;s install window
-                  available yet. Open the page directly in Chrome, then tap
-                  <strong> Install Oatle Kids</strong> again.
-                </p>
-                <a
-                  className="pwa-open-chrome-button"
-                  href={chromeLaunchUrl}
-                >
-                  Open in Chrome
-                </a>
-                <p>
-                  If you are already in Chrome, refresh once. You can also use
-                  Chrome&apos;s three-dot menu and choose
-                  <strong> Add to Home screen</strong>.
-                </p>
-              </div>
-            )}
-          </section>
-        )}
 
         <form onSubmit={handleSubmit} className="login-form">
           <label>
@@ -273,25 +140,7 @@ function LoginPage({ onLogin }) {
             setError("");
             setMessage("");
           }}>Back to log in</button>
-        ) : <p className="login-signup">
-          {isSignUp
-            ? "Already have an account? "
-            : "Don't have an account? "}
-
-          <button
-            className="text-button"
-            type="button"
-            onClick={() => {
-              setIsSignUp(!isSignUp);
-              setError("");
-              setMessage("");
-              setEmail("");
-              setPassword("");
-            }}
-          >
-            {isSignUp ? "Log in" : "Sign up"}
-          </button>
-        </p>}
+        ) : <p className="login-signup">Public registration is closed. Only approved testers can enter.</p>}
       </div>
     </main>
   );
