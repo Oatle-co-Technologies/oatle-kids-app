@@ -762,11 +762,6 @@ function App() {
   const [accessLoading, setAccessLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
 
-  // PayFast test state
-  // Deployment trigger check
-  const [paymentLoading, setPaymentLoading] = useState(false);
-  const [paymentError, setPaymentError] = useState("");
-  const [termsAccepted, setTermsAccepted] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoMessage, setPromoMessage] = useState("");
@@ -1981,90 +1976,7 @@ function App() {
     setScreen(group === "little" ? "littleExplorers" : "home");
   };
 
-  // PayFast test checkout
-  const startPayfastCheckout = async () => {
-    if (!termsAccepted) {
-      setPaymentError("Please accept the subscription terms before continuing.");
-      return;
-    }
-    setPaymentLoading(true);
-    setPaymentError("");
-
-    try {
-      // Get the currently logged-in user's session.
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.access_token) {
-        throw new Error(
-          "No authenticated session found."
-        );
-      }
-
-      // Explicitly send the user's JWT to the Edge Function.
-      const { data, error } =
-        await supabase.functions.invoke(
-          "quick-service",
-          {
-            body: {},
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          }
-        );
-
-      if (error) throw error;
-
-      if (
-        !data?.checkout_url ||
-        !data?.fields
-      ) {
-        throw new Error(
-          "PayFast checkout response was incomplete."
-        );
-      }
-
-      const form =
-        document.createElement("form");
-
-      form.method = "POST";
-      form.action = data.checkout_url;
-      form.style.display = "none";
-
-      Object.entries(data.fields).forEach(
-        ([name, value]) => {
-          const input =
-            document.createElement(
-              "input"
-            );
-
-          input.type = "hidden";
-          input.name = name;
-          input.value = String(
-            value ?? ""
-          );
-
-          form.appendChild(input);
-        }
-      );
-
-      document.body.appendChild(form);
-      form.submit();
-    } catch (error) {
-      console.error(
-        "PayFast checkout error:",
-        error
-      );
-
-      setPaymentError(
-        "We couldn't open the payment page. Please try again."
-      );
-
-      setPaymentLoading(false);
-    }
-  };
-
+  // Checkout remains paused until live payments are ready.
   const redeemPromoCode = async () => {
     const code =
       promoCode.trim();
@@ -2263,42 +2175,16 @@ function App() {
           </p>
 
           <p className="login-intro">
-            Subscribe for R99/month, or enter a promo code to get access.
+            New subscriptions are not available yet. If you have an invitation promo code, you can enter it below.
           </p>
-
-          <label className="checkout-consent">
-            <input
-              type="checkbox"
-              checked={termsAccepted}
-              onChange={(event) => {
-                setTermsAccepted(event.target.checked);
-                setPaymentError("");
-              }}
-            />
-            <span>I agree to the <a href="/terms.html" target="_blank" rel="noopener noreferrer">Terms</a>, <a href="/refund-policy.html" target="_blank" rel="noopener noreferrer">Refund</a>, <a href="/cancellation-policy.html" target="_blank" rel="noopener noreferrer">Cancellation</a>, <a href="/delivery-policy.html" target="_blank" rel="noopener noreferrer">Delivery</a> and <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy</a> policies, and understand that this is a recurring R99 monthly subscription.</span>
-          </label>
 
           <button
             className="primary-button"
-            onClick={
-              startPayfastCheckout
-            }
-            disabled={paymentLoading || !termsAccepted}
+            disabled
             type="button"
           >
-            {paymentLoading
-              ? "Opening payment..."
-              : "Subscribe — R99/month"}
+            Subscriptions opening soon
           </button>
-
-          {paymentError && (
-            <p
-              className="payment-error"
-              role="alert"
-            >
-              {paymentError}
-            </p>
-          )}
 
           <p
             className="login-intro"
@@ -4146,3 +4032,4 @@ function App() {
 }
 
 export default App;
+
