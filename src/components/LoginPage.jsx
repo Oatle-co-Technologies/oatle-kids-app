@@ -7,6 +7,7 @@ import {
 
 function LoginPage({ onLogin }) {
   const [isSignUp, setIsSignUp] = useState(() => new URLSearchParams(window.location.search).get("signup") === "1");
+  const [isResetRequest, setIsResetRequest] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -90,6 +91,21 @@ function LoginPage({ onLogin }) {
     setMessage("");
     setLoading(true);
 
+    if (isResetRequest) {
+      try {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/app.html?reset=1`,
+        });
+        if (resetError) setError(resetError.message);
+        else setMessage("If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.");
+      } catch {
+        setError("We couldn't request a reset link. Check your connection and try again.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (isSignUp) {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -109,7 +125,7 @@ function LoginPage({ onLogin }) {
       }
 
       setMessage(
-        "Account created! Check your email to confirm your account, then log in."
+        "Check your inbox for a confirmation link. If you already have an account, log in or use Forgot password."
       );
 
       setIsSignUp(false);
@@ -144,13 +160,15 @@ function LoginPage({ onLogin }) {
   />
 </div>
         <p className="eyebrow">
-          {isSignUp ? "JOIN THE ADVENTURE" : "WELCOME, CAPTAIN"}
+          {isResetRequest ? "ACCOUNT RECOVERY" : isSignUp ? "JOIN THE ADVENTURE" : "WELCOME, CAPTAIN"}
         </p>
 
-        <h1>{isSignUp ? "Create your account!" : "Welcome back!"}</h1>
+        <h1>{isResetRequest ? "Forgot your password?" : isSignUp ? "Create your account!" : "Welcome back!"}</h1>
 
         <p className="login-intro">
-          {isSignUp
+          {isResetRequest
+            ? "Enter your account email and we’ll send you a password reset link."
+            : isSignUp
             ? "Create an account to start your space learning adventure."
             : "Log in to continue your space learning adventure."}
         </p>
@@ -201,7 +219,7 @@ function LoginPage({ onLogin }) {
             />
           </label>
 
-          <div className="login-password-field">
+          {!isResetRequest && <div className="login-password-field">
             <label htmlFor="login-password">Password</label>
             <div className="login-password-input">
               <input
@@ -230,16 +248,18 @@ function LoginPage({ onLogin }) {
             </div>
           </div>
 
-          {error && <p className="login-error">{error}</p>}
+          }
 
-          {message && <p className="login-message">{message}</p>}
+          {error && <p className="login-error" role="alert">{error}</p>}
+
+          {message && <p className="login-message" role="status">{message}</p>}
 
           <button
             className="primary-button login-button"
             type="submit"
             disabled={loading}
           >
-            {loading
+            {isResetRequest ? (loading ? "Sending..." : "Send reset link") : loading
               ? isSignUp
                 ? "Creating..."
                 : "Launching..."
@@ -249,21 +269,29 @@ function LoginPage({ onLogin }) {
           </button>
         </form>
 
-        {!isSignUp && (
+        {!isSignUp && !isResetRequest && (
           <button
             className="text-button"
             type="button"
             onClick={() => {
               setError("");
               setMessage("");
-              // Password reset will be added next.
+              setIsResetRequest(true);
+              setPassword("");
+              setShowPassword(false);
             }}
           >
             Forgot password?
           </button>
         )}
 
-        <p className="login-signup">
+        {isResetRequest ? (
+          <button className="text-button" type="button" disabled={loading} onClick={() => {
+            setIsResetRequest(false);
+            setError("");
+            setMessage("");
+          }}>Back to log in</button>
+        ) : <p className="login-signup">
           {isSignUp
             ? "Already have an account? "
             : "Don't have an account? "}
@@ -282,7 +310,7 @@ function LoginPage({ onLogin }) {
           >
             {isSignUp ? "Log in" : "Sign up"}
           </button>
-        </p>
+        </p>}
       </div>
     </main>
   );
