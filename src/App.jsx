@@ -16,6 +16,7 @@ import {
   assessmentSkills as plutoSkills,
 } from "./data/assessmentQuestions";
 import { speak, stopSpeech } from "./utils/speech";
+import { hasActiveEntitlement } from "./lib/accessPolicy";
 import LoginPage from "./components/LoginPage";
 import PasswordRecovery from "./components/PasswordRecovery";
 import { supabase } from "./lib/supabase";
@@ -760,7 +761,8 @@ function App() {
 
   // Authentication and product access are separate.
   const [accessLoading, setAccessLoading] = useState(true);
-  const [hasAccess, setHasAccess] = useState(false);
+  const [accessGrant, setAccessGrant] = useState(null);
+  const hasAccess = hasActiveEntitlement(accessGrant, user?.id);
 
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
@@ -793,7 +795,8 @@ function App() {
   const [readingAssessmentActive, setReadingAssessmentActive] =
     useState(() => savedReadingAssessmentAttempt().active);
 
-  const [soundOn, setSoundOn] = useState(true);
+  const [soundPreference, setSoundOn] = useState(true);
+  const soundOn = soundPreference && hasAccess && !authLoading && !accessLoading;
 
   const [childProfile, setChildProfile] =
     useState(savedChildProfile);
@@ -849,6 +852,7 @@ function App() {
         setUser(session?.user ?? null);
 
         if (event === "SIGNED_OUT") {
+          setAccessGrant(null);
           localStorage.removeItem("oatle-age-group");
           localStorage.removeItem("oatle-child-profile");
           setChildProfile({ ...EMPTY_CHILD_PROFILE });
@@ -868,48 +872,49 @@ function App() {
 
   useEffect(() => {
     let mounted = true;
-
+    let requestSequence = 0;
+    const userId = user?.id;
     const checkAccess = async () => {
-      if (!user) {
-        if (mounted) {
-          setHasAccess(false);
-          setAccessLoading(false);
-        }
+      const request = ++requestSequence;
+      if (!userId) {
+        if (mounted) setAccessLoading(false);
         return;
       }
-
-      setAccessLoading(true);
-
-      const { data, error } = await supabase
-        .from("entitlements")
-        .select("status, expires_at")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!mounted) return;
-
-      if (error) {
-        console.error("Access check failed:", error);
-        setHasAccess(false);
-        setAccessLoading(false);
-        return;
+      try {
+        const { data, error } = await supabase.from("entitlements")
+          .select("user_id, status, expires_at").eq("user_id", userId).maybeSingle();
+        if (!mounted || request !== requestSequence) return;
+        setAccessGrant(error ? null : data);
+      } catch {
+        if (mounted && request === requestSequence) setAccessGrant(null);
+      } finally {
+        if (mounted && request === requestSequence) setAccessLoading(false);
       }
-
-      const active =
-        data?.status === "active" &&
-        (!data.expires_at ||
-          new Date(data.expires_at) > new Date());
-
-      setHasAccess(active);
-      setAccessLoading(false);
     };
-
-    checkAccess();
-
+    void checkAccess();
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") void checkAccess();
+    };
+    const refreshTimer = window.setInterval(() => { void checkAccess(); }, 30000);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    window.addEventListener("online", checkAccess);
     return () => {
       mounted = false;
+      requestSequence += 1;
+      window.clearInterval(refreshTimer);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+      window.removeEventListener("online", checkAccess);
     };
-  }, [user]);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!hasAccess || accessGrant.expires_at === null) return undefined;
+    // Keep expiry checks within the browser timer limit, including long grants.
+    const timer = window.setTimeout(() => {
+      setAccessGrant(current => hasActiveEntitlement(current, user?.id) ? { ...current } : null);
+    }, Math.min(Date.parse(accessGrant.expires_at) - Date.now() + 1, 2147483647));
+    return () => window.clearTimeout(timer);
+  }, [accessGrant, hasAccess, user?.id]);
 
   const planet =
     planets.find(
@@ -2040,28 +2045,11 @@ function App() {
         error: accessError,
       } = await supabase
         .from("entitlements")
-        .select("status, expires_at")
+        .select("user_id, status, expires_at")
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (accessError) {
-        console.error(
-          "Access refresh failed:",
-          accessError
-        );
-
-        setHasAccess(false);
-      } else {
-        const active =
-          entitlement?.status ===
-            "active" &&
-          (!entitlement.expires_at ||
-            new Date(
-              entitlement.expires_at
-            ) > new Date());
-
-        setHasAccess(active);
-      }
+      setAccessGrant(accessError ? null : entitlement);
 
       setAccessLoading(false);
     } catch (error) {
@@ -2133,6 +2121,8 @@ function App() {
     content = (
       <LoginPage
         onLogin={(loggedInUser) => {
+          setAccessGrant(null);
+          setAccessLoading(true);
           setUser(loggedInUser);
           localStorage.removeItem("oatle-age-group");
           setAgeGroup(null);
@@ -2171,11 +2161,11 @@ function App() {
           </h1>
 
           <p className="login-intro">
-            Your account is ready, but it does not have access to Oatle Kids yet.
+            Oatle Kids is in private testing. This account has not been given active access.
           </p>
 
           <p className="login-intro">
-            New subscriptions are not available yet. If you have an invitation promo code, you can enter it below.
+            Only approved testers can enter. If Oatle Kids has sent you an invitation code, you can redeem it below. Public subscriptions are closed.
           </p>
 
           <button
@@ -2259,7 +2249,7 @@ function App() {
             onClick={async () => {
               await supabase.auth.signOut();
               setUser(null);
-              setHasAccess(false);
+              setAccessGrant(null);
               setAgeGroup(null);
             }}
             type="button"
@@ -3993,7 +3983,7 @@ function App() {
           onClick={async () => {
             await supabase.auth.signOut();
             setUser(null);
-            setHasAccess(false);
+            setAccessGrant(null);
             localStorage.removeItem("oatle-age-group");
             setAgeGroup(null);
             setScreen("home");
