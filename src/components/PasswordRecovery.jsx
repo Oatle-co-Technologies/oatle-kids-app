@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PasswordField from "./PasswordField";
 import { supabase } from "../lib/supabase";
 
 export default function PasswordRecovery({ user, onDone }) {
@@ -64,12 +65,8 @@ export default function PasswordRecovery({ user, onDone }) {
           <p className="login-error" role="alert">This reset link is invalid or has expired. Return to log in and request a new link using Forgot password.</p>
         ) : (
           <form className="login-form" onSubmit={handleSubmit}>
-            <label>New password
-              <input type="password" autoComplete="new-password" minLength={8} required value={password} onChange={event => setPassword(event.target.value)} />
-            </label>
-            <label>Confirm new password
-              <input type="password" autoComplete="new-password" minLength={8} required value={confirmation} onChange={event => setConfirmation(event.target.value)} />
-            </label>
+            <PasswordField id="recovery-password" label="New password" autoComplete="new-password" minLength={8} required value={password} onChange={event => setPassword(event.target.value)} />
+            <PasswordField id="recovery-confirmation" label="Confirm new password" autoComplete="new-password" minLength={8} required value={confirmation} onChange={event => setConfirmation(event.target.value)} />
             <button className="primary-button login-button" type="submit" disabled={loading}>{loading ? "Updating..." : "Update password"}</button>
           </form>
         )}
