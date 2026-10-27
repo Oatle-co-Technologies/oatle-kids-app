@@ -140,3 +140,23 @@ test('endpoint rejects malformed codes and uses the verified identity',async()=>
   assert.equal(await scalar('select count(*)::int from entitlements where user_id=$1',[users[0]]),1);
   assert.equal(await scalar('select count(*)::int from entitlements where user_id=$1',[users[62]]),0);
 });
+
+
+test('private-testing upgrade blocks shared codes and preserves assigned invitations',async()=>{
+  const migration=await readFile(new URL('../migrations/202610270002_private_promo_invites.sql',import.meta.url),'utf8');
+  await db.exec(migration);
+  await db.exec(migration); // Safe to reapply without changing permissions or data.
+  const invited=randomUUID(),other=randomUUID();
+  for(const user of [invited,other]) await db.query('insert into auth.users values($1)',[user]);
+  const existingGrants=await scalar('select count(*)::int from entitlements');
+  await promo('PRIVATE-INVITE');
+  assert.equal((await redeem(invited,'PRIVATE-INVITE')).outcome,'wrong_account');
+  assert.equal(await scalar('select count(*)::int from entitlements'),existingGrants);
+  assert.equal(await scalar("select redemptions_count from promo_codes where code='PRIVATE-INVITE'"),0);
+  await db.query("update promo_codes set assigned_user_id=$1 where code='PRIVATE-INVITE'",[invited]);
+  assert.equal((await redeem(other,'PRIVATE-INVITE')).outcome,'wrong_account');
+  assert.equal((await redeem(invited,'PRIVATE-INVITE')).outcome,'redeemed');
+  assert.equal((await redeem(invited,'PRIVATE-INVITE')).outcome,'already_redeemed');
+  assert.equal(await scalar('select count(*)::int from entitlements'),existingGrants+1);
+  for(const role of ['anon','authenticated']) assert.equal(await scalar("select has_function_privilege($1,'public.redeem_free_promo_atomic(uuid,text)','execute')",[role]),false);
+});
