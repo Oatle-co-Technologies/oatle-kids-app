@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
 import { speak, stopSpeech } from '../utils/speech';
-import { ANIMALS, byId, isRightFood, isRightHome } from './animalLogic';
+import { ANIMALS, isRightFood, isRightHome } from './animalLogic';
 import dogSound from '../sounds/animals/dog.mp3';
 import catSound from '../sounds/animals/cat.mp3';
 import cowSound from '../sounds/animals/cow.mp3';
@@ -23,17 +23,21 @@ const ACTIVITY_INFO = {
 };
 
 const ANIMAL_SOUNDS = { dog: dogSound, cat: catSound, cow: cowSound, sheep: sheepSound, elephant: elephantSound };
+const shuffled = (items) => [...items].sort(() => Math.random() - 0.5);
 
 export default function AnimalAdventure({ onBack, soundOn }) {
   const [mode, setMode] = useState('menu');
   const [round, setRound] = useState(0);
-  const [selected, setSelected] = useState(null);
   const [done, setDone] = useState([]);
   const [fedFoods, setFedFoods] = useState([]);
   const [homeMatches, setHomeMatches] = useState([]);
+  const [homeAnimalOrder, setHomeAnimalOrder] = useState(() => shuffled(ANIMALS));
+  const [homeOrder, setHomeOrder] = useState(() => shuffled(ANIMALS));
+  const [dragging, setDragging] = useState(null);
   const [soundMatches, setSoundMatches] = useState([]);
   const [message, setMessage] = useState('');
   const audioRef = useRef(null);
+  const homeRefs = useRef({});
   const current = ANIMALS[round % ANIMALS.length];
   const homesFinished = done.length === ANIMALS.length;
   const feedingFinished = fedFoods.length === ANIMALS.length;
@@ -42,7 +46,7 @@ export default function AnimalAdventure({ onBack, soundOn }) {
     if (!soundOn) { stopSpeech(); return undefined; }
     const prompt = mode === 'menu' ? 'Animal adventure. Feed an animal, find animal homes, or listen for animal sounds.'
       : mode === 'feed' ? `This is ${current.name}. What does ${current.name} like to eat?`
-        : mode === 'homes' ? 'Tap an animal, then tap its home.'
+        : mode === 'homes' ? 'Drag each animal to its home.'
           : 'Listen carefully. Which animal made this sound?';
     const timer = window.setTimeout(() => speak(prompt), 220);
     return () => { window.clearTimeout(timer); stopSpeech(); };
@@ -50,7 +54,19 @@ export default function AnimalAdventure({ onBack, soundOn }) {
 
   useEffect(() => () => { audioRef.current?.pause(); }, []);
 
-  function chooseMode(next) { audioRef.current?.pause(); setMode(next); setRound(0); setSelected(null); setDone([]); setFedFoods([]); setHomeMatches([]); setSoundMatches([]); setMessage(''); }
+  function chooseMode(next) {
+    audioRef.current?.pause();
+    setMode(next);
+    setRound(0);
+    setDone([]);
+    setFedFoods([]);
+    setHomeMatches([]);
+    setHomeAnimalOrder(shuffled(ANIMALS));
+    setHomeOrder(shuffled(ANIMALS));
+    setDragging(null);
+    setSoundMatches([]);
+    setMessage('');
+  }
   function nextRound() { setRound((value) => (value + 1) % ANIMALS.length); setMessage(''); }
   function celebrate(text) { setMessage(text); if (soundOn) speak(text); }
   function selectFood(food) {
@@ -63,11 +79,31 @@ export default function AnimalAdventure({ onBack, soundOn }) {
     }
     else { setMessage(`${current.name} is looking for something else.`); }
   }
-  function selectHome(home) {
-    if (!selected) { setMessage('Choose an animal first.'); return; }
+  function matchAnimalToHome(animal, home) {
     if (homeMatches.includes(home)) return;
-    if (isRightHome(selected, home)) { const animal = byId(selected); const next = [...done, selected]; setDone(next); setHomeMatches((homes) => [...homes, home]); setSelected(null); celebrate(next.length === ANIMALS.length ? 'All the animals are home!' : `${animal.name} is home!`); }
+    if (isRightHome(animal.id, home)) { const next = [...done, animal.id]; setDone(next); setHomeMatches((homes) => [...homes, home]); celebrate(next.length === ANIMALS.length ? 'All the animals are home!' : `${animal.name} is home!`); }
     else setMessage('Let’s try another home.');
+  }
+  function startDragging(animal, event) {
+    if (done.includes(animal.id)) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    setDragging({ animal, pointerId: event.pointerId, x: event.clientX, y: event.clientY });
+    setMessage(`Find ${animal.name}'s home.`);
+  }
+  function moveDragging(animal, event) {
+    if (!dragging || dragging.animal.id !== animal.id || dragging.pointerId !== event.pointerId) return;
+    setDragging((current) => current ? { ...current, x: event.clientX, y: event.clientY } : current);
+  }
+  function finishDragging(animal, event) {
+    if (!dragging || dragging.animal.id !== animal.id || dragging.pointerId !== event.pointerId) return;
+    const target = homeOrder.find((homeAnimal) => {
+      const rect = homeRefs.current[homeAnimal.home]?.getBoundingClientRect();
+      return rect && event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+    });
+    setDragging(null);
+    if (!target) { setMessage('Try dropping the animal onto a home.'); return; }
+    matchAnimalToHome(animal, target.home);
   }
   function chooseSound(animal) {
     if (soundMatches.includes(animal.id)) return;
@@ -115,8 +151,12 @@ export default function AnimalAdventure({ onBack, soundOn }) {
       <div className="animal-choice-row">{ANIMALS.filter((animal) => !fedFoods.includes(animal.food)).map((animal) => <button key={animal.id} type="button" aria-label={`Offer ${animal.foodName}`} onClick={() => selectFood(animal.food)}><span>{animal.food}</span><b>{animal.foodName}</b></button>)}</div>
       {feedingFinished && <button className="animal-again" type="button" onClick={() => chooseMode('feed')}>Play again</button>}
     </section> : mode === 'homes' ? <section className="animal-play" aria-label="Match animals to homes">
-      <p className="animal-help">First choose an animal, then choose its home. The correct home will disappear.</p><div className="animal-choice-row">{ANIMALS.filter((animal) => !done.includes(animal.id)).map((animal) => <button key={animal.id} type="button" className={selected === animal.id ? 'is-selected' : ''} onClick={() => { setSelected(animal.id); setMessage('Now find its home.'); }}><span>{animal.emoji}</span><b>{animal.name}</b></button>)}</div>
-      <div className="animal-choice-row animal-homes">{ANIMALS.filter((animal) => !homeMatches.includes(animal.home)).map((animal) => <button key={animal.id} type="button" aria-label={`${animal.homeName} home`} onClick={() => selectHome(animal.home)}><span>{animal.home}</span><b>{animal.homeName}</b></button>)}</div>
+      <p className="animal-help">Drag each animal to the right home. The right animal and home will disappear.</p>
+      <div className="animal-home-board">
+        <section className="animal-home-column" aria-label="Animals to take home"><h2>Animals</h2><div className="animal-home-stack">{homeAnimalOrder.filter((animal) => !done.includes(animal.id)).map((animal) => <button key={animal.id} type="button" className={`animal-drag-card ${dragging?.animal.id === animal.id ? 'is-dragging' : ''}`} onPointerDown={(event) => startDragging(animal, event)} onPointerMove={(event) => moveDragging(animal, event)} onPointerUp={(event) => finishDragging(animal, event)} onPointerCancel={() => setDragging(null)} aria-label={`Drag ${animal.name} to its home`}><span>{animal.emoji}</span><b>{animal.name}</b></button>)}</div></section>
+        <section className="animal-home-column" aria-label="Homes"><h2>Homes</h2><div className="animal-home-stack">{homeOrder.filter((animal) => !homeMatches.includes(animal.home)).map((animal) => <div key={animal.id} ref={(node) => { homeRefs.current[animal.home] = node; }} className="animal-home-drop" aria-label={`${animal.homeName} home`}><span>{animal.home}</span><b>{animal.homeName}</b></div>)}</div></section>
+      </div>
+      {dragging && <div className="animal-drag-ghost" style={{ left: dragging.x, top: dragging.y }} aria-hidden="true"><span>{dragging.animal.emoji}</span><b>{dragging.animal.name}</b></div>}
       {homesFinished && <button className="animal-again" type="button" onClick={() => chooseMode('homes')}>Play again</button>}
     </section> : <section className="animal-play" aria-label="Hear the animal sound">
       <button className="animal-listen" type="button" onClick={() => playSound()}><span aria-hidden="true">🔊</span> Hear it again</button><p className="animal-help">Which animal made that sound? The right animal will disappear, then you will hear a new sound.</p>
