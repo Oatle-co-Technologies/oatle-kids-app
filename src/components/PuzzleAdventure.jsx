@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
 import { speak, stopSpeech } from '../utils/speech';
 import './PuzzleAdventure.css';
@@ -47,6 +47,8 @@ export default function PuzzleAdventure({ onBack, soundOn }) {
   const [order, setOrder] = useState(() => shuffle(PUZZLES[0].pieces));
   const [placed, setPlaced] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
+  const [dragging, setDragging] = useState(null);
+  const slotRefs = useRef({});
   const [message, setMessage] = useState('');
   const puzzle = PUZZLES[puzzleIndex];
   const complete = placed.length === puzzle.pieces.length;
@@ -65,6 +67,7 @@ export default function PuzzleAdventure({ onBack, soundOn }) {
     setOrder(shuffle(PUZZLES[index].pieces));
     setPlaced([]);
     setSelectedId(null);
+    setDragging(null);
     setMessage('');
   }
 
@@ -87,6 +90,9 @@ export default function PuzzleAdventure({ onBack, soundOn }) {
     setMessage(feedback);
     if (soundOn) speak(feedback);
   }
+  function startDrag(piece, event) { event.preventDefault(); event.currentTarget.setPointerCapture?.(event.pointerId); setDragging({ piece, pointerId: event.pointerId, x: event.clientX, y: event.clientY }); setMessage(`Find the ${piece.label} part of the picture.`); }
+  function moveDrag(piece, event) { if (dragging?.piece.id === piece.id && dragging.pointerId === event.pointerId) setDragging((current) => current ? { ...current, x: event.clientX, y: event.clientY } : current); }
+  function endDrag(piece, event) { if (dragging?.piece.id !== piece.id || dragging.pointerId !== event.pointerId) return; const target = puzzle.pieces.find((item) => { const rect = slotRefs.current[item.id]?.getBoundingClientRect(); return rect && event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom; }); setDragging(null); if (!target) { setMessage('Drop it onto the picture board.'); return; } placePiece(target); }
 
   const title = mode === 'menu' ? 'Puzzle Adventure' : mode === 'choose' ? 'Choose a Picture' : puzzle.title;
 
@@ -109,16 +115,17 @@ export default function PuzzleAdventure({ onBack, soundOn }) {
       </button>)}
     </section> : <section className="puzzle-workshop" aria-label={`${puzzle.title} picture puzzle`}>
       <div className={`puzzle-board puzzle-board-${puzzle.pieces.length}`}>
-        {puzzle.pieces.map((piece) => <button key={piece.id} type="button" className={`puzzle-slot ${placed.includes(piece.id) ? 'is-filled' : ''}`} style={{ '--piece-colour': piece.colour }} onClick={() => placePiece(piece)} aria-label={`${placed.includes(piece.id) ? piece.label : `Place ${piece.label} here`} space`}>
+        {puzzle.pieces.map((piece) => <div key={piece.id} ref={(node) => { slotRefs.current[piece.id] = node; }} className={`puzzle-slot ${placed.includes(piece.id) ? 'is-filled' : ''}`} style={{ '--piece-colour': piece.colour }}>
           {placed.includes(piece.id) ? <span>{piece.art}</span> : <span className="puzzle-slot-hint">{piece.art}</span>}
-        </button>)}
+        </div>)}
       </div>
       <p className="puzzle-help">{complete ? 'Your whole picture is ready!' : 'Choose a piece below.'}</p>
       <div className="puzzle-piece-tray" aria-label="Picture pieces">
-        {order.filter((piece) => !placed.includes(piece.id)).map((piece) => <button key={piece.id} type="button" className={`puzzle-piece ${selectedId === piece.id ? 'is-selected' : ''}`} style={{ '--piece-colour': piece.colour }} onClick={() => { setSelectedId(piece.id); setMessage(`Now find the ${piece.label} space.`); }} aria-pressed={selectedId === piece.id}>
+        {order.filter((piece) => !placed.includes(piece.id)).map((piece) => <button key={piece.id} type="button" className={`puzzle-piece ${dragging?.piece.id === piece.id ? 'is-dragging' : ''}`} style={{ '--piece-colour': piece.colour }} onPointerDown={(event) => startDrag(piece, event)} onPointerMove={(event) => moveDrag(piece, event)} onPointerUp={(event) => endDrag(piece, event)} onPointerCancel={() => setDragging(null)} aria-label={`Drag ${piece.label} to the picture`}>
           <span>{piece.art}</span><b>{piece.label}</b>
         </button>)}
       </div>
+      {dragging && <div className="puzzle-drag-ghost" style={{ left: dragging.x, top: dragging.y, '--piece-colour': dragging.piece.colour }} aria-hidden="true"><span>{dragging.piece.art}</span></div>}
       {complete && <button className="puzzle-again" type="button" onClick={() => reset()}>Play this picture again</button>}
       <p className="puzzle-feedback" role="status" aria-live="polite">{message || (selectedId ? 'Now tap its matching space.' : 'Choose a big picture piece.')}</p>
     </section>}
