@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import LocalBackButton from "./LocalBackButton";
 import BuildingAdventure, { BuildingIcon } from "./BuildingAdventure";
+import AnimalAdventure, { AnimalIcon } from "./AnimalAdventure";
 import {
   EraserIcon,
   ScribblerStickerPicker,
@@ -1206,6 +1207,10 @@ export default function LittleExplorers({
     return <BuildingAdventure onBack={showAdventures} soundOn={soundOn} />;
   }
 
+  if (screen === "animals") {
+    return <AnimalAdventure onBack={showAdventures} soundOn={soundOn} />;
+  }
+
   if (screen === "planet") {
     const missionStarted = startedPlanets.includes(activePlanet.progressId);
     const missionComplete = isPlanetComplete(activePlanet);
@@ -1771,6 +1776,16 @@ export default function LittleExplorers({
             <strong>Building Adventure</strong>
             <small>Build freely with blocks or copy a little shape picture.</small>
             <b>2 building activities</b>
+          </button>
+          <button
+            type="button"
+            className="little-adventure-card little-adventure-animals"
+            onClick={() => { stopSpeech(); setScreen("animals"); }}
+          >
+            <span aria-hidden="true"><AnimalIcon /></span>
+            <strong>Animal Adventure</strong>
+            <small>Feed animals, find their homes and listen for their sounds.</small>
+            <b>3 animal activities</b>
           </button>
           {LITTLE_ADVENTURES.map((adventure) => {
             const completedPlanets = adventure.planets.filter((planet) =>
