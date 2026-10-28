@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import LocalBackButton from "./LocalBackButton";
+import BuildingAdventure, { BuildingIcon } from "./BuildingAdventure";
 import {
   EraserIcon,
   ScribblerStickerPicker,
@@ -1201,6 +1202,10 @@ export default function LittleExplorers({
     celebratePlanet(280);
   };
 
+  if (screen === "building") {
+    return <BuildingAdventure onBack={showAdventures} soundOn={soundOn} />;
+  }
+
   if (screen === "planet") {
     const missionStarted = startedPlanets.includes(activePlanet.progressId);
     const missionComplete = isPlanetComplete(activePlanet);
@@ -1753,10 +1758,20 @@ export default function LittleExplorers({
         <header className="little-map-header">
           <p className="eyebrow">LITTLE SPACE ADVENTURES</p>
           <h1>Choose an Adventure</h1>
-          <p>Each adventure has its own planets and little missions.</p>
+          <p>Choose a section, then a little activity.</p>
         </header>
 
         <section className="little-adventure-grid" aria-label="Little Space Adventures">
+          <button
+            type="button"
+            className="little-adventure-card little-adventure-building"
+            onClick={() => { stopSpeech(); setScreen("building"); }}
+          >
+            <span aria-hidden="true"><BuildingIcon /></span>
+            <strong>Building Adventure</strong>
+            <small>Build freely with blocks or copy a little shape picture.</small>
+            <b>2 building activities</b>
+          </button>
           {LITTLE_ADVENTURES.map((adventure) => {
             const completedPlanets = adventure.planets.filter((planet) =>
               isPlanetComplete(planet, adventure)
@@ -1779,7 +1794,7 @@ export default function LittleExplorers({
         </section>
 
         <p className="little-grownup-note">
-          Grown-ups: each adventure follows the same planet journey as the older-kids game.
+          Grown-ups: each section has its own activities. Play and explore together.
         </p>
       </main>
     );
