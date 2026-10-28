@@ -34,6 +34,7 @@ import ShapeTracingMission from "./components/ShapeTracingMission";
 import SentenceWritingMission from "./components/SentenceWritingMission";
 import LocalBackButton from "./components/LocalBackButton";
 import LittleExplorers from "./components/LittleExplorers";
+import CosmicPuzzles, { CosmicPuzzleEntry } from "./components/CosmicPuzzles";
 
 import mercuryImage from "./assets/images/planets/mercury.webp";
 import venusImage from "./assets/images/planets/venus.webp";
@@ -680,6 +681,7 @@ function AppNav({
         activeScreen === "mission" ||
         activeScreen === "launch" ||
         activeScreen === "math" ||
+        activeScreen === "cosmicPuzzles" ||
         activeScreen === "writing" ||
         activeScreen === "writingMap" ||
         activeScreen === "writingPlanet" ||
@@ -2383,8 +2385,11 @@ function App() {
           </button>
 
         </div>
+        <CosmicPuzzleEntry onClick={() => { stopSpeech(); setScreen("cosmicPuzzles"); }} />
       </main>
     );
+  } else if (screen === "cosmicPuzzles") {
+    content = <CosmicPuzzles onBack={() => setScreen("explore")} soundOn={soundOn} />;
   } else if (
     screen === "littleExplorers"
   ) {
