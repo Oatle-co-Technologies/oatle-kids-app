@@ -97,6 +97,8 @@
 .little-adventure-trail { border-color: rgba(85, 198, 255, 0.62); }
 .little-adventure-scribble { border-color: rgba(168, 117, 232, 0.62); }
 .little-adventure-discovery { border-color: rgba(102, 226, 139, 0.7); }
+.little-adventure-puzzles { border-color: #e7b76e; }
+.little-adventure-puzzles > span > svg { width:66px; height:66px; }
 
 .little-map-header {
   width: min(820px, 100%);
