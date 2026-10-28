@@ -1,7 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
 import { speak, stopSpeech } from '../utils/speech';
 import { ANIMALS, byId, isRightFood, isRightHome } from './animalLogic';
+import dogSound from '../sounds/animals/dog.ogg';
+import catSound from '../sounds/animals/cat.ogg';
+import cowSound from '../sounds/animals/cow.ogg';
+import sheepSound from '../sounds/animals/sheep.ogg';
+import elephantSound from '../sounds/animals/elephant.ogg';
 import './AnimalAdventure.css';
 
 export function AnimalIcon() {
@@ -17,12 +22,15 @@ const ACTIVITY_INFO = {
   sounds: { number: '03 · LISTENING', title: 'Hear the Sound', copy: 'Listen, then find the animal.' },
 };
 
+const ANIMAL_SOUNDS = { dog: dogSound, cat: catSound, cow: cowSound, sheep: sheepSound, elephant: elephantSound };
+
 export default function AnimalAdventure({ onBack, soundOn }) {
   const [mode, setMode] = useState('menu');
   const [round, setRound] = useState(0);
   const [selected, setSelected] = useState(null);
   const [done, setDone] = useState([]);
   const [message, setMessage] = useState('');
+  const audioRef = useRef(null);
   const current = ANIMALS[round % ANIMALS.length];
   const finished = done.length === ANIMALS.length;
 
@@ -31,12 +39,14 @@ export default function AnimalAdventure({ onBack, soundOn }) {
     const prompt = mode === 'menu' ? 'Animal adventure. Feed an animal, find animal homes, or listen for animal sounds.'
       : mode === 'feed' ? `This is ${current.name}. What does ${current.name} like to eat?`
         : mode === 'homes' ? 'Tap an animal, then tap its home.'
-          : `Listen carefully. Which animal says, ${current.sound}`;
+          : 'Listen carefully. Which animal made this sound?';
     const timer = window.setTimeout(() => speak(prompt), 220);
     return () => { window.clearTimeout(timer); stopSpeech(); };
   }, [mode, current, soundOn]);
 
-  function chooseMode(next) { setMode(next); setRound(0); setSelected(null); setDone([]); setMessage(''); }
+  useEffect(() => () => { audioRef.current?.pause(); }, []);
+
+  function chooseMode(next) { audioRef.current?.pause(); setMode(next); setRound(0); setSelected(null); setDone([]); setMessage(''); }
   function nextRound() { setRound((value) => (value + 1) % ANIMALS.length); setMessage(''); }
   function celebrate(text) { setMessage(text); if (soundOn) speak(text); }
   function selectFood(food) {
@@ -52,7 +62,13 @@ export default function AnimalAdventure({ onBack, soundOn }) {
     if (animal.id === current.id) { celebrate(`Yes! That is ${animal.name}!`); window.setTimeout(nextRound, 750); }
     else setMessage('Listen once more, then try again.');
   }
-  function playSound() { if (soundOn) speak(current.sound); setMessage(`Listen: ${current.sound}`); }
+  function playSound() {
+    audioRef.current?.pause();
+    const audio = new Audio(ANIMAL_SOUNDS[current.id]);
+    audioRef.current = audio;
+    audio.play().catch(() => setMessage('Tap “Hear it again” once more to play the sound.'));
+    setMessage('Listen carefully.');
+  }
   const title = mode === 'menu' ? 'Animal Adventure' : ACTIVITY_INFO[mode].title;
 
   return <main className="little-explorers-page animal-page">
