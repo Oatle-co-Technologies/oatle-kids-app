@@ -35,6 +35,7 @@ import SentenceWritingMission from "./components/SentenceWritingMission";
 import LocalBackButton from "./components/LocalBackButton";
 import LittleExplorers from "./components/LittleExplorers";
 import CosmicPuzzles, { CosmicPuzzleEntry } from "./components/CosmicPuzzles";
+import SpaceBuilder, { SpaceBuilderEntry } from "./components/SpaceBuilder";
 
 import mercuryImage from "./assets/images/planets/mercury.webp";
 import venusImage from "./assets/images/planets/venus.webp";
@@ -682,6 +683,7 @@ function AppNav({
         activeScreen === "launch" ||
         activeScreen === "math" ||
         activeScreen === "cosmicPuzzles" ||
+        activeScreen === "spaceBuilder" ||
         activeScreen === "writing" ||
         activeScreen === "writingMap" ||
         activeScreen === "writingPlanet" ||
@@ -2386,10 +2388,13 @@ function App() {
 
         </div>
         <CosmicPuzzleEntry onClick={() => { stopSpeech(); setScreen("cosmicPuzzles"); }} />
+        <SpaceBuilderEntry onClick={() => { stopSpeech(); setScreen("spaceBuilder"); }} />
       </main>
     );
   } else if (screen === "cosmicPuzzles") {
     content = <CosmicPuzzles onBack={() => setScreen("explore")} soundOn={soundOn} />;
+  } else if (screen === "spaceBuilder") {
+    content = <SpaceBuilder onBack={() => setScreen("explore")} soundOn={soundOn} />;
   } else if (
     screen === "littleExplorers"
   ) {
