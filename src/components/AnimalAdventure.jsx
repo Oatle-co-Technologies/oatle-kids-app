@@ -29,11 +29,14 @@ export default function AnimalAdventure({ onBack, soundOn }) {
   const [round, setRound] = useState(0);
   const [selected, setSelected] = useState(null);
   const [done, setDone] = useState([]);
+  const [fedFoods, setFedFoods] = useState([]);
+  const [homeMatches, setHomeMatches] = useState([]);
   const [soundMatches, setSoundMatches] = useState([]);
   const [message, setMessage] = useState('');
   const audioRef = useRef(null);
   const current = ANIMALS[round % ANIMALS.length];
-  const finished = done.length === ANIMALS.length;
+  const homesFinished = done.length === ANIMALS.length;
+  const feedingFinished = fedFoods.length === ANIMALS.length;
 
   useEffect(() => {
     if (!soundOn) { stopSpeech(); return undefined; }
@@ -47,16 +50,23 @@ export default function AnimalAdventure({ onBack, soundOn }) {
 
   useEffect(() => () => { audioRef.current?.pause(); }, []);
 
-  function chooseMode(next) { audioRef.current?.pause(); setMode(next); setRound(0); setSelected(null); setDone([]); setSoundMatches([]); setMessage(''); }
+  function chooseMode(next) { audioRef.current?.pause(); setMode(next); setRound(0); setSelected(null); setDone([]); setFedFoods([]); setHomeMatches([]); setSoundMatches([]); setMessage(''); }
   function nextRound() { setRound((value) => (value + 1) % ANIMALS.length); setMessage(''); }
   function celebrate(text) { setMessage(text); if (soundOn) speak(text); }
   function selectFood(food) {
-    if (isRightFood(current.id, food)) { celebrate(`${current.name} loves that!`); window.setTimeout(nextRound, 750); }
+    if (fedFoods.includes(food)) return;
+    if (isRightFood(current.id, food)) {
+      const foods = [...fedFoods, food];
+      setFedFoods(foods);
+      celebrate(foods.length === ANIMALS.length ? 'Every animal has had their favourite food!' : `${current.name} loves that!`);
+      if (foods.length < ANIMALS.length) window.setTimeout(nextRound, 750);
+    }
     else { setMessage(`${current.name} is looking for something else.`); }
   }
   function selectHome(home) {
     if (!selected) { setMessage('Choose an animal first.'); return; }
-    if (isRightHome(selected, home)) { const animal = byId(selected); const next = [...done, selected]; setDone(next); setSelected(null); celebrate(next.length === ANIMALS.length ? 'All the animals are home!' : `${animal.name} is home!`); }
+    if (homeMatches.includes(home)) return;
+    if (isRightHome(selected, home)) { const animal = byId(selected); const next = [...done, selected]; setDone(next); setHomeMatches((homes) => [...homes, home]); setSelected(null); celebrate(next.length === ANIMALS.length ? 'All the animals are home!' : `${animal.name} is home!`); }
     else setMessage('Let’s try another home.');
   }
   function chooseSound(animal) {
@@ -101,11 +111,13 @@ export default function AnimalAdventure({ onBack, soundOn }) {
       <p className="animal-grownup">Play together: name the animals, foods and homes as you go.</p>
     </section> : mode === 'feed' ? <section className="animal-play" aria-label="Feed the animal">
       <div className="animal-hero"><span>{current.emoji}</span><strong>{current.name}</strong><p>What does {current.name} want to eat?</p></div>
-      <div className="animal-choice-row">{ANIMALS.map((animal) => <button key={animal.id} type="button" aria-label={`Offer ${animal.foodName}`} onClick={() => selectFood(animal.food)}><span>{animal.food}</span><b>{animal.foodName}</b></button>)}</div>
+      <p className="animal-help">The right food will disappear after your animal eats it.</p>
+      <div className="animal-choice-row">{ANIMALS.filter((animal) => !fedFoods.includes(animal.food)).map((animal) => <button key={animal.id} type="button" aria-label={`Offer ${animal.foodName}`} onClick={() => selectFood(animal.food)}><span>{animal.food}</span><b>{animal.foodName}</b></button>)}</div>
+      {feedingFinished && <button className="animal-again" type="button" onClick={() => chooseMode('feed')}>Play again</button>}
     </section> : mode === 'homes' ? <section className="animal-play" aria-label="Match animals to homes">
-      <p className="animal-help">First choose an animal, then choose its home.</p><div className="animal-choice-row">{ANIMALS.filter((animal) => !done.includes(animal.id)).map((animal) => <button key={animal.id} type="button" className={selected === animal.id ? 'is-selected' : ''} onClick={() => { setSelected(animal.id); setMessage('Now find its home.'); }}><span>{animal.emoji}</span><b>{animal.name}</b></button>)}</div>
-      <div className="animal-choice-row animal-homes">{ANIMALS.map((animal) => <button key={animal.id} type="button" aria-label={`${animal.homeName} home`} onClick={() => selectHome(animal.home)}><span>{animal.home}</span><b>{animal.homeName}</b></button>)}</div>
-      {finished && <button className="animal-again" type="button" onClick={() => chooseMode('homes')}>Play again</button>}
+      <p className="animal-help">First choose an animal, then choose its home. The correct home will disappear.</p><div className="animal-choice-row">{ANIMALS.filter((animal) => !done.includes(animal.id)).map((animal) => <button key={animal.id} type="button" className={selected === animal.id ? 'is-selected' : ''} onClick={() => { setSelected(animal.id); setMessage('Now find its home.'); }}><span>{animal.emoji}</span><b>{animal.name}</b></button>)}</div>
+      <div className="animal-choice-row animal-homes">{ANIMALS.filter((animal) => !homeMatches.includes(animal.home)).map((animal) => <button key={animal.id} type="button" aria-label={`${animal.homeName} home`} onClick={() => selectHome(animal.home)}><span>{animal.home}</span><b>{animal.homeName}</b></button>)}</div>
+      {homesFinished && <button className="animal-again" type="button" onClick={() => chooseMode('homes')}>Play again</button>}
     </section> : <section className="animal-play" aria-label="Hear the animal sound">
       <button className="animal-listen" type="button" onClick={() => playSound()}><span aria-hidden="true">🔊</span> Hear it again</button><p className="animal-help">Which animal made that sound? The right animal will disappear, then you will hear a new sound.</p>
       <div className="animal-choice-row">{ANIMALS.filter((animal) => !soundMatches.includes(animal.id)).map((animal) => <button key={animal.id} type="button" onClick={() => chooseSound(animal)}><span>{animal.emoji}</span><b>{animal.name}</b></button>)}</div>
