@@ -5,27 +5,33 @@ import './PuzzleAdventure.css';
 
 const PUZZLES = [
   {
-    id: 'garden', title: 'Sunny Garden', count: 2,
+    id: 'garden', title: 'Sunny Garden', count: 10,
     pieces: [
       { id: 'sun', art: '☀️', label: 'sunny sky', colour: '#66caff' },
+      { id: 'cloud', art: '☁️', label: 'soft cloud', colour: '#8ad7f4' }, { id: 'rainbow', art: '🌈', label: 'rainbow', colour: '#6cc8e9' }, { id: 'bird', art: '🐦', label: 'little bird', colour: '#72ccec' },
       { id: 'flower', art: '🌷', label: 'flower garden', colour: '#75cd7a' },
+      { id: 'tulip', art: '🌼', label: 'yellow flower', colour: '#80cf76' }, { id: 'bee', art: '🐝', label: 'busy bee', colour: '#72c977' }, { id: 'butterfly', art: '🦋', label: 'butterfly', colour: '#75c978' }, { id: 'tree', art: '🌳', label: 'green tree', colour: '#6bbe72' }, { id: 'grass', art: '🌱', label: 'new grass', colour: '#66ba6e' },
     ],
   },
   {
-    id: 'farm', title: 'Farm Fun', count: 3,
+    id: 'farm', title: 'Farm Fun', count: 10,
     pieces: [
       { id: 'tractor', art: '🚜', label: 'farm tractor', colour: '#f4bb53' },
+      { id: 'sun', art: '☀️', label: 'farm sunshine', colour: '#75c7e9' }, { id: 'cloud', art: '☁️', label: 'farm cloud', colour: '#8bdaf2' },
       { id: 'cow', art: '🐮', label: 'happy cow', colour: '#86c977' },
-      { id: 'barn', art: '🌾', label: 'golden field', colour: '#e8c75d' },
+      { id: 'barn', art: '🏠', label: 'red barn', colour: '#df746d' }, { id: 'chicken', art: '🐔', label: 'little chicken', colour: '#e9c85d' }, { id: 'sheep', art: '🐑', label: 'fluffy sheep', colour: '#86ca77' }, { id: 'field', art: '🌾', label: 'golden field', colour: '#e8c75d' }, { id: 'fence', art: '🪵', label: 'farm fence', colour: '#b88355' }, { id: 'apple', art: '🍎', label: 'red apple', colour: '#79c777' },
     ],
   },
   {
-    id: 'ocean', title: 'Ocean Friends', count: 4,
+    id: 'ocean', title: 'Ocean Friends', count: 10,
     pieces: [
       { id: 'fish', art: '🐠', label: 'little fish', colour: '#4bb7e5' },
+      { id: 'dolphin', art: '🐬', label: 'dolphin', colour: '#579cdd' },
       { id: 'whale', art: '🐳', label: 'friendly whale', colour: '#5f92df' },
+      { id: 'octopus', art: '🐙', label: 'octopus', colour: '#7b82d5' },
       { id: 'shell', art: '🐚', label: 'seashell', colour: '#f0a7c4' },
       { id: 'star', art: '⭐', label: 'starfish', colour: '#e5bd55' },
+      { id: 'crab', art: '🦀', label: 'little crab', colour: '#e78577' }, { id: 'turtle', art: '🐢', label: 'sea turtle', colour: '#61bc9b' }, { id: 'coral', art: '🪸', label: 'coral reef', colour: '#e18aa5' }, { id: 'wave', art: '🌊', label: 'ocean wave', colour: '#42a9dc' },
     ],
   },
 ];
