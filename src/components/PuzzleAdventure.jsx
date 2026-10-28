@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
 import { speak, stopSpeech } from '../utils/speech';
+import puzzleScenes from '../assets/images/puzzles/puzzle-scenes.png';
 import './PuzzleAdventure.css';
 
 const PUZZLES = [
   {
-    id: 'garden', title: 'Sunny Garden', count: 10,
+    id: 'garden', title: 'Safari Friends', scene: 0, count: 10,
     pieces: [
       { id: 'sun', art: '☀️', label: 'sunny sky', colour: '#66caff' },
       { id: 'cloud', art: '☁️', label: 'soft cloud', colour: '#8ad7f4' }, { id: 'rainbow', art: '🌈', label: 'rainbow', colour: '#6cc8e9' }, { id: 'bird', art: '🐦', label: 'little bird', colour: '#72ccec' },
@@ -14,7 +15,7 @@ const PUZZLES = [
     ],
   },
   {
-    id: 'farm', title: 'Farm Fun', count: 10,
+    id: 'farm', title: 'Farm Friends', scene: 1, count: 10,
     pieces: [
       { id: 'tractor', art: '🚜', label: 'farm tractor', colour: '#f4bb53' },
       { id: 'sun', art: '☀️', label: 'farm sunshine', colour: '#75c7e9' }, { id: 'cloud', art: '☁️', label: 'farm cloud', colour: '#8bdaf2' },
@@ -23,7 +24,7 @@ const PUZZLES = [
     ],
   },
   {
-    id: 'ocean', title: 'Ocean Friends', count: 10,
+    id: 'ocean', title: 'Ocean Friends', scene: 2, count: 10,
     pieces: [
       { id: 'fish', art: '🐠', label: 'little fish', colour: '#4bb7e5' },
       { id: 'dolphin', art: '🐬', label: 'dolphin', colour: '#579cdd' },
@@ -58,6 +59,7 @@ export default function PuzzleAdventure({ onBack, soundOn }) {
   const [message, setMessage] = useState('');
   const puzzle = PUZZLES[puzzleIndex];
   const complete = placed.length === puzzle.pieces.length;
+  const fragmentStyle = (piece, index) => ({ '--piece-colour': piece.colour, backgroundImage: `url(${puzzleScenes})`, backgroundSize: '1500% 200%', backgroundPosition: `${((puzzle.scene * 5 + index % 5) / 14) * 100}% ${Math.floor(index / 5) * 100}%` });
 
   useEffect(() => {
     if (!soundOn) { stopSpeech(); return undefined; }
@@ -121,15 +123,13 @@ export default function PuzzleAdventure({ onBack, soundOn }) {
       </button>)}
     </section> : <section className="puzzle-workshop" aria-label={`${puzzle.title} picture puzzle`}>
       <div className={`puzzle-board puzzle-board-${puzzle.pieces.length}`}>
-        {puzzle.pieces.map((piece) => <div key={piece.id} ref={(node) => { slotRefs.current[piece.id] = node; }} className={`puzzle-slot ${placed.includes(piece.id) ? 'is-filled' : ''}`} style={{ '--piece-colour': piece.colour }}>
-          {placed.includes(piece.id) ? <span>{piece.art}</span> : <span className="puzzle-slot-hint">{piece.art}</span>}
+        {puzzle.pieces.map((piece, index) => <div key={piece.id} ref={(node) => { slotRefs.current[piece.id] = node; }} className={`puzzle-slot ${placed.includes(piece.id) ? 'is-filled' : ''}`} style={fragmentStyle(piece, index)}>
+          {!placed.includes(piece.id) && <span className="puzzle-slot-hint">{piece.art}</span>}
         </div>)}
       </div>
       <p className="puzzle-help">{complete ? 'Your whole picture is ready!' : 'Choose a piece below.'}</p>
       <div className="puzzle-piece-tray" aria-label="Picture pieces">
-        {order.filter((piece) => !placed.includes(piece.id)).map((piece) => <button key={piece.id} type="button" className={`puzzle-piece ${dragging?.piece.id === piece.id ? 'is-dragging' : ''}`} style={{ '--piece-colour': piece.colour }} onPointerDown={(event) => startDrag(piece, event)} onPointerMove={(event) => moveDrag(piece, event)} onPointerUp={(event) => endDrag(piece, event)} onPointerCancel={() => setDragging(null)} aria-label={`Drag ${piece.label} to the picture`}>
-          <span>{piece.art}</span><b>{piece.label}</b>
-        </button>)}
+        {order.filter((piece) => !placed.includes(piece.id)).map((piece) => { const index = puzzle.pieces.findIndex((item) => item.id === piece.id); return <button key={piece.id} type="button" className={`puzzle-piece ${dragging?.piece.id === piece.id ? 'is-dragging' : ''}`} style={fragmentStyle(piece, index)} onPointerDown={(event) => startDrag(piece, event)} onPointerMove={(event) => moveDrag(piece, event)} onPointerUp={(event) => endDrag(piece, event)} onPointerCancel={() => setDragging(null)} aria-label={`Drag ${piece.label} to the picture`}><span>{piece.art}</span></button>; })}
       </div>
       {dragging && <div className="puzzle-drag-ghost" style={{ left: dragging.x, top: dragging.y, '--piece-colour': dragging.piece.colour }} aria-hidden="true"><span>{dragging.piece.art}</span></div>}
       {complete && <button className="puzzle-again" type="button" onClick={() => reset()}>Play this picture again</button>}
