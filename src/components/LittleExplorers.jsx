@@ -3,6 +3,7 @@ import LocalBackButton from "./LocalBackButton";
 import BuildingAdventure, { BuildingIcon } from "./BuildingAdventure";
 import AnimalAdventure, { AnimalIcon } from "./AnimalAdventure";
 import PuzzleAdventure, { PuzzleIcon } from "./PuzzleAdventure";
+import MusicAdventure, { MusicIcon } from "./MusicAdventure";
 import {
   EraserIcon,
   ScribblerStickerPicker,
@@ -1216,6 +1217,10 @@ export default function LittleExplorers({
     return <PuzzleAdventure onBack={showAdventures} soundOn={soundOn} />;
   }
 
+  if (screen === "music") {
+    return <MusicAdventure onBack={showAdventures} soundOn={soundOn} />;
+  }
+
   if (screen === "planet") {
     const missionStarted = startedPlanets.includes(activePlanet.progressId);
     const missionComplete = isPlanetComplete(activePlanet);
@@ -1801,6 +1806,16 @@ export default function LittleExplorers({
             <strong>Puzzle Adventure</strong>
             <small>Put together big, simple picture puzzles.</small>
             <b>Picture puzzles</b>
+          </button>
+          <button
+            type="button"
+            className="little-adventure-card little-adventure-music"
+            onClick={() => { stopSpeech(); setScreen("music"); }}
+          >
+            <span aria-hidden="true"><MusicIcon /></span>
+            <strong>Music &amp; Movement</strong>
+            <small>Play instruments, copy little tunes and dance along.</small>
+            <b>3 music activities</b>
           </button>
           {LITTLE_ADVENTURES.map((adventure) => {
             const completedPlanets = adventure.planets.filter((planet) =>
