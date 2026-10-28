@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
 import { speak, stopSpeech } from '../utils/speech';
-import puzzleScenes from '../assets/images/puzzles/puzzle-scenes.png';
+import puzzleScenes from '../assets/images/puzzle-scenes.png';
 import './PuzzleAdventure.css';
 
 const PUZZLES = [
