@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
+import useLittleMissionCompletion from './useLittleMissionCompletion';
 import { speak, stopSpeech } from '../utils/speech';
 import artwork from '../assets/images/puzzle-portraits.png';
 import { shuffleTiles, swapTiles, isSolved } from './puzzleLogic';
@@ -12,8 +13,8 @@ function Picture({ scene, tile = null }) {
 export function PuzzleIcon() {
   return <svg viewBox="0 0 100 100" aria-hidden="true"><rect x="8" y="8" width="84" height="84" rx="16" fill="#ffd36f" /><path d="M8 50H92M50 8V92" stroke="#24395a" strokeWidth="5" /><circle cx="50" cy="33" r="9" fill="#82d5cd" /></svg>;
 }
-export default function PuzzleAdventure({ onBack, soundOn }) {
-  const [scene, setScene] = useState(null);
+export default function PuzzleAdventure({ onBack, soundOn, mission, onComplete }) {
+  const [scene, setScene] = useState(mission?.scene ?? null);
   const [tiles, setTiles] = useState(shuffleTiles);
   const [selected, setSelected] = useState(null);
   const [ghost, setGhost] = useState(null);
@@ -22,6 +23,7 @@ export default function PuzzleAdventure({ onBack, soundOn }) {
   const dragRef = useRef(null);
   const suppressClick = useRef(false);
   const solved = isSolved(tiles);
+  useLittleMissionCompletion(solved, onComplete);
   useEffect(() => {
     if (!soundOn) { stopSpeech(); return undefined; }
     const timer = window.setTimeout(() => speak(scene === null ? 'Choose a picture puzzle.' : `Let’s make the ${PICTURES[scene]} picture. Move a piece onto another piece to swap them.`), 220);
@@ -71,8 +73,8 @@ export default function PuzzleAdventure({ onBack, soundOn }) {
   }
   return <main className="little-explorers-page puzzle-page">
     <header className="puzzle-header">
-      <LocalBackButton label={scene === null ? 'Adventures' : 'Pictures'} onClick={() => { clearDrag(); setSelected(null); scene === null ? onBack() : setScene(null); }} />
-      <p className="eyebrow">LITTLE EXPLORERS / PUZZLES</p>
+      <LocalBackButton label={mission ? 'Puzzle Adventure map' : scene === null ? 'Adventures' : 'Pictures'} onClick={() => { clearDrag(); setSelected(null); mission || scene === null ? onBack() : setScene(null); }} />
+      <p className="eyebrow">{mission ? `PLANET ${mission.name.toUpperCase()} / PUZZLES` : 'LITTLE EXPLORERS / PUZZLES'}</p>
       <h1>{scene === null ? 'Puzzle Adventure' : `${PICTURES[scene]} Puzzle`}</h1>
       <p>{scene === null ? 'Choose a picture. Put its ten pieces back together.' : 'Drag one piece onto another to swap them.'}</p>
     </header>
@@ -85,7 +87,7 @@ export default function PuzzleAdventure({ onBack, soundOn }) {
       </div>
       {ghost && <div className="picture-ghost" style={{ left: ghost.x, top: ghost.y, width: ghost.width, height: ghost.height }}><Picture scene={scene} tile={ghost.tile} /></div>}
       <p className="picture-message" role="status">{message || 'You can also tap two pieces to swap them.'}</p>
-      {solved && <div className="picture-celebration"><span aria-hidden="true">🌟</span><h2>You put it together!</h2><button type="button" onClick={() => start(scene)}>Play again</button><button type="button" onClick={() => setScene(null)}>Choose another picture</button></div>}
+      {solved && <div className="picture-celebration"><span aria-hidden="true">🌟</span><h2>You put it together!</h2>{!mission && <><button type="button" onClick={() => start(scene)}>Play again</button><button type="button" onClick={() => setScene(null)}>Choose another picture</button></>}</div>}
     </section>}
   </main>;
 }

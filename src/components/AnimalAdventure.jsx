@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
+import useLittleMissionCompletion from './useLittleMissionCompletion';
 import { speak, stopSpeech } from '../utils/speech';
 import { ANIMALS, isRightFood, isRightHome } from './animalLogic';
 import dogSound from '../sounds/animals/dog.mp3';
@@ -25,8 +26,8 @@ const ACTIVITY_INFO = {
 const ANIMAL_SOUNDS = { dog: dogSound, cat: catSound, cow: cowSound, sheep: sheepSound, elephant: elephantSound };
 const shuffled = (items) => [...items].sort(() => Math.random() - 0.5);
 
-export default function AnimalAdventure({ onBack, soundOn }) {
-  const [mode, setMode] = useState('menu');
+export default function AnimalAdventure({ onBack, soundOn, mission, onComplete }) {
+  const [mode, setMode] = useState(mission?.mode || 'menu');
   const [round, setRound] = useState(0);
   const [done, setDone] = useState([]);
   const [fedFoods, setFedFoods] = useState([]);
@@ -37,10 +38,14 @@ export default function AnimalAdventure({ onBack, soundOn }) {
   const [soundMatches, setSoundMatches] = useState([]);
   const [message, setMessage] = useState('');
   const audioRef = useRef(null);
+  const roundTimer = useRef(null);
+  const advancing = useRef(false);
   const homeRefs = useRef({});
   const current = ANIMALS[round % ANIMALS.length];
   const homesFinished = done.length === ANIMALS.length;
   const feedingFinished = fedFoods.length === ANIMALS.length;
+  const soundsFinished = soundMatches.length === ANIMALS.length;
+  useLittleMissionCompletion((mode === 'feed' && feedingFinished) || (mode === 'homes' && homesFinished) || (mode === 'sounds' && soundsFinished), onComplete);
 
   useEffect(() => {
     if (!soundOn) { stopSpeech(); return undefined; }
@@ -52,9 +57,10 @@ export default function AnimalAdventure({ onBack, soundOn }) {
     return () => { window.clearTimeout(timer); stopSpeech(); };
   }, [mode, current, soundOn]);
 
-  useEffect(() => () => { audioRef.current?.pause(); }, []);
+  useEffect(() => () => { audioRef.current?.pause(); window.clearTimeout(roundTimer.current); }, []);
 
   function chooseMode(next) {
+    window.clearTimeout(roundTimer.current); advancing.current = false;
     audioRef.current?.pause();
     setMode(next);
     setRound(0);
@@ -67,15 +73,15 @@ export default function AnimalAdventure({ onBack, soundOn }) {
     setSoundMatches([]);
     setMessage('');
   }
-  function nextRound() { setRound((value) => (value + 1) % ANIMALS.length); setMessage(''); }
+  function nextRound() { advancing.current = false; setRound((value) => (value + 1) % ANIMALS.length); setMessage(''); }
   function celebrate(text) { setMessage(text); if (soundOn) speak(text); }
   function selectFood(food) {
-    if (fedFoods.includes(food)) return;
+    if (advancing.current || fedFoods.includes(food)) return;
     if (isRightFood(current.id, food)) {
       const foods = [...fedFoods, food];
       setFedFoods(foods);
       celebrate(foods.length === ANIMALS.length ? 'Every animal has had their favourite food!' : `${current.name} loves that!`);
-      if (foods.length < ANIMALS.length) window.setTimeout(nextRound, 750);
+      if (foods.length < ANIMALS.length) { advancing.current = true; roundTimer.current = window.setTimeout(nextRound, 750); }
     }
     else { setMessage(`${current.name} is looking for something else.`); }
   }
@@ -106,7 +112,7 @@ export default function AnimalAdventure({ onBack, soundOn }) {
     matchAnimalToHome(animal, target.home);
   }
   function chooseSound(animal) {
-    if (soundMatches.includes(animal.id)) return;
+    if (advancing.current || soundMatches.includes(animal.id)) return;
     if (animal.id !== current.id) {
       const feedback = 'No, that’s not it. Try another one.';
       setMessage(feedback);
@@ -118,13 +124,16 @@ export default function AnimalAdventure({ onBack, soundOn }) {
     celebrate(`Yes! That is ${animal.name}!`);
     if (matches.length === ANIMALS.length) return;
     const nextAnimal = ANIMALS[(round + 1) % ANIMALS.length];
-    window.setTimeout(() => {
+    advancing.current = true;
+    roundTimer.current = window.setTimeout(() => {
+      advancing.current = false;
       setRound((value) => (value + 1) % ANIMALS.length);
       setMessage('Listen carefully. Which animal made this sound?');
       playSound(nextAnimal);
     }, 850);
   }
   function playSound(animal = current) {
+    if (!soundOn) return;
     audioRef.current?.pause();
     const audio = new Audio(ANIMAL_SOUNDS[animal.id]);
     audio.volume = 1;
@@ -136,8 +145,8 @@ export default function AnimalAdventure({ onBack, soundOn }) {
 
   return <main className="little-explorers-page animal-page">
     <header className="animal-header">
-      <LocalBackButton label={mode === 'menu' ? 'Adventures' : 'Animal Adventure'} onClick={() => mode === 'menu' ? onBack() : chooseMode('menu')} />
-      <p className="eyebrow">LITTLE EXPLORERS / ANIMALS</p><h1>{title}</h1>
+      <LocalBackButton label={mission ? 'Animal Adventure map' : mode === 'menu' ? 'Adventures' : 'Animal Adventure'} onClick={() => mission || mode === 'menu' ? onBack() : chooseMode('menu')} />
+      <p className="eyebrow">{mission ? `PLANET ${mission.name.toUpperCase()} / ANIMALS` : 'LITTLE EXPLORERS / ANIMALS'}</p><h1>{title}</h1>
       <p>{mode === 'menu' ? 'Meet, match and care for friendly animals.' : ACTIVITY_INFO[mode].copy}</p>
     </header>
     {mode === 'menu' ? <section className="animal-mode-grid" aria-label="Animal activities">
@@ -149,7 +158,7 @@ export default function AnimalAdventure({ onBack, soundOn }) {
       <div className="animal-hero"><span>{current.emoji}</span><strong>{current.name}</strong><p>What does {current.name} want to eat?</p></div>
       <p className="animal-help">The right food will disappear after your animal eats it.</p>
       <div className="animal-choice-row">{ANIMALS.filter((animal) => !fedFoods.includes(animal.food)).map((animal) => <button key={animal.id} type="button" aria-label={`Offer ${animal.foodName}`} onClick={() => selectFood(animal.food)}><span>{animal.food}</span><b>{animal.foodName}</b></button>)}</div>
-      {feedingFinished && <button className="animal-again" type="button" onClick={() => chooseMode('feed')}>Play again</button>}
+      {feedingFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('feed')}>Play again</button>}
     </section> : mode === 'homes' ? <section className="animal-play" aria-label="Match animals to homes">
       <p className="animal-help">Drag each animal to the right home. The right animal and home will disappear.</p>
       <div className="animal-home-board">
@@ -157,11 +166,11 @@ export default function AnimalAdventure({ onBack, soundOn }) {
         <section className="animal-home-column" aria-label="Homes"><h2>Homes</h2><div className="animal-home-stack">{homeOrder.filter((animal) => !homeMatches.includes(animal.home)).map((animal) => <div key={animal.id} ref={(node) => { homeRefs.current[animal.home] = node; }} className="animal-home-drop" aria-label={`${animal.homeName} home`}><span>{animal.home}</span><b>{animal.homeName}</b></div>)}</div></section>
       </div>
       {dragging && <div className="animal-drag-ghost" style={{ left: dragging.x, top: dragging.y }} aria-hidden="true"><span>{dragging.animal.emoji}</span><b>{dragging.animal.name}</b></div>}
-      {homesFinished && <button className="animal-again" type="button" onClick={() => chooseMode('homes')}>Play again</button>}
+      {homesFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('homes')}>Play again</button>}
     </section> : <section className="animal-play" aria-label="Hear the animal sound">
       <button className="animal-listen" type="button" onClick={() => playSound()}><span aria-hidden="true">🔊</span> Hear it again</button><p className="animal-help">Which animal made that sound? The right animal will disappear, then you will hear a new sound.</p>
       <div className="animal-choice-row">{ANIMALS.filter((animal) => !soundMatches.includes(animal.id)).map((animal) => <button key={animal.id} type="button" onClick={() => chooseSound(animal)}><span>{animal.emoji}</span><b>{animal.name}</b></button>)}</div>
-      {soundMatches.length === ANIMALS.length && <button className="animal-again" type="button" onClick={() => chooseMode('sounds')}>Play again</button>}
+      {soundsFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('sounds')}>Play again</button>}
     </section>}
     {mode !== 'menu' && <p className="animal-feedback" role="status" aria-live="polite">{message || 'Choose and explore.'}</p>}
   </main>;

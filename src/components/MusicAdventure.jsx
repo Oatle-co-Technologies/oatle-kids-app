@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
+import useLittleMissionCompletion from './useLittleMissionCompletion';
 import { speak, stopSpeech } from '../utils/speech';
 import { createMusicAudio } from './musicAudio';
 import './MusicAdventure.css';
@@ -32,8 +33,9 @@ export default function MusicAdventure(props) {
   return <MusicActivities key={String(props.soundOn)} {...props} />;
 }
 
-function MusicActivities({ onBack, soundOn = true }) {
-  const [activity, setActivity] = useState('menu');
+function MusicActivities({ onBack, soundOn = true, mission, onComplete }) {
+  const [activity, setActivity] = useState(mission?.mode || 'menu');
+  const [hasPlayed, setHasPlayed] = useState(false);
   const [phase, setPhase] = useState('ready');
   const [message, setMessage] = useState('');
   const [lit, setLit] = useState(null);
@@ -44,6 +46,8 @@ function MusicActivities({ onBack, soundOn = true }) {
   const generation = useRef(0);
   const phaseRef = useRef('ready');
   const answer = useRef(0);
+  const missionFinished = (activity === 'copy' && phase === 'success' && round === PATTERNS.length - 1) || (activity === 'dance' && phase === 'finished');
+  useLittleMissionCompletion(missionFinished, onComplete);
 
   function later(callback, delay) {
     const id = window.setTimeout(() => { timers.current.delete(id); callback(); }, delay);
@@ -104,6 +108,7 @@ function MusicActivities({ onBack, soundOn = true }) {
     clear();
     if (!await readyAudio()) return;
     audio.current.hit(instrument, 0, pitch);
+    setHasPlayed(true);
     setLit(key); later(() => setLit(null), 220);
   }
 
@@ -162,8 +167,8 @@ function MusicActivities({ onBack, soundOn = true }) {
   const playing = ['starting', 'dance', 'freeze'].includes(phase);
   return <main className="little-explorers-page music-page">
     <header className="music-header">
-      <LocalBackButton label={activity === 'menu' ? 'Adventures' : 'Music activities'} onClick={() => { reset(); activity === 'menu' ? onBack() : setActivity('menu'); }} />
-      <p className="eyebrow">LITTLE EXPLORERS / MUSIC & MOVEMENT</p>
+      <LocalBackButton label={mission ? 'Music & Movement map' : activity === 'menu' ? 'Adventures' : 'Music activities'} onClick={() => { reset(); mission || activity === 'menu' ? onBack() : setActivity('menu'); }} />
+      <p className="eyebrow">{mission ? `PLANET ${mission.name.toUpperCase()} / MUSIC & MOVEMENT` : 'LITTLE EXPLORERS / MUSIC & MOVEMENT'}</p>
       <h1>{selected?.title || 'Music & Movement'}</h1>
       <p>{activity === 'menu' ? 'Little sounds. Big smiles. Let’s play!' : selected.description}</p>
     </header>
@@ -176,13 +181,14 @@ function MusicActivities({ onBack, soundOn = true }) {
         <div className="music-instruments">{['drum', 'bell'].map(kind => <button type="button" className={`music-pad ${lit === kind ? 'is-lit' : ''}`} disabled={!soundOn} key={kind} onClick={() => play(kind)}><InstrumentArt kind={kind} /><strong>{kind === 'drum' ? 'Drum' : 'Bell'}</strong></button>)}</div>
         <div className="music-keys" aria-label="Five piano keys">{['C', 'D', 'E', 'G', 'A'].map((note, index) => <button type="button" key={note} style={{ '--key-colour': ['#ef9894', '#ffd77d', '#a9e3b7', '#9ed9f3', '#ccbbf0'][index] }} className={lit === note ? 'is-lit' : ''} disabled={!soundOn} aria-label={`Play ${note}`} onClick={() => play('piano', [0, 2, 4, 7, 9][index], note)}><span aria-hidden="true">♪</span><b>{note}</b></button>)}</div>
         <p className="music-hint">Your little piano</p>
+        {mission && <button type="button" className="music-primary" disabled={!hasPlayed} onClick={() => { clear(); onComplete(); }}>I’m finished ✓</button>}
       </>}
       {activity === 'copy' && <>
         <p className="music-hint">Little tune {round + 1} of {PATTERNS.length} · Two sounds to copy</p>
         <div className="music-copy-progress" aria-label={`${progress} of 2 sounds copied`}>{PATTERNS[round].map((_, index) => <span key={index} className={index < progress ? 'is-complete' : ''} aria-hidden="true">{index < progress ? '★' : '♪'}</span>)}</div>
-        <button type="button" className="music-primary" disabled={!soundOn || phase === 'listening'} onClick={() => listen()}>{phase === 'listening' ? 'Listening…' : phase === 'ready' ? '▶ Listen' : '↻ Listen again'}</button>
+        <button type="button" className="music-primary" disabled={!soundOn || phase === 'listening' || (mission && missionFinished)} onClick={() => listen()}>{phase === 'listening' ? 'Listening…' : phase === 'ready' ? '▶ Listen' : '↻ Listen again'}</button>
         <div className="music-instruments">{['drum', 'bell'].map(kind => <button type="button" key={kind} disabled={!soundOn || phase !== 'answer'} className={`music-pad ${lit === kind ? 'is-lit' : ''}`} onClick={() => copy(kind)}><InstrumentArt kind={kind} /><strong>{kind === 'drum' ? 'Drum' : 'Bell'}</strong></button>)}</div>
-        {phase === 'success' && <button type="button" className="music-primary" onClick={() => { const next = (round + 1) % PATTERNS.length; setRound(next); void listen(next); }}>{round === PATTERNS.length - 1 ? 'Play again' : 'Next little tune'} <span aria-hidden="true">→</span></button>}
+        {phase === 'success' && !(mission && missionFinished) && <button type="button" className="music-primary" onClick={() => { const next = (round + 1) % PATTERNS.length; setRound(next); void listen(next); }}>{round === PATTERNS.length - 1 ? 'Play again' : 'Next little tune'} <span aria-hidden="true">→</span></button>}
       </>}
       {activity === 'dance' && <>
         <p className="music-grownup">Grown-ups: make a little space and stay nearby. Seated dancing and waving hands work too.</p>
@@ -191,7 +197,7 @@ function MusicActivities({ onBack, soundOn = true }) {
           <h2>{phase === 'dance' ? 'Dance!' : phase === 'freeze' ? 'Freeze!' : phase === 'finished' ? 'You did it!' : 'Ready to wiggle?'}</h2>
           <p>{playing ? `Round ${progress || 1} of 3` : 'Move when you hear the music'}</p>
         </div>
-        <button type="button" className="music-primary" disabled={!soundOn} onClick={playing ? reset : dance}>{playing ? '■ Stop' : phase === 'finished' ? '▶ Dance again' : '▶ Start dancing'}</button>
+        {!(mission && missionFinished) && <button type="button" className="music-primary" disabled={!soundOn} onClick={playing ? reset : dance}>{playing ? '■ Stop' : phase === 'finished' ? '▶ Dance again' : '▶ Start dancing'}</button>}
       </>}
       <p className="music-message" role="status">{message || (activity === 'copy' ? 'Tap Listen when you’re ready.' : '')}</p>
     </section>}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
+import useLittleMissionCompletion from './useLittleMissionCompletion';
 import { speak, stopSpeech } from '../utils/speech';
 import { BLOCKS, SHAPES, BUILDS, BOARD, CELL, MAX_BLOCKS, containsPoint, freePlacement, matchingTarget } from './buildingLogic';
 import './BuildingAdventure.css';
@@ -50,9 +51,9 @@ const positionStyle = (piece, definition) => ({
   width: `${definition.width / BOARD.width * 100}%`, height: `${definition.height / BOARD.height * 100}%`,
 });
 
-export default function BuildingAdventure({ onBack, soundOn }) {
-  const [mode, setMode] = useState('menu');
-  const [buildIndex, setBuildIndex] = useState(0);
+export default function BuildingAdventure({ onBack, soundOn, mission, onComplete }) {
+  const [mode, setMode] = useState(mission?.mode || 'menu');
+  const [buildIndex, setBuildIndex] = useState(mission?.buildIndex ?? 0);
   const [freePieces, setFreePieces] = useState([]);
   const [history, setHistory] = useState([]);
   const [filled, setFilled] = useState([]);
@@ -68,6 +69,7 @@ export default function BuildingAdventure({ onBack, soundOn }) {
   const pieces = isCopy ? build.targets.map(target => filled.find(piece => piece.targetId === target.id)).filter(Boolean) : freePieces;
   const definitions = isCopy ? SHAPES : BLOCKS;
   const complete = isCopy && filled.length === build.targets.length;
+  useLittleMissionCompletion(complete, onComplete);
   const title = mode === 'menu' ? 'Building Adventure' : mode === 'choose' ? 'Build This' : isCopy ? build.title : 'Build Anything';
 
   useEffect(() => {
@@ -164,8 +166,8 @@ export default function BuildingAdventure({ onBack, soundOn }) {
 
   return <main className={`little-explorers-page building-page building-${mode}`}>
     <header className="building-header">
-      <LocalBackButton label={mode === 'menu' ? 'Adventures' : mode === 'copy' ? 'Build This' : 'Building'} onClick={() => mode === 'menu' ? onBack() : changeMode(mode === 'copy' ? 'choose' : 'menu')} />
-      <p className="eyebrow">LITTLE EXPLORERS / BUILDING</p>
+      <LocalBackButton label={mission ? 'Building Adventure map' : mode === 'menu' ? 'Adventures' : mode === 'copy' ? 'Build This' : 'Building'} onClick={() => mission || mode === 'menu' ? onBack() : changeMode(mode === 'copy' ? 'choose' : 'menu')} />
+      <p className="eyebrow">{mission ? `PLANET ${mission.name.toUpperCase()} / BUILDING` : 'LITTLE EXPLORERS / BUILDING'}</p>
       <h1>{title}</h1>
       <p>{mode === 'menu' ? 'Little pieces. Big possibilities.' : mode === 'choose' ? 'Pick a picture. Let’s make it together.' : isCopy ? 'Make the little picture with shapes.' : 'Stack, move and make something your own.'}</p>
     </header>
@@ -226,7 +228,8 @@ export default function BuildingAdventure({ onBack, soundOn }) {
       <div className="building-tools">
         <button type="button" onClick={undo} disabled={isCopy ? !filled.length : !history.length}>Undo</button>
         <button type="button" onClick={reset} disabled={!pieces.length}>Start again</button>
-        {isCopy && <button type="button" className={complete ? 'building-next' : ''} onClick={() => changeMode('choose')}>{complete ? 'Build another picture' : 'Choose a picture'}</button>}
+        {isCopy && !mission && <button type="button" className={complete ? 'building-next' : ''} onClick={() => changeMode('choose')}>{complete ? 'Build another picture' : 'Choose a picture'}</button>}
+        {mission && !isCopy && <button type="button" className="building-next" disabled={!pieces.length} onClick={onComplete}>I’m finished ✓</button>}
       </div>
     </section>}
   </main>;

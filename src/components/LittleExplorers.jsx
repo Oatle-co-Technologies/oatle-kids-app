@@ -4,6 +4,7 @@ import BuildingAdventure, { BuildingIcon } from "./BuildingAdventure";
 import AnimalAdventure, { AnimalIcon } from "./AnimalAdventure";
 import PuzzleAdventure, { PuzzleIcon } from "./PuzzleAdventure";
 import MusicAdventure, { MusicIcon } from "./MusicAdventure";
+import { makeExtraAdventures } from "./littleMissionCatalog";
 import {
   EraserIcon,
   ScribblerStickerPicker,
@@ -319,6 +320,7 @@ const PLANET_ART = [
 ];
 
 const LITTLE_ADVENTURES = [
+  ...makeExtraAdventures(PLANET_ART),
   {
     id: "balloons",
     title: "Balloon Adventure",
@@ -656,7 +658,7 @@ export default function LittleExplorers({
       adventures: "Choose your little space adventure.",
       map: `${activeAdventure.title}. Choose a planet.`,
       planet: `Welcome to planet ${activePlanet.name} in the ${activeAdventure.title}. ${activePlanet.description}`,
-      celebration: null,
+      celebration: `Mission accomplished! You completed the ${activePlanet.missionTitle} mission on planet ${activePlanet.name}.`,
       balloons: balloonBreak
         ? "Bubble break! Pop the balloons!"
         : balloonMode
@@ -676,12 +678,13 @@ export default function LittleExplorers({
     const prompt = prompts[screen];
     if (!prompt) return undefined;
 
-    const timer = window.setTimeout(() => speak(prompt), 220);
+    const timer = window.setTimeout(() => speak(prompt), screen === "celebration" ? 7800 : 220);
 
-    return () => window.clearTimeout(timer);
+    return () => { window.clearTimeout(timer); stopSpeech(); };
   }, [
     activePlanet.name,
     activePlanet.description,
+    activePlanet.missionTitle,
     activeAdventure.title,
     balloonBreak,
     balloonCategory,
@@ -797,11 +800,13 @@ export default function LittleExplorers({
   };
 
   const startPlanetMission = () => {
+    stopSpeech();
     markPlanetStarted(activePlanet.progressId);
     startActivity(activePlanet);
   };
 
   const unlockNextPlanet = () => {
+    stopSpeech();
     const currentIndex = activeAdventure.planets.findIndex(
       (planet) => planet.id === activePlanet.id
     );
@@ -1205,20 +1210,26 @@ export default function LittleExplorers({
     celebratePlanet(280);
   };
 
+  const finishExtraMission = () => {
+    stopSpeech();
+    completePlanet();
+    celebratePlanet();
+  };
+
   if (screen === "building") {
-    return <BuildingAdventure onBack={showAdventures} soundOn={soundOn} />;
+    return <BuildingAdventure key={activePlanet.progressId} mission={activePlanet} onComplete={finishExtraMission} onBack={showMap} soundOn={soundOn} />;
   }
 
   if (screen === "animals") {
-    return <AnimalAdventure onBack={showAdventures} soundOn={soundOn} />;
+    return <AnimalAdventure key={activePlanet.progressId} mission={activePlanet} onComplete={finishExtraMission} onBack={showMap} soundOn={soundOn} />;
   }
 
   if (screen === "puzzles") {
-    return <PuzzleAdventure onBack={showAdventures} soundOn={soundOn} />;
+    return <PuzzleAdventure key={activePlanet.progressId} mission={activePlanet} onComplete={finishExtraMission} onBack={showMap} soundOn={soundOn} />;
   }
 
   if (screen === "music") {
-    return <MusicAdventure onBack={showAdventures} soundOn={soundOn} />;
+    return <MusicAdventure key={activePlanet.progressId} mission={activePlanet} onComplete={finishExtraMission} onBack={showMap} soundOn={soundOn} />;
   }
 
   if (screen === "planet") {
@@ -1777,46 +1788,6 @@ export default function LittleExplorers({
         </header>
 
         <section className="little-adventure-grid" aria-label="Little Space Adventures">
-          <button
-            type="button"
-            className="little-adventure-card little-adventure-building"
-            onClick={() => { stopSpeech(); setScreen("building"); }}
-          >
-            <span aria-hidden="true"><BuildingIcon /></span>
-            <strong>Building Adventure</strong>
-            <small>Build freely with blocks or copy a little shape picture.</small>
-            <b>2 building activities</b>
-          </button>
-          <button
-            type="button"
-            className="little-adventure-card little-adventure-animals"
-            onClick={() => { stopSpeech(); setScreen("animals"); }}
-          >
-            <span aria-hidden="true"><AnimalIcon /></span>
-            <strong>Animal Adventure</strong>
-            <small>Feed animals, find their homes and listen for their sounds.</small>
-            <b>3 animal activities</b>
-          </button>
-          <button
-            type="button"
-            className="little-adventure-card little-adventure-puzzles"
-            onClick={() => { stopSpeech(); setScreen("puzzles"); }}
-          >
-            <span aria-hidden="true"><PuzzleIcon /></span>
-            <strong>Puzzle Adventure</strong>
-            <small>Put together big, simple picture puzzles.</small>
-            <b>Picture puzzles</b>
-          </button>
-          <button
-            type="button"
-            className="little-adventure-card little-adventure-music"
-            onClick={() => { stopSpeech(); setScreen("music"); }}
-          >
-            <span aria-hidden="true"><MusicIcon /></span>
-            <strong>Music &amp; Movement</strong>
-            <small>Play instruments, copy little tunes and dance along.</small>
-            <b>3 music activities</b>
-          </button>
           {LITTLE_ADVENTURES.map((adventure) => {
             const completedPlanets = adventure.planets.filter((planet) =>
               isPlanetComplete(planet, adventure)
@@ -1829,7 +1800,7 @@ export default function LittleExplorers({
                 className={`little-adventure-card little-adventure-${adventure.id}`}
                 onClick={() => openAdventure(adventure.id)}
               >
-                <span aria-hidden="true">{adventure.icon}</span>
+                <span aria-hidden="true">{adventure.id === "building" ? <BuildingIcon /> : adventure.id === "animals" ? <AnimalIcon /> : adventure.id === "puzzles" ? <PuzzleIcon /> : adventure.id === "music" ? <MusicIcon /> : adventure.icon}</span>
                 <strong>{adventure.title}</strong>
                 <small>{adventure.description}</small>
                 <b>{completedPlanets} of {adventure.planets.length} planets</b>
