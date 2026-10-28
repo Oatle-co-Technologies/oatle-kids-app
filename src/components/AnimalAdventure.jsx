@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
 import { speak, stopSpeech } from '../utils/speech';
 import { ANIMALS, byId, isRightFood, isRightHome } from './animalLogic';
-import dogSound from '../sounds/animals/dog.ogg';
-import catSound from '../sounds/animals/cat.ogg';
-import cowSound from '../sounds/animals/cow.ogg';
-import sheepSound from '../sounds/animals/sheep.ogg';
-import elephantSound from '../sounds/animals/elephant.ogg';
+import dogSound from '../sounds/animals/dog.mp3';
+import catSound from '../sounds/animals/cat.mp3';
+import cowSound from '../sounds/animals/cow.mp3';
+import sheepSound from '../sounds/animals/sheep.mp3';
+import elephantSound from '../sounds/animals/elephant.mp3';
 import './AnimalAdventure.css';
 
 export function AnimalIcon() {
@@ -29,6 +29,8 @@ export default function AnimalAdventure({ onBack, soundOn }) {
   const [round, setRound] = useState(0);
   const [selected, setSelected] = useState(null);
   const [done, setDone] = useState([]);
+  const [soundChoicesGone, setSoundChoicesGone] = useState([]);
+  const [soundRoundComplete, setSoundRoundComplete] = useState(false);
   const [message, setMessage] = useState('');
   const audioRef = useRef(null);
   const current = ANIMALS[round % ANIMALS.length];
@@ -46,8 +48,8 @@ export default function AnimalAdventure({ onBack, soundOn }) {
 
   useEffect(() => () => { audioRef.current?.pause(); }, []);
 
-  function chooseMode(next) { audioRef.current?.pause(); setMode(next); setRound(0); setSelected(null); setDone([]); setMessage(''); }
-  function nextRound() { setRound((value) => (value + 1) % ANIMALS.length); setMessage(''); }
+  function chooseMode(next) { audioRef.current?.pause(); setMode(next); setRound(0); setSelected(null); setDone([]); setSoundChoicesGone([]); setSoundRoundComplete(false); setMessage(''); }
+  function nextRound() { setRound((value) => (value + 1) % ANIMALS.length); setSoundChoicesGone([]); setSoundRoundComplete(false); setMessage(''); }
   function celebrate(text) { setMessage(text); if (soundOn) speak(text); }
   function selectFood(food) {
     if (isRightFood(current.id, food)) { celebrate(`${current.name} loves that!`); window.setTimeout(nextRound, 750); }
@@ -59,15 +61,26 @@ export default function AnimalAdventure({ onBack, soundOn }) {
     else setMessage('Let’s try another home.');
   }
   function chooseSound(animal) {
-    if (animal.id === current.id) { celebrate(`Yes! That is ${animal.name}!`); window.setTimeout(nextRound, 750); }
-    else setMessage('Listen once more, then try again.');
+    if (soundChoicesGone.includes(animal.id)) return;
+    setSoundChoicesGone((choices) => [...choices, animal.id]);
+    if (animal.id === current.id) { setSoundRoundComplete(true); celebrate(`Yes! That is ${animal.name}!`); }
+    else setMessage('That animal has gone away. Listen again, then try another one.');
   }
   function playSound() {
     audioRef.current?.pause();
     const audio = new Audio(ANIMAL_SOUNDS[current.id]);
+    audio.volume = 1;
     audioRef.current = audio;
+    let plays = 0;
+    const playAgain = () => {
+      plays += 1;
+      if (plays === 3) return;
+      audio.currentTime = 0;
+      audio.play().catch(() => setMessage('Tap “Hear it again” once more to play the sound.'));
+    };
+    audio.addEventListener('ended', playAgain);
     audio.play().catch(() => setMessage('Tap “Hear it again” once more to play the sound.'));
-    setMessage('Listen carefully.');
+    setMessage('Listen carefully — it will play three times.');
   }
   const title = mode === 'menu' ? 'Animal Adventure' : ACTIVITY_INFO[mode].title;
 
@@ -90,8 +103,9 @@ export default function AnimalAdventure({ onBack, soundOn }) {
       <div className="animal-choice-row animal-homes">{ANIMALS.map((animal) => <button key={animal.id} type="button" aria-label={`${animal.homeName} home`} onClick={() => selectHome(animal.home)}><span>{animal.home}</span><b>{animal.homeName}</b></button>)}</div>
       {finished && <button className="animal-again" type="button" onClick={() => chooseMode('homes')}>Play again</button>}
     </section> : <section className="animal-play" aria-label="Hear the animal sound">
-      <button className="animal-listen" type="button" onClick={playSound}><span aria-hidden="true">🔊</span> Hear it again</button><p className="animal-help">Which animal made that sound?</p>
-      <div className="animal-choice-row">{ANIMALS.map((animal) => <button key={animal.id} type="button" onClick={() => chooseSound(animal)}><span>{animal.emoji}</span><b>{animal.name}</b></button>)}</div>
+      <button className="animal-listen" type="button" onClick={playSound}><span aria-hidden="true">🔊</span> Hear it three times</button><p className="animal-help">Which animal made that sound? Each animal you try will disappear.</p>
+      <div className="animal-choice-row">{ANIMALS.filter((animal) => !soundChoicesGone.includes(animal.id)).map((animal) => <button key={animal.id} type="button" onClick={() => chooseSound(animal)}><span>{animal.emoji}</span><b>{animal.name}</b></button>)}</div>
+      {soundRoundComplete && <button className="animal-again" type="button" onClick={nextRound}>Hear another animal</button>}
     </section>}
     {mode !== 'menu' && <p className="animal-feedback" role="status" aria-live="polite">{message || 'Choose and explore.'}</p>}
   </main>;
