@@ -1,6 +1,6 @@
-# 🚀 Atli's Space Game
+# 🚀 Oatle Kids App
 
-**Atli's Space Game** is an interactive early-literacy learning game designed to help young children build foundational reading skills through a fun space adventure.
+**Oatle Kids App** is an interactive early-literacy learning game designed to help young children build foundational reading skills through a fun space adventure.
 
 The game takes children on a journey through the solar system, with each planet introducing a different early-reading skill. Children learn through short activities, visual illustrations, audio feedback, repetition, and an encouraging game experience.
 
