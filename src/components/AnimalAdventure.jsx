@@ -12,6 +12,7 @@ import './AnimalAdventure.css';
 import FeedAnimalScene from './FeedAnimalScene';
 import AnimalHomesScene from './AnimalHomesScene';
 import AnimalSoundScene from './AnimalSoundScene';
+import './AnimalImmersive.css';
 
 export function AnimalIcon() {
   return <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
@@ -122,12 +123,18 @@ export default function AnimalAdventure({ onBack, soundOn, mission, onComplete }
   }
   const title = mode === 'menu' ? 'Animal Adventure' : ACTIVITY_INFO[mode].title;
 
-  return <main className={`little-explorers-page animal-page ${mode === 'feed' ? 'is-feeding' : mode === 'homes' ? 'is-homing' : mode === 'sounds' ? 'is-listening' : ''}`}>
+  return <main className={`little-explorers-page animal-page ${mode !== 'menu' ? 'animal-immersive' : ''} ${mode === 'feed' ? 'is-feeding' : mode === 'homes' ? 'is-homing' : mode === 'sounds' ? 'is-listening' : ''}`}>
+    {mode !== 'menu' ? <>
+      <h1 className="animal-sr-only">{title}</h1>
+      <button type="button" className="animal-scene-back" aria-label={mission ? 'Back to Animal Adventure map' : 'Back to Animal Adventure'}
+        onClick={() => mission ? onBack() : chooseMode('menu')}><span aria-hidden="true">←</span></button>
+    </> : <>
     <header className="animal-header">
       <LocalBackButton label={mission ? 'Animal Adventure map' : mode === 'menu' ? 'Adventures' : 'Animal Adventure'} onClick={() => mission || mode === 'menu' ? onBack() : chooseMode('menu')} />
       <p className="eyebrow">{mission ? `PLANET ${mission.name.toUpperCase()} / ANIMALS` : 'LITTLE EXPLORERS / ANIMALS'}</p><h1>{title}</h1>
       <p>{mode === 'menu' ? 'Meet, match and care for friendly animals.' : ACTIVITY_INFO[mode].copy}</p>
     </header>
+    </>}
     {mode === 'menu' ? <section className="animal-mode-grid" aria-label="Animal activities">
       {Object.entries(ACTIVITY_INFO).map(([id, info]) => <button key={id} type="button" className={`animal-mode-card animal-${id}-card`} onClick={() => chooseMode(id)}>
         <span className="animal-mode-art" aria-hidden="true">{id === 'feed' ? '🐰🥕' : id === 'homes' ? '🐵🌴' : '🐧🎵'}</span><span>{info.number}</span><strong>{info.title}</strong><small>{info.copy}</small><b>Let’s play ↗</b>
@@ -135,14 +142,14 @@ export default function AnimalAdventure({ onBack, soundOn, mission, onComplete }
       <p className="animal-grownup">Play together: name the animals, foods and homes as you go.</p>
     </section> : mode === 'feed' ? <>
       <FeedAnimalScene key={current.id} animal={current} fed={fedFoods.includes(current.food)} onFood={selectFood} />
-      {feedingFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('feed')}>Play again</button>}
+      {feedingFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('feed')} aria-label="Play again"><span aria-hidden="true">↻</span></button>}
     </> : mode === 'homes' ? <>
       <AnimalHomesScene key={current.id} animal={current} matched={done.includes(current.id)} onHome={matchAnimalToHome} />
-      {homesFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('homes')}>Play again</button>}
+      {homesFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('homes')} aria-label="Play again"><span aria-hidden="true">↻</span></button>}
     </> : <>
       <AnimalSoundScene key={current.id} animal={current} matched={soundMatches.includes(current.id)} soundOn={soundOn} onListen={() => playSound()} onChoose={chooseSound} />
-      {soundsFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('sounds')}>Play again</button>}
+      {soundsFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('sounds')} aria-label="Play again"><span aria-hidden="true">↻</span></button>}
     </>}
-    {mode !== 'menu' && <p className="animal-feedback" role="status" aria-live="polite">{message}</p>}
+    {mode !== 'menu' && <p className={`animal-feedback ${mode !== 'menu' ? 'animal-sr-only' : ''}`} role="status" aria-live="polite">{message}</p>}
   </main>;
 }
