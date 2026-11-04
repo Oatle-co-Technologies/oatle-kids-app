@@ -9,3 +9,11 @@ test('four distinct recorded songs ship with their source and attribution',()=>{
  for(const song of DANCE_SONGS){assert.ok(statSync(new URL('../public'+song.src,import.meta.url)).size>100000);assert.ok(attribution.includes(song.title));assert.ok(attribution.includes(song.isrc));}
  assert.ok(attribution.includes(MUSIC_LICENCE));assert.ok(attribution.includes('Kevin MacLeod'));
 });
+
+test('copy examples contain four audible beats and finish before the child’s turn', async()=>{
+ const {COPY_BEATS_MS,COPY_TURN_MS}=await import('../src/components/musicGardenData.js');
+ assert.equal(COPY_BEATS_MS.length,4);
+ assert.ok(COPY_BEATS_MS.at(-1)-COPY_BEATS_MS[0]>=2500);
+ assert.ok(COPY_TURN_MS>=COPY_BEATS_MS.at(-1)+700);
+ for(let i=1;i<COPY_BEATS_MS.length;i++)assert.ok(COPY_BEATS_MS[i]>COPY_BEATS_MS[i-1]);
+});

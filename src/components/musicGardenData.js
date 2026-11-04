@@ -1,3 +1,6 @@
+// Four steady sounds give toddlers a longer example without requiring pitch matching.
+export const COPY_BEATS_MS = [300, 1200, 2100, 3000];
+export const COPY_TURN_MS = 3900;
 export const MUSIC_INSTRUMENTS = ['drum','bongos','bell','piano','xylophone'];
 export const COPY_INSTRUMENTS = ['drum', 'bongos', 'bell', 'piano', 'xylophone'];
 export const DANCE_SONGS = [
