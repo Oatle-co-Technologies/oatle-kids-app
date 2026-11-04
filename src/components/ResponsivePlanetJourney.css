@@ -2,6 +2,15 @@
 .responsive-planet-host { display: contents; }
 
 @media (max-width: 1023px) {
+  main.big-kids-planet-map, main.little-map-page {
+    --planet-map-safe-top: env(safe-area-inset-top, 0px);
+    --planet-map-safe-left: env(safe-area-inset-left, 0px);
+    --planet-map-safe-right: env(safe-area-inset-right, 0px);
+    --planet-map-top-gap: 32px;
+    --planet-map-side-gap: 16px;
+    --planet-map-bottom-gap: 16px;
+    padding: calc(var(--planet-map-top-gap) + var(--planet-map-safe-top)) calc(var(--planet-map-side-gap) + var(--planet-map-safe-right)) var(--planet-map-bottom-gap) calc(var(--planet-map-side-gap) + var(--planet-map-safe-left));
+  }
   .responsive-planet-host { display: grid; place-items: center; width: 100%; height: 100%; min-width: 0; min-height: 0; margin: 0; }
   .space-journey.planet-orbit { position: relative; width: var(--orbit-board-width); max-width: 100%; margin: 0; }
   .space-journey.planet-orbit .journey-key, .space-journey.planet-orbit .journey-stage::before { display: none; }
@@ -44,22 +53,22 @@
   .planet-orbit-center > strong { position: absolute; left: 12.5%; bottom: 20%; display: block; width: 75%; box-sizing: border-box; padding: 3px; border: 1.5px solid #ffe298; border-radius: 24px; background: linear-gradient(155deg, #42315e, #171536); box-shadow: 0 2px 8px #e796dd55; font: 900 var(--orbit-title-font)/1.1 'Nunito', sans-serif; text-shadow: 0 2px 4px #050923; }
   .planet-orbit-sparkle { position: absolute; z-index: 0; transform: translate(-50%, -50%); font-size: 9px; line-height: 1; color: #fff; text-shadow: 0 0 4px #fff, 0 0 9px #a99bff; pointer-events: none; }
 
-  main.big-kids-planet-map { display: grid; grid-template-rows: 116px minmax(0, 1fr); padding: 12px; height: calc(100dvh - 82px - env(safe-area-inset-bottom, 0px)); min-height: 0; }
-  main.big-kids-planet-map .planet-map-toolbar { position: relative; display: grid; grid-template-columns: 1fr auto; grid-template-rows: 44px 42px; align-items: center; gap: 8px 10px; min-height: 116px; height: 116px; margin: 0; align-content: start; }
+  main.big-kids-planet-map { --planet-map-header-height: 152px; display: grid; grid-template-rows: var(--planet-map-header-height) minmax(190px, 1fr); height: calc(100dvh - 82px - env(safe-area-inset-bottom, 0px)); min-height: calc(var(--planet-map-top-gap) + var(--planet-map-safe-top) + var(--planet-map-bottom-gap) + var(--planet-map-header-height) + 190px); }
+  main.big-kids-planet-map .planet-map-toolbar { position: relative; display: grid; grid-template-columns: 1fr auto; grid-template-rows: 44px 42px; align-items: center; gap: 18px 10px; min-height: var(--planet-map-header-height); height: var(--planet-map-header-height); margin: 0; align-content: start; }
   main.big-kids-planet-map .planet-map-brand-back { grid-column: 1; grid-row: 1; display: flex; align-items: center; gap: 10px; }
   main.big-kids-planet-map .planet-map-brand-back > img { width: 78px; }
   main.big-kids-planet-map .planet-map-brand-back .local-back-button { margin: 0; padding: 8px 10px; min-height: 44px; font-size: .75rem; }
   main.big-kids-planet-map .planet-map-banner { grid-column: 1 / -1; grid-row: 2; position: relative; justify-self: center; width: min(460px, calc(100% - 36px)); height: 42px; box-sizing: border-box; padding: 7px 8px 7px 35px; margin: 0; border-width: 3px; transform: none; }
   main.big-kids-planet-map .planet-map-banner h1 { font-size: clamp(17px, 4.7vw, 24px); line-height: 1.2; }
   main.big-kids-planet-map .planet-banner-emblem { width: 52px; height: 52px; left: -24px; top: -8px; box-sizing: border-box; border-width: 3px; font-size: 24px; }
-  main.big-kids-planet-map .planet-map-banner > p { bottom: -22px; padding: 4px 12px; border-width: 1.5px; font-size: 10.5px; }
+  main.big-kids-planet-map .planet-map-banner > p { bottom: -28px; padding: 4px 12px; border-width: 1.5px; font-size: 10.5px; }
   main.big-kids-planet-map .planet-map-profile { grid-column: 2; grid-row: 1; margin: 0; width: 38px; max-width: 38px; min-height: 38px; padding: 5px; gap: 0; font-size: 0; }
   main.big-kids-planet-map .planet-map-profile > span:first-child { font-size: .8rem; width: 24px; height: 24px; flex-shrink: 0; }
   main.big-kids-planet-map .planet-map-profile > span:last-child { display: none; }
   main.big-kids-planet-map .planet-journey-progress { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: 0; padding: 0; border: 0; box-shadow: none; overflow: hidden; clip-path: inset(50%); }
 
 
-  main.little-map-page { display: grid; grid-template-rows: 44px minmax(0, 1fr) auto; gap: 6px; width: 100%; height: calc(100dvh - 82px - env(safe-area-inset-bottom, 0px)); min-height: 0; padding: 12px; overflow: visible; }
+  main.little-map-page { display: grid; grid-template-rows: 44px minmax(190px, 1fr) auto; gap: 12px; width: 100%; height: calc(100dvh - 82px - env(safe-area-inset-bottom, 0px)); min-height: calc(var(--planet-map-top-gap) + var(--planet-map-safe-top) + var(--planet-map-bottom-gap) + 282px); overflow: visible; }
   main.little-map-page > .page-back-button { position: relative; inset: auto; align-self: start; justify-self: start; margin: 0; }
   main.little-map-page > .little-map-header { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   main.little-map-page > .little-grownup-note { margin: 8px auto 0; max-width: 440px; font-size: .7rem; line-height: 1.3; text-align: center; }
@@ -67,17 +76,14 @@
 @media (max-width: 700px) {
   main.big-kids-planet-map, main.little-map-page { height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px)); }
 }
-/* Leave room for the home indicator on short portrait phones. */
-@media (max-width: 1023px) and (orientation: portrait) and (max-height: 750px) {
-  main.big-kids-planet-map { grid-template-rows: 94px minmax(0, 1fr); }
-  main.big-kids-planet-map .planet-map-toolbar { height: 94px; min-height: 94px; grid-template-rows: 44px 30px; row-gap: 4px; }
-  main.big-kids-planet-map .planet-map-banner { height: 30px; padding: 2px 5px 2px 29px; }
-  main.big-kids-planet-map .planet-map-banner h1 { font-size: 17px; line-height: 1.1; }
-  main.big-kids-planet-map .planet-banner-emblem { width: 40px; height: 40px; top: -7px; left: -18px; font-size: 20px; }
-  main.big-kids-planet-map .planet-map-banner > p { bottom: -17px; padding: 2px 9px; font-size: 9px; }
+/* Keep the full heading and subtitle spaced apart on shorter phones too. */
+@media (max-width: 1023px) and (max-height: 750px) {
+  main.big-kids-planet-map { --planet-map-header-height: 140px; }
+  main.big-kids-planet-map .planet-map-toolbar { row-gap: 16px; }
 }
-@media (max-width: 1023px) and (orientation: landscape) and (max-height: 599px) {
-  main.big-kids-planet-map { display: grid; grid-template-columns: clamp(110px, 19vw, 150px) minmax(0, 1fr); grid-template-areas: 'toolbar orbit'; grid-template-rows: minmax(0, 1fr); align-content: stretch; column-gap: 12px; padding: 10px 12px; }
+@media (min-width: 560px) and (max-width: 1023px) and (orientation: landscape) and (max-height: 599px) {
+  main.big-kids-planet-map, main.little-map-page { --planet-map-top-gap: 12px; --planet-map-bottom-gap: 12px; min-height: calc(var(--planet-map-top-gap) + var(--planet-map-safe-top) + var(--planet-map-bottom-gap) + 220px); }
+  main.big-kids-planet-map { display: grid; grid-template-columns: clamp(110px, 19vw, 150px) minmax(0, 1fr); grid-template-areas: 'toolbar orbit'; grid-template-rows: minmax(190px, 1fr); align-content: stretch; column-gap: 12px; }
   main.big-kids-planet-map .planet-map-toolbar { grid-area: toolbar; height: auto; min-height: 0; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; gap: 8px; }
   main.big-kids-planet-map .planet-map-brand-back { flex-direction: column; gap: 8px; }
   main.big-kids-planet-map .planet-map-brand-back > img { width: 72px; }
@@ -90,14 +96,14 @@
   .planet-orbit-sparkle { font-size: 8px; }
   main.big-kids-planet-map .planet-progress-orbs { justify-content: center; flex-wrap: wrap; }
   main.big-kids-planet-map .planet-progress-orbs > span { width: 11px; height: 11px; }
-  main.little-map-page { display: grid; grid-template-columns: clamp(110px, 19vw, 150px) minmax(0, 1fr); grid-template-areas: 'back orbit' 'note orbit'; grid-template-rows: 48px minmax(0, 1fr); align-content: stretch; column-gap: 12px; padding: 10px 12px; }
+  main.little-map-page { display: grid; grid-template-columns: clamp(110px, 19vw, 150px) minmax(0, 1fr); grid-template-areas: 'back orbit' 'note orbit'; grid-template-rows: 48px minmax(0, 1fr); align-content: stretch; column-gap: 12px; }
   main.little-map-page > .page-back-button { grid-area: back; align-self: start; }
   main.little-map-page > .responsive-planet-host { grid-area: orbit; }
   main.little-map-page > .little-grownup-note { grid-area: note; font-size: .68rem; }
 }
 @keyframes planet-orbit-hover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-@media (max-width: 1023px) and (orientation: landscape) and (max-height: 350px) {
-  main.big-kids-planet-map, main.little-map-page { padding-block: 4px; }
+@media (min-width: 560px) and (max-width: 1023px) and (orientation: landscape) and (max-height: 350px) {
+  main.big-kids-planet-map, main.little-map-page { --planet-map-top-gap: 4px; --planet-map-bottom-gap: 4px; min-height: calc(var(--planet-map-top-gap) + var(--planet-map-safe-top) + var(--planet-map-bottom-gap) + 190px); }
   main.big-kids-planet-map .planet-map-toolbar, main.big-kids-planet-map .planet-map-brand-back { gap: 4px; }
   main.big-kids-planet-map .planet-map-brand-back > img { width: 60px; }
   main.big-kids-planet-map .planet-map-banner { margin: 0 0 16px; padding: 5px 4px; }

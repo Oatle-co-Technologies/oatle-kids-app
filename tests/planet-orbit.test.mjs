@@ -11,18 +11,22 @@ test('the breakpoint is exactly 1024px; every requested width selects the intend
   for(const width of [1024,1280,1920])assert.equal(isOrbitViewport(width),false);
 });
 
-test('all mission counts fit and stay centred in the measured content area, including short screens and safe areas',()=>{
+test('all mission counts clear phone insets and use spare bottom space without clipping',()=>{
   const cases=[...views,[375,568],[375,430],[390,600],[430,650],[667,320],[844,320]];
-  for(const [w,h]of cases)for(const safeInset of [0,34])for(const count of [1,2,3,4,5,6,7,8,9]){
-    const landscape=w>h&&h<600;
+  for(const [w,h]of cases)for(const safeInset of [0,34])for(const topInset of [0,20,47,59])for(const count of [1,2,3,4,5,6,7,8,9]){
+    const landscape=w>=560&&w>h&&h<600;
     const nav=(w<=700?72:82)+safeInset;
     const sidebar=landscape?Math.max(110,Math.min(150,w*.19))+12:0;
-    const topSpace=landscape?(h<=350?8:20):h<=750?118:140;
-    const contentHeight=h-nav-topSpace;
-    const g=planetOrbitLayout(count,w-24-sidebar,w,h,nav,contentHeight);
-    const context=`${w}x${h}, ${count} missions, inset ${safeInset}`;
+    const spacing=landscape?(h<=350?8:24):48+(h<=750?140:152);
+    const minimum=landscape&&h>350?220:190;
+    const contentHeight=Math.max(minimum,h-nav-topInset-spacing);
+    const sideInset=landscape?47:0;
+    const g=planetOrbitLayout(count,w-32-sidebar-sideInset*2,w,h,nav,contentHeight);
+    const context=`${w}x${h}, ${count} missions, bottom inset ${safeInset}, top inset ${topInset}`;
     assert.equal(g.height,contentHeight,context+' uses the available grid height');
-    assert.equal(g.centerY,g.height/2,context+' island is vertically centred');
+    assert.equal(g.centerY,g.height/2+g.lowerOffset,context+' island moves with the whole orbit');
+    assert.ok(g.lowerOffset>=0&&g.lowerOffset<=64,context+' bounded downward movement');
+    if(landscape)assert.equal(g.lowerOffset,0,context+' short landscape uses the full height');
     assert.ok(g.touch>=44,context+' has accessible targets');
     const ringCenter=g.points[0].cy;
     let top=Infinity,bottom=-Infinity;
@@ -36,9 +40,20 @@ test('all mission counts fit and stay centred in the measured content area, incl
       }
       top=Math.min(top,r.y);bottom=Math.max(bottom,r.y+r.height);
     }
-    assert.ok(Math.abs(ringCenter-g.height/2)<.01,context+' entire orbit is balanced');
+    assert.equal(ringCenter,g.centerY,context+' island stays in the middle of the orbit');
+    const extent=g.points[0].ry+g.touch/2;
+    assert.ok(g.height-(ringCenter+extent)<=ringCenter-extent+.1,context+' spare space moves above the orbit');
     assert.ok(top>=0&&bottom<=g.height+.1,context);
   }
+});
+
+test('a tall phone moves the entire orbit down while a short content area keeps all touch targets visible',()=>{
+  const tall=planetOrbitLayout(9,358,390,844,106,487);
+  assert.ok(tall.lowerOffset>40);
+  assert.ok(tall.height-tall.centerY-tall.points[0].ry-tall.touch/2>=15.9);
+  const short=planetOrbitLayout(9,343,375,430,106,190);
+  assert.equal(short.lowerOffset,0);
+  assert.ok(short.touch>=44);
 });
 
 test('orbit points follow clockwise mission order on a true rendered circle, without sorting data',()=>{

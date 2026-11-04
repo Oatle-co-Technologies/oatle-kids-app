@@ -4,16 +4,19 @@ export function isOrbitViewport(width) { return width < ORBIT_BREAKPOINT; }
 // Presentation only: the supplied item sequence and navigation rules are untouched.
 // The host is the actual grid area between the header and fixed bottom navigation.
 export function planetOrbitLayout(count, hostWidth, viewportWidth, viewportHeight, measuredNavHeight, hostHeight) {
-  const landscape = viewportWidth > viewportHeight && viewportHeight < 600;
+  const landscape = viewportWidth >= 560 && viewportWidth > viewportHeight && viewportHeight < 600;
   const navHeight = measuredNavHeight || (viewportWidth <= 700 ? 72 : 82);
-  const reserved = landscape ? (viewportHeight <= 350 ? 8 : 20) : viewportHeight <= 750 ? 118 : 140;
+  const reserved = landscape ? (viewportHeight <= 350 ? 8 : 24) : viewportHeight <= 750 ? 188 : 200;
   const width = Math.max(100, hostWidth);
-  const height = Math.max(100, hostHeight || viewportHeight - navHeight - reserved);
+  const height = Math.max(190, hostHeight || viewportHeight - navHeight - reserved);
   const diameter = Math.min(width, height);
   const touch = Math.max(44, Math.min(160, diameter * .215));
   const radius = Math.min(diameter * .38, (diameter - touch - 16) / 2);
   const cx = width / 2;
-  const cy = height / 2;
+  // Spend spare portrait space below the header instead of leaving a large
+  // empty band above the bottom bar. Never move a planet into that bar.
+  const lowerOffset = landscape ? 0 : Math.min(64, Math.max(0, height / 2 - radius - touch / 2 - 16));
+  const cy = height / 2 + lowerOffset;
   const centerSize = Math.max(24, Math.min(320, 2 * (radius - touch / 2 - 12)));
   const points = Array.from({ length: count }, (_, index) => {
     const angle = -Math.PI / 2 + index * Math.PI * 2 / Math.max(1, count);
@@ -27,7 +30,7 @@ export function planetOrbitLayout(count, hostWidth, viewportWidth, viewportHeigh
   });
   return {
     points, width, height, landscape, touch, planet: touch,
-    centerSize, centerY: cy,
+    centerSize, centerY: cy, lowerOffset,
     titleFont: Math.max(9.5, Math.min(20, centerSize * .085)),
   };
 }
