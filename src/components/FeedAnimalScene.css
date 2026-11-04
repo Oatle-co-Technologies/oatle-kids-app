@@ -1,0 +1,35 @@
+.animal-page.is-feeding { background: linear-gradient(#193a59, #346361); }
+.is-feeding .animal-header h1 { font-family: 'Nunito', sans-serif; font-weight: 1000; }
+.feeding-meadow { position: relative; isolation: isolate; overflow: hidden; width: min(860px, 100%); min-height: 520px; margin: 20px auto 0; background: radial-gradient(ellipse at 16% 80%, #85bb70 0 32%, transparent 32.5%), radial-gradient(ellipse at 85% 90%, #6cab65 0 38%, transparent 38.5%), linear-gradient(#b2e5ee 0 58%, #94c67d 58%); color: #214533; text-align: center; }
+.feeding-instruction { position: relative; z-index: 2; margin: 18px 12px 0; font: 1000 clamp(1.1rem, 3vw, 1.5rem)/1.4 'Nunito', sans-serif; }
+.feeding-animal-target { position: relative; display: block; width: 280px; height: 290px; margin: 0 auto; padding: 0; background: none; border: 0; cursor: pointer; touch-action: manipulation; }
+.feeding-animal-target > svg { width: 100%; height: 100%; overflow: visible; }
+.feeding-animal-target:disabled { opacity: 1; cursor: default; }
+.feeding-animal-target.is-ready { filter: drop-shadow(0 0 9px #fff6ab); }
+.feeding-tail { transform-origin: 215px 235px; animation: feeding-wag 1.2s ease-in-out infinite; }
+.feeding-face { transform-origin: 150px 180px; animation: feeding-breathe 3s ease-in-out infinite; }
+.is-munching { animation: feeding-munch .28s ease-in-out 5; }
+.has-eaten .feeding-tail { animation-duration: .25s; }
+.feeding-bowl { position: absolute; bottom: -2px; left: 50%; width: 92px; height: 34px; transform: translateX(-50%); border-radius: 8px 8px 35px 35px; background: linear-gradient(#7ce0e3 0 20%, #398f9e 25%); box-shadow: 0 7px 0 #427f4933; }
+.feeding-bowl::before { content: ''; position: absolute; left: 0; right: 0; top: -7px; height: 17px; border-radius: 50%; background: #226c7d; box-shadow: inset 0 0 0 5px #8fe1e4; }
+.feeding-eaten-food { position: absolute; z-index: 1; width: 60px; left: 16px; top: -35px; animation: feeding-eat 1.2s ease-in forwards; }
+.feeding-hearts { position: absolute; top: 20px; left: 0; width: 100%; color: #dc537b; font-size: 2rem; animation: feeding-hearts 1.6s ease-out forwards; }
+.feeding-basket { position: relative; width: 270px; height: 140px; margin: 20px auto 0; }
+.feeding-basket-handle { position: absolute; left: 55px; top: 0; width: 160px; height: 110px; border: 11px solid #a46632; border-bottom: 0; border-radius: 100px 100px 0 0; box-sizing: border-box; z-index: -1; }
+.feeding-foods { position: absolute; inset: 12px 4px auto; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 22px; }
+.feeding-food { width: 106px; height: 94px; padding: 0; border: 0; border-radius: 50%; background: none; box-shadow: none; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.feeding-food > svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 5px 2px #57401b44); transition: transform .2s; pointer-events: none; }
+.feeding-food[aria-pressed=true] > svg { transform: translateY(-14px) rotate(-8deg); filter: drop-shadow(0 0 6px #fff8a7); }
+.feeding-food.is-lifted { opacity: .15; }
+.feeding-food:active { cursor: grabbing; }
+.feeding-food:disabled { opacity: 0; pointer-events: none; }
+.feeding-basket-front { position: absolute; left: 0; right: 0; bottom: 0; height: 64px; border-radius: 12px 12px 65px 65px; background: repeating-linear-gradient(0deg, #a66c34 0 3px, transparent 3px 15px), repeating-linear-gradient(90deg, #daa05b 0 15px, #c18a49 15px 18px); box-shadow: inset 0 8px #edbd76, 0 7px 0 #447d4933; }
+.feeding-hint { position: relative; margin: 14px auto 18px; padding: 0 14px; max-width: 450px; color: #23412e; font: 800 .9rem/1.5 'Nunito', sans-serif; }
+.feeding-food-ghost { position: fixed; z-index: 11000; width: 100px; height: 90px; transform: translate(-50%, -50%); pointer-events: none; filter: drop-shadow(0 6px 5px #0004); }
+@keyframes feeding-wag { 0%,100% { transform: rotate(-9deg); } 50% { transform: rotate(13deg); } }
+@keyframes feeding-breathe { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+@keyframes feeding-munch { 50% { transform: translateY(5px) rotate(2deg); } }
+@keyframes feeding-eat { to { transform: translateY(24px) scale(.1); opacity: 0; } }
+@keyframes feeding-hearts { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-35px); opacity: 0; } }
+@media (max-width: 480px) { .feeding-animal-target { width: 240px; height: 245px; } .feeding-meadow { min-height: 480px; } .feeding-basket { margin-top: 18px; } .is-feeding.animal-page { padding-inline: 10px; } }
+@media (prefers-reduced-motion: reduce) { .feeding-meadow *, .feeding-food-ghost { animation: none !important; transition: none !important; } }
