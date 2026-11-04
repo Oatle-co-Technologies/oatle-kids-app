@@ -1,3 +1,5 @@
+// Short, familiar sentences, moving from simple statements to everyday actions.
+// Keep all 13 positions stable: reading progress and assessment use their order.
 export const sentenceQuestions = [
   {
     words: ["The", "sun", "is", "hot"],
@@ -6,36 +8,36 @@ export const sentenceQuestions = [
     words: ["A", "dog", "can", "run"],
   },
   {
-    words: ["The", "pen", "is", "in", "the", "bag"],
+    words: ["The", "pen", "is", "on", "the", "desk"],
   },
   {
-    words: ["The", "egg", "is", "in", "the", "bag"],
+    words: ["The", "hen", "lays", "an", "egg"],
   },
   {
-    words: ["I", "see", "an", "owl"],
+    words: ["I", "can", "see", "an", "owl"],
   },
   {
-    words: ["The", "key", "is", "in", "the", "bag"],
+    words: ["I", "use", "a", "key", "to", "open", "the", "door"],
   },
   {
-    words: ["The", "fan", "is", "on"],
+    words: ["The", "fan", "keeps", "me", "cool"],
   },
   {
-    words: ["The", "map", "is", "in", "the", "bag"],
+    words: ["A", "map", "shows", "us", "the", "way"],
   },
   {
-    words: ["The", "web", "is", "big"],
+    words: ["A", "spider", "spins", "a", "web"],
   },
   {
-    words: ["The", "van", "is", "red"],
+    words: ["The", "red", "van", "goes", "fast"],
   },
   {
-    words: ["The", "net", "is", "big"],
+    words: ["We", "catch", "fish", "with", "a", "net"],
   },
   {
-    words: ["The", "rug", "is", "red"],
+    words: ["The", "rug", "is", "on", "the", "floor"],
   },
   {
-    words: ["The", "hat", "is", "big"],
+    words: ["I", "wear", "a", "hat", "outside"],
   },
 ];
