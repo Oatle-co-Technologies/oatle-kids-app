@@ -1,10 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import SpaceJourney from "./SpaceJourney";
+import LittleAdventureHomes from "./LittleAdventureHomes";
 import ResponsivePlanetJourney from "./ResponsivePlanetJourney";
-import { storybooks } from "../data/storybooks";
 import StorybookAdventure from "./StorybookAdventure";
 import LocalBackButton from "./LocalBackButton";
-import BuildingAdventure, { BuildingIcon } from "./BuildingAdventure";
+import BuildingAdventure from "./BuildingAdventure";
 import AnimalAdventure, { AnimalIcon } from "./AnimalAdventure";
 import PuzzleAdventure, { PuzzleIcon } from "./PuzzleAdventure";
 import MusicAdventure, { MusicIcon } from "./MusicAdventure";
@@ -1783,37 +1782,16 @@ export default function LittleExplorers({
   }
 
   if (screen === "adventures") {
-    return (
-      <main className="little-explorers-page little-adventure-page expedition-hub">
-        <img className="expedition-brand" src="/oatle-kids-wordmark.webp" alt="Oatle Kids" />
-        <LocalBackButton
-          className="page-back-button"
-          label={backLabel}
-          onClick={onBack}
-        />
-
-        <header className="little-map-header">
-          <p className="eyebrow">LITTLE SPACE ADVENTURES</p>
-          <h1>Choose an Adventure</h1>
-          <p>Choose a section, then a little activity.</p>
-        </header>
-
-        <SpaceJourney playful label="Little Explorers adventure destinations" storageKey="oatle-little-adventure-destination" items={[
-          ...LITTLE_ADVENTURES.map((adventure, index) => {
-            const completeCount = adventure.planets.filter(planet => isPlanetComplete(planet, adventure)).length;
-            const icon = adventure.id === "building" ? <BuildingIcon /> : adventure.id === "animals" ? <AnimalIcon /> : adventure.id === "puzzles" ? <PuzzleIcon /> : adventure.id === "music" ? <MusicIcon /> : adventure.icon;
-            return { id: adventure.id, title: adventure.title, subtitle: `${completeCount} of ${adventure.planets.length} planets explored`,
-              image: PLANET_ART[index % PLANET_ART.length].image, art: <span className="little-journey-world"><img src={PLANET_ART[index % PLANET_ART.length].image} alt="" /><span>{icon}</span></span>,
-              complete: completeCount === adventure.planets.length, onSelect: () => openAdventure(adventure.id) };
-          }),
-          { id: "storybooks", title: "Storybook Adventure", subtitle: "A little world of picture books", art: <span className="journey-books">{storybooks.map(book => <img src={book.cover} key={book.id} alt="" />)}</span>, onSelect: () => { stopSpeech(); setScreen("storybooks"); } },
-        ]} />
-
-        <p className="little-grownup-note">
-          Grown-ups: each section has its own activities. Play and explore together.
-        </p>
-      </main>
-    );
+    return <LittleAdventureHomes onBack={onBack} backLabel={backLabel} items={[
+      ...LITTLE_ADVENTURES.map(adventure => {
+        const completeCount = adventure.planets.filter(planet => isPlanetComplete(planet, adventure)).length;
+        return { id: adventure.id, title: adventure.title,
+          subtitle: `${completeCount} of ${adventure.planets.length} planets explored`,
+          complete: completeCount === adventure.planets.length,
+          onSelect: () => openAdventure(adventure.id) };
+      }),
+      { id: "storybooks", title: "Storybook Adventure", subtitle: "A little world of picture books", onSelect: () => { stopSpeech(); setScreen("storybooks"); } },
+    ]} />;
   }
 
   return (
