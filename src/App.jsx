@@ -35,6 +35,7 @@ import SentenceWritingMission from "./components/SentenceWritingMission";
 import LocalBackButton from "./components/LocalBackButton";
 import LittleExplorers from "./components/LittleExplorers";
 import CosmicPuzzles from "./components/CosmicPuzzles";
+import ReadingBalloonBreak from "./components/ReadingBalloonBreak";
 import AdventureWorlds from "./components/AdventureWorlds";
 import BigKidsPlanetJourney from "./components/BigKidsPlanetJourney";
 import { adventureEntryScreen } from "./components/bigKidsHomes";
@@ -263,11 +264,6 @@ const BIG_KIDS_PRAISE = [
 ];
 
 const READING_BREAK_INTERVAL = 6;
-const READING_BREAK_BALLOONS = [
-  { id: 1, colour: "#ff6f91", label: "Pink balloon" },
-  { id: 2, colour: "#ffd45c", label: "Yellow balloon" },
-  { id: 3, colour: "#55c6ff", label: "Blue balloon" },
-];
 
 function stopAudioRef(audioRef) {
   if (!audioRef.current) {
@@ -749,11 +745,8 @@ function App() {
     useState(0);
   const [completedReadingBreaks, setCompletedReadingBreaks] =
     useState([]);
-  const [poppedReadingBreakBalloons, setPoppedReadingBreakBalloons] =
-    useState([]);
 
   const advanceTimer = useRef(null);
-  const readingBreakTimer = useRef(null);
   const victoryAudioRef = useRef(null);
   const effectAudioRef = useRef(null);
 
@@ -1025,7 +1018,7 @@ function App() {
 
     if (readingBreakDue) {
       const timer = setTimeout(() => {
-        speak("Space break! Pop all three balloons, then keep exploring.");
+        speak("Pop the balloons for a mini break! Then keep exploring.");
       }, 250);
 
       return () => {
@@ -1195,9 +1188,6 @@ function App() {
     return () => {
       stopAudioRef(victoryAudioRef);
       stopAudioRef(effectAudioRef);
-      if (readingBreakTimer.current) {
-        window.clearTimeout(readingBreakTimer.current);
-      }
     };
   }, []);
 
@@ -1225,28 +1215,10 @@ function App() {
     });
   };
 
-  const popReadingBreakBalloon = (balloonId) => {
-    if (poppedReadingBreakBalloons.includes(balloonId)) return;
-
-    const next = [...poppedReadingBreakBalloons, balloonId];
-    setPoppedReadingBreakBalloons(next);
-    playSound(correctSound);
-
-    if (next.length !== READING_BREAK_BALLOONS.length) return;
-
-    if (readingBreakTimer.current) {
-      window.clearTimeout(readingBreakTimer.current);
-    }
-
-    readingBreakTimer.current = window.setTimeout(() => {
-      setCompletedReadingBreaks((current) =>
-        current.includes(readingBreakKey)
-          ? current
-          : [...current, readingBreakKey]
-      );
-      setPoppedReadingBreakBalloons([]);
-      readingBreakTimer.current = null;
-    }, 500);
+  const completeReadingBreak = () => {
+    setCompletedReadingBreaks(current =>
+      current.includes(readingBreakKey) ? current : [...current, readingBreakKey]
+    );
   };
 
   const celebrateReadingMission = () => {
@@ -1276,7 +1248,6 @@ function App() {
     setBuiltWord([]);
     setIsProcessing(false);
     setRevealedAnswer("");
-    setPoppedReadingBreakBalloons([]);
 
     if (advanceTimer.current) {
       clearTimeout(advanceTimer.current);
@@ -2580,8 +2551,6 @@ function App() {
               setReadingMissionRun((current) => current + 1);
             }
 
-            setPoppedReadingBreakBalloons([]);
-
             setProgress((current) => ({
               ...current,
               startedMissions: {
@@ -2628,7 +2597,7 @@ function App() {
       100;
 
     content = (
-      <main className="mission-panel">
+      <main className={`mission-panel ${readingBreakDue ? "has-reading-mini-break" : ""}`}>
         <LocalBackButton
           className="page-back-button"
           label="Planet"
@@ -2680,33 +2649,14 @@ function App() {
           </div>
         </div>
 
-        {readingBreakDue ? (
-          <section className="reading-space-break" aria-label="Space balloon break">
-            <p className="eyebrow">QUICK SPACE BREAK</p>
-            <h2>Pop all three balloons!</h2>
-            <p>Then your reading mission will continue.</p>
-
-            <div className="reading-break-balloons">
-              {READING_BREAK_BALLOONS.map((balloon) => (
-                <button
-                  key={balloon.id}
-                  type="button"
-                  className={`reading-break-balloon ${
-                    poppedReadingBreakBalloons.includes(balloon.id)
-                      ? "popped"
-                      : ""
-                  }`}
-                  style={{ "--reading-balloon-colour": balloon.colour }}
-                  onClick={() => popReadingBreakBalloon(balloon.id)}
-                  disabled={poppedReadingBreakBalloons.includes(balloon.id)}
-                  aria-label={`Pop the ${balloon.label}`}
-                >
-                  <span aria-hidden="true" />
-                </button>
-              ))}
-            </div>
-          </section>
-        ) : planet.id === 8 ? (
+        {readingBreakDue && <ReadingBalloonBreak
+          key={readingBreakKey}
+          onComplete={completeReadingBreak}
+          onPop={() => playSound(correctSound)}
+        />}
+        <div className={`reading-question-content ${readingBreakDue ? "is-on-break" : ""}`}
+          inert={readingBreakDue} aria-hidden={readingBreakDue || undefined}>
+        {planet.id === 8 ? (
           <>
             <p className="eyebrow">
               ATLI AND THE LOST MAP
@@ -3099,6 +3049,7 @@ function App() {
         >
           {feedback}
         </p>
+        </div>
       </main>
     );
   } else if (

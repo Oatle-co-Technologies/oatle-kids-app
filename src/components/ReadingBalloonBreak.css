@@ -1,0 +1,20 @@
+/* Balloons float over the reading scene: no dialog, card or backdrop. */
+.reading-mini-break{position:fixed;inset:0;z-index:40;pointer-events:none;overflow:hidden;isolation:isolate}
+.reading-mini-break-prompt{position:absolute;top:clamp(82px,13vh,120px);left:16px;right:16px;text-align:center;color:#fff;text-shadow:0 2px 8px #07102b}
+.reading-mini-break-prompt h2{margin:0;font-size:clamp(1.2rem,4.8vw,2rem);line-height:1.3}
+.reading-mini-break-prompt p{margin:8px 0 0;font-size:clamp(.8rem,3vw,1rem);color:#dfeaff}
+.reading-mini-break-field{position:absolute;inset:clamp(180px,25vh,220px) max(18px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));--balloon-width:clamp(64px,17vw,104px);--balloon-height:clamp(94px,25vw,150px)}
+.reading-mini-break-slot{position:absolute;width:var(--balloon-width);height:var(--balloon-height);left:calc((100% - var(--balloon-width)) / 2 * var(--column));top:calc((100% - var(--balloon-height)) / 2 * var(--row));animation:readingMiniBreakArrive .9s var(--arrival-delay) cubic-bezier(.2,.65,.3,1) both}
+.reading-mini-break-balloon{position:relative;display:block;width:100%;height:100%;padding:0;border:0;background:transparent;cursor:pointer;pointer-events:auto;touch-action:manipulation;animation:readingMiniBreakFloat 3.4s calc(var(--arrival-delay) * -1) ease-in-out infinite}
+.reading-mini-break-balloon:focus-visible{outline:3px dashed #fff;outline-offset:5px;border-radius:45%}
+.reading-mini-break-balloon-shape{position:absolute;inset:0 2px 28%;border-radius:50% 50% 46% 46%;background:radial-gradient(ellipse at 30% 25%,#ffffffc9 0 6%,transparent 10%),linear-gradient(130deg,#ffffff38,transparent 48%),var(--balloon-colour);box-shadow:inset -9px -10px 0 #00000017,0 7px 14px #0003}
+.reading-mini-break-balloon-shape::after{content:'';position:absolute;bottom:-8px;left:calc(50% - 6px);border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid var(--balloon-colour)}
+.reading-mini-break-string{position:absolute;top:calc(72% + 8px);bottom:0;left:48%;width:12%;border-left:2px solid #e6e8f2b3;border-radius:50%;transform:rotate(-8deg)}
+.reading-mini-break-balloon.is-popped{animation:readingMiniBreakPop .3s ease-out forwards;pointer-events:none}
+.mission-panel.has-reading-mini-break>.journey-track{opacity:.15}
+.reading-question-content.is-on-break{opacity:.18;pointer-events:none;user-select:none}
+@keyframes readingMiniBreakArrive{from{transform:translate(var(--arrival-x),var(--arrival-y));opacity:0}to{transform:translate(0,0);opacity:1}}
+@keyframes readingMiniBreakFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+@keyframes readingMiniBreakPop{0%{opacity:1;transform:scale(1)}45%{opacity:1;transform:scale(1.18)}100%{opacity:0;transform:scale(.1)}}
+@media(max-height:500px) and (orientation:landscape){.reading-mini-break-prompt{top:54px}.reading-mini-break-prompt h2{font-size:1.2rem}.reading-mini-break-prompt p{margin-top:3px;font-size:.75rem}.reading-mini-break-field{inset:118px 24px 16px;--balloon-width:60px;--balloon-height:82px}.reading-mini-break-slot{left:calc((100% - var(--balloon-width)) / 3 * var(--compact-column));top:calc((100% - var(--balloon-height)) * var(--compact-row))}}
+@media(prefers-reduced-motion:reduce){.reading-mini-break-slot,.reading-mini-break-balloon{animation:none}.reading-mini-break-balloon.is-popped{opacity:0}}
