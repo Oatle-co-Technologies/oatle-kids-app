@@ -9,9 +9,6 @@
 .garden-credits-button { position: absolute; bottom: calc(12px + env(safe-area-inset-bottom)); left: calc(16px + env(safe-area-inset-left)); width: 44px; height: 44px; font-size: 1.4rem; }
 .music-garden button:focus-visible { outline: 4px solid #215b86; outline-offset: 4px; }
 .garden-muted { position: absolute; right: 20px; top: 20px; color: #9d3939; font-size: 2rem; }
-.garden-band { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); grid-template-rows: minmax(100px,1fr) minmax(140px,1fr); align-items: center; gap: clamp(12px,3vw,40px); width: min(1150px,100%); height: 100%; margin: auto; }
-.garden-band > .garden-drum,.garden-band > .garden-bongos,.garden-band > .garden-bell { grid-column: span 2; }
-.garden-band > .garden-piano,.garden-band > .garden-xylophone { grid-column: span 3; }
 .garden-loose-instrument { display: block; width: 100%; max-width: 320px; margin: auto; padding: 0; border: 0; background: none; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .garden-loose-instrument > :is(svg,img) { display: block; width: 100%; max-height: 30dvh; object-fit: contain; filter: drop-shadow(0 7px 3px #52673533); pointer-events: none; }
 .garden-loose-instrument:disabled { cursor: default; opacity: 1; }
@@ -59,8 +56,6 @@
 @keyframes garden-hit { 50% { transform: translateY(7px) scale(.96); } }
 @keyframes garden-dancing { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-12px) rotate(3deg); } }
 @media (max-width:600px) and (orientation:portrait) {
- .garden-band { grid-template-columns: repeat(6,minmax(0,1fr)); grid-template-rows: 1fr 1fr 1fr; gap: 16px; }
- .garden-band > .garden-piano,.garden-band > .garden-xylophone { grid-column: span 6; width: min(88%,430px); }
  .garden-key-instrument { padding: 15px 10px 12px; }
  .garden-instrument-body { height: 15px; font-size: 1.3rem; margin-bottom: 9px; }
  .garden-keyboard { height: clamp(64px,12dvh,115px); }
@@ -73,7 +68,6 @@
 }
 @media (orientation:landscape) and (max-height:600px) {
  .music-garden-immersive { padding: 55px 16px 48px; }
- .garden-band { grid-template-rows: 1fr 1fr; gap: 10px 28px; max-width: 1000px; }
  .garden-key-instrument { padding: 9px 9px 10px; }
  .garden-instrument-body { height: 0; margin-bottom: 9px; font-size: 1rem; }
  .garden-keyboard { height: 20dvh; }
@@ -88,3 +82,24 @@
  .garden-dance-play { left: 22%; bottom: 15px; width: 48px; height: 48px; }
 }
 @media (prefers-reduced-motion:reduce) { .music-garden * { animation: none!important; transition: none!important; } }
+/* An ordered instrument shelf keeps free play focused on a single large instrument. */
+.garden-instrument-picker { position: absolute; top: calc(76px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; justify-content: space-evenly; align-items: center; gap: 6px; width: min(calc(100% - 24px), 750px); padding: 0; }
+.garden-instrument-picker button { position: relative; display: grid; place-items: center; width: 18%; max-width: 110px; min-height: 56px; padding: 4px 3px 10px; border: 0; border-radius: 12px; background: none; cursor: pointer; touch-action: manipulation; }
+.garden-instrument-picker :is(img,svg) { display: block; width: 100%; height: clamp(48px,10dvh,90px); object-fit: contain; pointer-events: none; }
+.garden-instrument-picker button[aria-pressed=true] { filter: drop-shadow(0 0 7px #fff0ac); }
+.garden-instrument-picker button[aria-pressed=true]::after { content: ''; position: absolute; bottom: 0; left: 25%; right: 25%; height: 5px; border-radius: 8px; background: #a45d36; }
+.garden-selected-instrument { position: absolute; left: 50%; top: 60%; transform: translate(-50%,-50%); width: min(88vw,740px); }
+.garden-selected-instrument .garden-loose-instrument { max-width: 600px; }
+.garden-selected-instrument .garden-loose-instrument > :is(svg,img) { max-height: 53dvh; }
+.garden-selected-instrument .garden-key-instrument { max-width: 700px; }
+.garden-selected-instrument .garden-keyboard { height: clamp(125px,26dvh,230px); }
+.garden-selected-instrument .garden-xylophone .garden-keyboard { height: clamp(130px,25dvh,220px); }
+.garden-copy-stars { font-size: clamp(1.4rem,4vw,2rem); }
+@media (orientation:landscape) and (max-height:600px) {
+ .garden-instrument-picker { top: calc(8px + env(safe-area-inset-top)); width: min(calc(100% - 160px),650px); }
+ .garden-instrument-picker button { min-height: 44px; padding-bottom: 7px; }
+ .garden-instrument-picker :is(img,svg) { height: 48px; }
+ .garden-selected-instrument { top: 56%; width: min(68vw,650px); }
+ .garden-selected-instrument .garden-loose-instrument > :is(svg,img) { max-height: 60dvh; }
+ .garden-selected-instrument .garden-keyboard,.garden-selected-instrument .garden-xylophone .garden-keyboard { height: 35dvh; }
+}
