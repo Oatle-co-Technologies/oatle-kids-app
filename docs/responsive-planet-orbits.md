@@ -1,30 +1,33 @@
-# Responsive planet journeys
+# Responsive 3D mission orbits
 
-Below 1024px, mission maps use a circular orbit around the adventure home or its existing emblem. The mobile composition follows the supplied reference: purple/gold heading, dimensional central artwork, original planets, gold-edged mission labels, numbered state badges, and a thin luminous orbit with star accents. Reading and Maths retain nine stops; Writing retains its four missions and its always-available Scribbler. Little Explorers uses the same presentation component for its existing one-to-five-stop mission maps. Adventure selection and activities are unaffected.
+Below 1024px, the planetary mission maps follow the approved miniature-solar-system reference: the existing adventure island in the centre, original textured planets in an evenly spaced circular orbit, dimensional activity illustrations integrated with the planets, and minimal permanent text. At 1024px and above the original winding layout and desktop stylesheet remain unchanged.
 
-At 1024px and above, the wrapper has `display: contents` and forwards the original journey properties. The approved desktop stylesheet, winding coordinates, planet sizes and route builder are unchanged.
+## Activity illustrations and states
 
-## Implementation
+Reading retains Mercury through Pluto and the exact nine requested concepts: ABC, abc, Aa, ear/sound waves, open book, pencil, building blocks, illustrated storybook and trophy. Writing retains alphabet, number and shape tracing, sentence writing, and its always-available Scribbler; shared pencils pair with the appropriate activity symbol. Maths uses number, shape, colour, sorting, addition, subtraction, grouping and assessment illustrations. All current Little Explorers mission families have visual associations, including the specific five shapes, five tracing paths, three animal puzzles, building and music activities. New unrecognised stages still render a usable book/trophy fallback instead of disappearing.
 
-- `ResponsivePlanetJourney` wraps the existing `SpaceJourney`; it reuses the original items, callbacks, completion and lock flags. No curriculum, saved progress, Supabase, scoring, authentication or artwork changes.
-- `planetOrbitLayout` supplies circular positions and label offsets. The same SVG arcs draw the orbit and drive the existing rocket animation in both directions. Single-stop maps also retain a full decorative orbit.
-- Portrait geometry scales with the host width and available height. Short portrait phones have a compact banner. Short landscape screens place navigation beside the orbit. Actual bottom-navigation height, including the home-indicator inset, is measured rather than assumed.
-- Planet images hover by only three pixels; their labels and anchors stay fixed. Reduced-motion/slow-update styles disable continuous motion. The original rocket's reduced-motion, low-power, timeout, selection locking and cleanup behavior are preserved.
-- Every planet and label remains inside one native button, with a minimum 44px planet target, full accessible mission/state labels, keyboard focus and the original disabled semantics. Numbered completion/lock markers remain visible. The numerical progress summary remains available to assistive technology; the mobile view uses the badges to keep the reference composition clear.
+Only the mobile renderer changes. The presentation map in `missionIllustrations.js` neither sorts items nor changes their callbacks, IDs, titles, descriptions, completion or locks. The original full mission and state remain in each native button's accessible name. Hover tooltips retain the original descriptions; no extra button, panel or intermediate screen is introduced. Permanent mission bubbles are visually hidden in the orbit.
+
+Locked planets darken and desaturate their entire texture/illustration group beneath one centred 3D padlock. Number badges remain visible. Completed destinations stay coloured and display a green tick; the current destination has a gentle golden halo. Original disabled-button semantics and the rocket flight/navigation handoff are unchanged. The parked rocket is smaller and visually offset from the activity illustration.
+
+## Responsive composition
+
+The mobile map is a grid with a measured content region between its header and bottom navigation. `ResizeObserver` measures that region's width and height. `planetOrbitLayout` derives the orbit radius, planet/touch size, centre island size and central point from those actual dimensions. The island sits at the exact centre of the orbit and content region. Short landscape screens place their toolbar beside the orbit, with compact padding on very short screens. Bottom-navigation safe areas remain accounted for.
+
+Touch targets are at least 44px. Planet anchors, mission numbers, locks and completion ticks remain fixed while each planet/illustration group hovers by only two pixels. Reduced-motion and slow-update styles disable the continuous motion; the existing rocket reduced-motion and low-power fallbacks are preserved. Ringed planets fit within their allotted visual space without cropping or modifying the original image files.
+
+## Asset provenance and weight
+
+The built-in **imagegen** tool generated 29 reusable transparent 3D icons. All final files live in `public/mission-icons/`; their filenames, shared generation prompt and individual subject prompts are recorded in [mission-icon-assets.json](mission-icon-assets.json). Original generated PNGs remain in Codex's generated-image directory. The application uses optimised, alpha-preserving WebP exports, totalling 368,400 bytes for the entire set. Shared concepts reuse the same file; desktop does not render the mobile illustration layers. No logo, rocket, planet or adventure-home artwork was replaced. No dependency was added.
 
 ## Verification
 
-Temporary browser fixtures rendered the production components with existing mission labels and artwork, without writing user progress. Chrome DOM measurements checked label/target bounds and collisions, central-art clearance, horizontal overflow and bottom-navigation clearance.
+- The Node suite checks the exact 1024px breakpoint, all counts from one through nine, non-overlapping touch targets, 44px minimum sizes, centred geometry, safe-area budgets, forward/reverse arc endpoints and single-stop orbit closure. The original desktop coordinate/style and artwork-integrity checks remain active.
+- Illustration tests cover the exact Reading sequence, Writing/Scribbler semantics, every existing Little Explorers mission family, transparent local assets and their total weight.
+- Temporary browser fixtures use the production navigation components and original mission metadata. They report viewport bounds, island/planet collisions, hidden labels, target sizes, image loading, locks, ticks and bottom-navigation clearance without writing user progress.
+- Chrome rendered the complete nine-stop Reading orbit at exactly 375×667, 390×844, 430×932, 768×1024 and 820×1180; the 1024×768 fixture retained desktop winding navigation. Additional 667×375, 844×390, 932×430, 375×568, 844×320 and 375×430 fixtures passed.
+- Safari also passes the Writing and Maths matrices and the safe-area Reading and shape matrices at the same viewports. All 12 adventure families pass at 390×844 with a simulated 34px bottom inset. Native selections recorded Reading arrivals for the current and both completed destinations (3, 1, 2), plus the Scribbler arrival. These fixtures exercise the unchanged callback handoff without entering a saved learning session.
+- The existing selection/lock/rocket/reduced-motion/callback function was compared byte-for-byte with the preceding revision and is unchanged.
+- All 37 Node tests, focused ESLint and the production build pass. The existing large-bundle warning remains.
 
-| Layout | Viewports | Result |
-| --- | --- | --- |
-| Portrait orbit | 375×667, 390×844, 430×932, 768×1024, 820×1180 | Reading, Writing, Maths and Little Explorers five-stop fixture pass |
-| Landscape orbit | 667×375, 844×390, 932×430 | The same fixtures pass |
-| Extra 34px home-indicator space | All the above orbit viewports | Nine-stop Reading fixture passes |
-| Desktop boundary | 1024×768 | Original winding presentation selected |
-
-Chrome also exposed the flying-to-Scribbler state and then recorded its selection callback after arrival. This checks the shared flight/navigation handoff; the fixture does not open a real saved learning session.
-
-The Node suite covers all current mission counts (1, 2, 3, 4, 5, 9), forward/reverse arc endpoints, single-stop orbit closure, exact breakpoint, viewport budgets with/without a 34px safe area, non-overlap and minimum target size. A desktop stylesheet hash and coordinate assertion protect the existing composition; the existing artwork-integrity suite checks the original assets. All 35 tests, focused ESLint and production build pass. The existing bundle-size warning remains.
-
-Installed-PWA and physical-device touch/orientation checks were not performed; viewport fixtures and safe-area simulation cover the responsive geometry. Temporary verification pages were removed. No dependency or service-worker changes were needed.
+Physical-device touch, installed-PWA and real saved-session learning activities require manual review. No authentication, database, progress, curriculum, routing or adventure-selection changes were made.

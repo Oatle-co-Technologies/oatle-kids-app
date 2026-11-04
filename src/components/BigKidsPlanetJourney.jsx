@@ -28,7 +28,7 @@ export default function BigKidsPlanetJourney({ title, description, label, items,
         {childName && <button className="planet-map-profile" aria-label={`${childName} — Settings`} type="button" onClick={onProfile} disabled={!onProfile}><span aria-hidden="true">{childName.charAt(0).toUpperCase()}</span>{childName}<span aria-hidden="true">⌄</span></button>}
       </header>
       <p className="planet-map-guidance">{description}</p>
-      <ResponsivePlanetJourney centerTitle={title} centerImage={BIG_KIDS_HOMES.find(home => home.title === title)?.image} centerEmblem={emblem} className="big-planet-journey" label={label} items={items} currentId={currentId}
+      <ResponsivePlanetJourney adventureId={BIG_KIDS_HOMES.find(home => home.title === title)?.id} centerTitle={title} centerImage={BIG_KIDS_HOMES.find(home => home.title === title)?.image} centerEmblem={emblem} className="big-planet-journey" label={label} items={items} currentId={currentId}
         positions={points} stageHeight={height} autoScrollCurrent={mode !== 'wide' && currentIndex >= (mode === 'phone' ? 2 : 3)}
         pathBuilder={planetJourneyRoute} showMissionStatus compactLabels numberedStops rocketLift={0} />
       <section className="planet-journey-progress" aria-label={`${journeyName} journey progress`}>

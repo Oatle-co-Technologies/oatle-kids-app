@@ -6,39 +6,38 @@ import { isOrbitViewport, planetOrbitLayout, planetOrbitRoute, planetOrbitClosin
 import { planetJourneyLayout } from '../src/components/planetJourneyLayout.js';
 
 const views = [[375,667],[390,844],[430,932],[768,1024],[820,1180],[667,375],[844,390],[932,430],[812,375]];
-const intersects = (a,b) => Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x)>.1 && Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y)>.1;
-const circleHitsRect = (c,r) => {
-  const x=c.x+c.width/2,y=c.y+c.height/2;
-  return Math.hypot(x-Math.max(r.x,Math.min(x,r.x+r.width)),y-Math.max(r.y,Math.min(y,r.y+r.height)))<c.width/2-.1;
-};
-
 test('the breakpoint is exactly 1024px; every requested width selects the intended layout',()=>{
   for(const width of [375,390,430,768,820,1023])assert.equal(isOrbitViewport(width),true);
   for(const width of [1024,1280,1920])assert.equal(isOrbitViewport(width),false);
 });
 
-test('all current adventure counts fit without overlapping planet targets, labels or the central title',()=>{
-  for(const [w,h]of views)for(const safeInset of [0,34])for(const count of [1,2,3,4,5,9]){
+test('all mission counts fit and stay centred in the measured content area, including short screens and safe areas',()=>{
+  const cases=[...views,[375,568],[375,430],[390,600],[430,650],[667,320],[844,320]];
+  for(const [w,h]of cases)for(const safeInset of [0,34])for(const count of [1,2,3,4,5,6,7,8,9]){
     const landscape=w>h&&h<600;
-    const g=planetOrbitLayout(count,w-24-(landscape?162:0),w,h,(w<=700?72:82)+safeInset);
+    const nav=(w<=700?72:82)+safeInset;
+    const sidebar=landscape?Math.max(110,Math.min(150,w*.19))+12:0;
+    const topSpace=landscape?(h<=350?8:20):h<=750?118:140;
+    const contentHeight=h-nav-topSpace;
+    const g=planetOrbitLayout(count,w-24-sidebar,w,h,nav,contentHeight);
     const context=`${w}x${h}, ${count} missions, inset ${safeInset}`;
-    const topSpace=landscape?10:h<=750?106:128;
-    assert.ok(g.height+topSpace<=h-(w<=700?72:82)-safeInset+.5,context+' fits above navigation');
-    const center={x:g.width/2-g.centerWidth/2,y:g.centerY-g.centerHeight/2,width:g.centerWidth,height:g.centerHeight};
-    assert.ok(g.touch>=44,context);
-    assert.ok(g.labelFont>=10,context);
+    assert.equal(g.height,contentHeight,context+' uses the available grid height');
+    assert.equal(g.centerY,g.height/2,context+' island is vertically centred');
+    assert.ok(g.touch>=44,context+' has accessible targets');
+    const ringCenter=g.points[0].cy;
+    let top=Infinity,bottom=-Infinity;
     for(let i=0;i<count;i++){
-      const a=g.points[i];
-      for(const r of [a.touchRect,a.labelRect]){
-        assert.ok(r.x>=-.1&&r.y>=-.1&&r.x+r.width<=g.width+.1&&r.y+r.height<=g.height+.1,context);
-      }
-      assert.equal(intersects(a.labelRect,center)||circleHitsRect(a.touchRect,center),false,context);
+      const a=g.points[i],r=a.touchRect;
+      assert.ok(r.x>=-.1&&r.y>=-.1&&r.x+r.width<=g.width+.1&&r.y+r.height<=g.height+.1,context+' target stays visible');
+      assert.ok(a.ry-g.touch/2-g.centerSize/2>=11.9,context+' island clears every planet');
       for(let j=i+1;j<count;j++){
         const b=g.points[j];
-        assert.equal(intersects(a.labelRect,b.labelRect)||circleHitsRect(a.touchRect,b.labelRect)||circleHitsRect(b.touchRect,a.labelRect),false,context);
-        assert.ok(Math.hypot(a.touchRect.x-b.touchRect.x,a.touchRect.y-b.touchRect.y)>=g.touch-.1,context);
+        assert.ok(Math.hypot(r.x-b.touchRect.x,r.y-b.touchRect.y)>=g.touch-.1,context+' targets do not overlap');
       }
+      top=Math.min(top,r.y);bottom=Math.max(bottom,r.y+r.height);
     }
+    assert.ok(Math.abs(ringCenter-g.height/2)<.01,context+' entire orbit is balanced');
+    assert.ok(top>=0&&bottom<=g.height+.1,context);
   }
 });
 

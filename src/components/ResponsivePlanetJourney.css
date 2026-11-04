@@ -2,42 +2,49 @@
 .responsive-planet-host { display: contents; }
 
 @media (max-width: 1023px) {
-  .responsive-planet-host { display: flow-root; width: 100%; min-width: 0; margin: 0; }
-  .space-journey.planet-orbit { position: relative; width: var(--orbit-board-width); max-width: 100%; margin: 0 auto; }
+  .responsive-planet-host { display: grid; place-items: center; width: 100%; height: 100%; min-width: 0; min-height: 0; margin: 0; }
+  .space-journey.planet-orbit { position: relative; width: var(--orbit-board-width); max-width: 100%; margin: 0; }
   .space-journey.planet-orbit .journey-key, .space-journey.planet-orbit .journey-stage::before { display: none; }
   .space-journey.planet-orbit .journey-stage { margin: 0; background: none; }
   .space-journey.planet-orbit .journey-routes path { stroke: #ded8ff; stroke-width: 1.3; stroke-dasharray: none; opacity: .95; filter: drop-shadow(0 0 3px #aaa0ff) drop-shadow(0 0 7px #955bff88); }
   .space-journey.planet-orbit .journey-route-locked { opacity: .85; }
   .space-journey.planet-orbit .journey-stop { width: var(--orbit-touch); height: var(--orbit-touch); max-width: none; transform: translate(-50%, -50%); }
   .space-journey.planet-orbit .journey-stop button { position: relative; display: grid; place-items: center; width: var(--orbit-touch); height: var(--orbit-touch); min-width: 44px; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: none; }
-  .space-journey.planet-orbit .journey-planet { display: flex; align-items: center; justify-content: center; width: var(--orbit-planet); height: var(--orbit-planet); background: none; border-radius: 50%; }
+  .space-journey.planet-orbit .journey-planet { position: relative; display: block; width: var(--orbit-planet); height: var(--orbit-planet); background: none; border-radius: 50%; }
   .space-journey.planet-orbit .journey-planet::after { display: none; }
-  .space-journey.planet-orbit .journey-planet > img { display: block; width: 132%; height: 132%; max-width: none; object-fit: contain; flex-shrink: 0; animation: planet-orbit-hover 6s ease-in-out infinite; filter: drop-shadow(0 3px 5px #03092299); }
-  .space-journey.planet-orbit .journey-stop:nth-child(even) .journey-planet > img { animation-duration: 7.2s; animation-delay: -2.4s; }
-  .space-journey.planet-orbit .is-current .journey-planet > img { filter: drop-shadow(0 0 4px #ffdd8f); }
-  .space-journey.planet-orbit .is-locked .journey-planet { filter: none; opacity: .65; }
-  .space-journey.planet-orbit .journey-stop button .journey-label-plate { position: absolute; left: var(--orbit-label-x); top: var(--orbit-label-y); display: block; width: var(--orbit-label-own-width, var(--orbit-label-width)); max-width: none; height: auto; min-height: 0; margin: 0; padding: 3px; box-sizing: border-box; border: 1.5px solid #f5d685; border-radius: 24px; background: linear-gradient(155deg, #303163f5, #101632f5); box-shadow: inset 0 1px 3px #fff2, 0 2px 6px #07091e77; text-align: center; }
-  .space-journey.planet-orbit .journey-stop strong { display: block; width: 100%; max-width: none; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; color: #fff1cb; font: 900 var(--orbit-title-font)/1.15 'Nunito', sans-serif; white-space: nowrap; text-shadow: 0 1px 4px #070921; }
-  .space-journey.planet-orbit .journey-stop small { display: block; width: 100%; max-width: none; min-height: 0; margin: 2px 0 0; color: #eee8f7; font: 600 var(--orbit-label-font)/1.05 'Nunito', sans-serif; white-space: normal; overflow-wrap: normal; text-shadow: 0 1px 4px #070921; }
-  .space-journey.planet-orbit .is-locked strong, .space-journey.planet-orbit .is-locked small { color: #bfc5d9; }
-  .space-journey.planet-orbit .journey-stamp { position: absolute; top: -3px; left: -3px; right: auto; z-index: 2; min-width: 16px; width: 16px; height: 16px; padding: 0; border: 1px solid #ffe7a2; border-radius: 50%; background: linear-gradient(#ffe998, #e9aa36); color: #1c2146; box-shadow: 0 1px 3px #02072177; font: 1000 10px/1 'Nunito', sans-serif; }
-  .space-journey.planet-orbit .journey-stop.is-complete .journey-stamp { border-color: #ffe7a2; background: linear-gradient(#ffe998, #e9aa36); color: #1c2146; }
-  .space-journey.planet-orbit .is-locked .journey-stamp::after { content: '🔒'; position: absolute; bottom: -3px; right: -3px; font-size: 7px; }
-  .space-journey.planet-orbit .is-complete .journey-stamp::after { content: '✓'; position: absolute; bottom: -3px; right: -3px; padding: 1px 2px; border-radius: 50%; background: #18804c; font-size: 8px; color: #ecfff0; }
+  .space-journey.planet-orbit .journey-stop .journey-planet { filter: none; opacity: 1; }
+  .orbit-planet-surface { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 50%; animation: planet-orbit-hover 7s ease-in-out infinite; filter: drop-shadow(0 3px 5px #03092299); }
+  .space-journey.planet-orbit .journey-stop:nth-child(even) .orbit-planet-surface { animation-duration: 8s; animation-delay: -3s; }
+  .orbit-planet-texture { position: absolute; display: block; width: 132%; height: 132%; max-width: none; object-fit: contain; pointer-events: none; }
+  .orbit-planet-texture:is([src*="saturn"], [src*="uranus"]) { width: 100%; height: 100%; }
+  .orbit-mission-illustration { position: absolute; inset: 15%; z-index: 1; pointer-events: none; filter: drop-shadow(0 2px 2px #120b3366); }
+  .orbit-mission-illustration > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .orbit-mission-illustration.has-companion .orbit-icon-main { inset: 0 15% 8% 0; width: 85%; height: 92%; }
+  .orbit-mission-illustration.has-companion .orbit-icon-companion { inset: auto -8% -6% auto; width: 58%; height: 65%; filter: drop-shadow(-1px 2px 2px #130a3a66); }
+  .orbit-trace-illustration { position: absolute; inset: 10%; width: 80%; height: 80%; }
+  .space-journey.planet-orbit .journey-stop.is-current .orbit-planet-surface { filter: drop-shadow(0 0 4px #ffe5a2) drop-shadow(0 0 10px #f7b94977); }
+  .space-journey.planet-orbit .journey-stop.is-locked .orbit-planet-surface { filter: saturate(.35) brightness(.58); }
+  .space-journey.planet-orbit .journey-stop.is-locked .orbit-planet-surface::after { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: 50%; background: #080d3526; }
+  .space-journey.planet-orbit .journey-planet > .orbit-mission-lock { position: absolute; width: 57%; height: 57%; max-width: none; left: 21.5%; top: 21.5%; z-index: 3; object-fit: contain; animation: none; filter: drop-shadow(0 2px 3px #050720aa); }
+  .orbit-completion-tick { position: absolute; left: 0; bottom: 0; display: grid; place-items: center; z-index: 3; width: clamp(15px, calc(var(--orbit-touch) * .25), 26px); height: clamp(15px, calc(var(--orbit-touch) * .25), 26px); border-radius: 50%; border: 1.5px solid #caffb6; background: linear-gradient(145deg, #a5f96b, #24993f 60%, #117137); box-shadow: inset 0 1px 2px #fff9, 0 2px 3px #070d3688; color: white; font: 1000 clamp(10px, calc(var(--orbit-touch) * .19), 20px)/1 'Nunito', sans-serif; }
+  .space-journey.planet-orbit .journey-stop .journey-stamp { top: -3px; left: -1px; right: auto; z-index: 4; min-width: 18px; width: clamp(18px, calc(var(--orbit-touch) * .28), 30px); height: clamp(18px, calc(var(--orbit-touch) * .28), 30px); padding: 0; border: 1px solid #fff1b5; border-radius: 50%; background: linear-gradient(#fff0a2, #f5bc3e 65%, #dd9819); color: #202246; box-shadow: inset 0 1px 2px #fff9, 0 1px 3px #02072188; font: 1000 clamp(11px, calc(var(--orbit-touch) * .22), 23px)/1 'Nunito', sans-serif; }
+  .space-journey.planet-orbit .journey-stop .journey-stamp::after { content: none; }
+  .space-journey.planet-orbit .journey-stop .journey-label-plate,
+  .space-journey.planet-orbit .journey-mission-status,
+  .space-journey.planet-orbit .journey-flight-status { position: absolute; top: 0; left: 0; width: 1px; height: 1px; max-width: 1px; min-height: 0; margin: 0; padding: 0; border: 0; box-shadow: none; overflow: hidden; clip-path: inset(50%); }
   .space-journey.planet-orbit .journey-world-badge, .space-journey.planet-orbit .journey-group { display: none; }
-  .space-journey.planet-orbit .journey-mission-status, .space-journey.planet-orbit .journey-flight-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .space-journey.planet-orbit .journey-ship { width: 32px; height: 32px; }
+  .space-journey.planet-orbit .journey-ship { width: clamp(22px, calc(var(--orbit-touch) * .4), 34px); height: clamp(22px, calc(var(--orbit-touch) * .4), 34px); }
+  .space-journey.planet-orbit .journey-ship:not(.is-flying) > img { transform: translate(55%, 55%) scale(.85); }
   .space-journey.planet-orbit .journey-thruster { width: 10px; height: 6px; left: 3px; bottom: 4px; }
   .space-journey.planet-orbit .journey-stop button:focus-visible { outline: 2px solid #fff0b4; outline-offset: 3px; border-radius: 50%; }
-  .planet-orbit-center { position: absolute; left: 50%; z-index: 1; transform: translate(-50%, -50%); width: var(--orbit-center-width); height: var(--orbit-center-height); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; color: #fff8e7; }
-  .planet-orbit-center > img { display: block; width: 100%; height: calc(100% - 24px); object-fit: contain; filter: drop-shadow(0 0 10px #f1abdb77) drop-shadow(0 8px 10px #03072088); }
-  .planet-orbit-center > span { display: grid; place-items: center; width: 80%; flex: 1; min-height: 0; font-size: clamp(20px, calc(var(--orbit-center-width) * .4), 60px); border-radius: 50%; background: radial-gradient(ellipse, #6c43ab88, #274e8c55 50%, transparent 72%); filter: drop-shadow(0 2px 5px #c59c6e55); }
-  .planet-orbit-center > span svg { width: 75%; height: 75%; }
-  .planet-orbit-center > strong { position: relative; display: block; width: 94%; box-sizing: border-box; margin-top: -4px; padding: 4px 3px; border: 1.5px solid #ffe298; border-radius: 24px; background: linear-gradient(155deg, #42315e, #171536); box-shadow: 0 2px 8px #e796dd55; font: 900 var(--orbit-title-font)/1.1 'Nunito', sans-serif; text-shadow: 0 2px 4px #050923; }
-  .planet-orbit-sparkle { position: absolute; z-index: 0; transform: translate(-50%, -50%); font-size: 11px; line-height: 1; color: #fff; text-shadow: 0 0 4px #fff, 0 0 9px #a99bff; pointer-events: none; }
+  .planet-orbit-center { position: absolute; left: 50%; z-index: 1; transform: translate(-50%, -50%); width: var(--orbit-center-size); height: var(--orbit-center-size); text-align: center; pointer-events: none; color: #fff8e7; }
+  .planet-orbit-center > img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 9px #eeb0dc66) drop-shadow(0 5px 7px #03072066); }
+  .planet-orbit-center > span { display: grid; place-items: center; width: 100%; height: 100%; font-size: clamp(20px, calc(var(--orbit-center-size) * .4), 80px); border-radius: 50%; background: radial-gradient(ellipse, #6c43ab88, #274e8c55 50%, transparent 72%); filter: drop-shadow(0 2px 5px #c59c6e55); }
+  .planet-orbit-center > span svg { width: 70%; height: 70%; }
+  .planet-orbit-center > strong { position: absolute; left: 12.5%; bottom: 20%; display: block; width: 75%; box-sizing: border-box; padding: 3px; border: 1.5px solid #ffe298; border-radius: 24px; background: linear-gradient(155deg, #42315e, #171536); box-shadow: 0 2px 8px #e796dd55; font: 900 var(--orbit-title-font)/1.1 'Nunito', sans-serif; text-shadow: 0 2px 4px #050923; }
+  .planet-orbit-sparkle { position: absolute; z-index: 0; transform: translate(-50%, -50%); font-size: 9px; line-height: 1; color: #fff; text-shadow: 0 0 4px #fff, 0 0 9px #a99bff; pointer-events: none; }
 
-
-  main.big-kids-planet-map { padding: 12px 12px 0; min-height: calc(100dvh - 82px - env(safe-area-inset-bottom, 0px)); }
+  main.big-kids-planet-map { display: grid; grid-template-rows: 116px minmax(0, 1fr); padding: 12px; height: calc(100dvh - 82px - env(safe-area-inset-bottom, 0px)); min-height: 0; }
   main.big-kids-planet-map .planet-map-toolbar { position: relative; display: grid; grid-template-columns: 1fr auto; grid-template-rows: 44px 42px; align-items: center; gap: 8px 10px; min-height: 116px; height: 116px; margin: 0; align-content: start; }
   main.big-kids-planet-map .planet-map-brand-back { grid-column: 1; grid-row: 1; display: flex; align-items: center; gap: 10px; }
   main.big-kids-planet-map .planet-map-brand-back > img { width: 78px; }
@@ -52,16 +59,17 @@
   main.big-kids-planet-map .planet-journey-progress { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: 0; padding: 0; border: 0; box-shadow: none; overflow: hidden; clip-path: inset(50%); }
 
 
-  main.little-map-page { width: 100%; min-height: calc(100dvh - 82px - env(safe-area-inset-bottom, 0px)); padding: 12px 12px 16px; overflow: visible; }
-  main.little-map-page > .page-back-button { position: relative; inset: auto; align-self: flex-start; margin: 0 0 6px; }
+  main.little-map-page { display: grid; grid-template-rows: 44px minmax(0, 1fr) auto; gap: 6px; width: 100%; height: calc(100dvh - 82px - env(safe-area-inset-bottom, 0px)); min-height: 0; padding: 12px; overflow: visible; }
+  main.little-map-page > .page-back-button { position: relative; inset: auto; align-self: start; justify-self: start; margin: 0; }
   main.little-map-page > .little-map-header { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   main.little-map-page > .little-grownup-note { margin: 8px auto 0; max-width: 440px; font-size: .7rem; line-height: 1.3; text-align: center; }
 }
 @media (max-width: 700px) {
-  main.big-kids-planet-map, main.little-map-page { min-height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px)); }
+  main.big-kids-planet-map, main.little-map-page { height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px)); }
 }
 /* Leave room for the home indicator on short portrait phones. */
 @media (max-width: 1023px) and (orientation: portrait) and (max-height: 750px) {
+  main.big-kids-planet-map { grid-template-rows: 94px minmax(0, 1fr); }
   main.big-kids-planet-map .planet-map-toolbar { height: 94px; min-height: 94px; grid-template-rows: 44px 30px; row-gap: 4px; }
   main.big-kids-planet-map .planet-map-banner { height: 30px; padding: 2px 5px 2px 29px; }
   main.big-kids-planet-map .planet-map-banner h1 { font-size: 17px; line-height: 1.1; }
@@ -69,26 +77,30 @@
   main.big-kids-planet-map .planet-map-banner > p { bottom: -17px; padding: 2px 9px; font-size: 9px; }
 }
 @media (max-width: 1023px) and (orientation: landscape) and (max-height: 599px) {
-  main.big-kids-planet-map { display: grid; grid-template-columns: 150px minmax(0, 1fr); grid-template-areas: 'toolbar orbit' 'progress orbit'; align-content: start; column-gap: 12px; padding: 10px 12px; }
+  main.big-kids-planet-map { display: grid; grid-template-columns: clamp(110px, 19vw, 150px) minmax(0, 1fr); grid-template-areas: 'toolbar orbit'; grid-template-rows: minmax(0, 1fr); align-content: stretch; column-gap: 12px; padding: 10px 12px; }
   main.big-kids-planet-map .planet-map-toolbar { grid-area: toolbar; height: auto; min-height: 0; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; gap: 8px; }
   main.big-kids-planet-map .planet-map-brand-back { flex-direction: column; gap: 8px; }
   main.big-kids-planet-map .planet-map-brand-back > img { width: 72px; }
-  main.big-kids-planet-map .planet-map-banner { width: 138px; height: auto; min-height: 44px; padding: 7px 4px; margin-top: 8px; }
+  main.big-kids-planet-map .planet-map-banner { width: min(138px, 100%); height: auto; min-height: 44px; padding: 7px 4px; margin: 8px 0 20px; }
   main.big-kids-planet-map .planet-map-banner h1 { white-space: normal; font-size: 14px; }
   main.big-kids-planet-map .planet-banner-emblem { display: none; }
   main.big-kids-planet-map .planet-map-banner > p { font-size: 9px; padding: 3px 6px; bottom: -20px; }
   main.big-kids-planet-map > .responsive-planet-host { grid-area: orbit; }
-  .space-journey.planet-orbit .journey-stop button .journey-label-plate { padding: 1px 2px; border-width: 1px; }
   .planet-orbit-center > strong { padding: 2px; border-width: 1px; }
-  .planet-orbit-center > img { height: calc(100% - 24px); }
   .planet-orbit-sparkle { font-size: 8px; }
-  main.big-kids-planet-map > .planet-journey-progress { grid-area: progress; }
   main.big-kids-planet-map .planet-progress-orbs { justify-content: center; flex-wrap: wrap; }
   main.big-kids-planet-map .planet-progress-orbs > span { width: 11px; height: 11px; }
-  main.little-map-page { display: grid; grid-template-columns: 150px minmax(0, 1fr); grid-template-areas: 'back orbit' 'note orbit'; grid-template-rows: 48px 1fr; align-content: start; column-gap: 12px; padding: 10px 12px; }
+  main.little-map-page { display: grid; grid-template-columns: clamp(110px, 19vw, 150px) minmax(0, 1fr); grid-template-areas: 'back orbit' 'note orbit'; grid-template-rows: 48px minmax(0, 1fr); align-content: stretch; column-gap: 12px; padding: 10px 12px; }
   main.little-map-page > .page-back-button { grid-area: back; align-self: start; }
   main.little-map-page > .responsive-planet-host { grid-area: orbit; }
   main.little-map-page > .little-grownup-note { grid-area: note; font-size: .68rem; }
 }
-@keyframes planet-orbit-hover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-@media (max-width: 1023px) and (prefers-reduced-motion: reduce), (max-width: 1023px) and (update: slow) { .space-journey.planet-orbit .journey-planet > img { animation: none !important; transition: none; } }
+@keyframes planet-orbit-hover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@media (max-width: 1023px) and (orientation: landscape) and (max-height: 350px) {
+  main.big-kids-planet-map, main.little-map-page { padding-block: 4px; }
+  main.big-kids-planet-map .planet-map-toolbar, main.big-kids-planet-map .planet-map-brand-back { gap: 4px; }
+  main.big-kids-planet-map .planet-map-brand-back > img { width: 60px; }
+  main.big-kids-planet-map .planet-map-banner { margin: 0 0 16px; padding: 5px 4px; }
+  main.big-kids-planet-map .planet-map-banner h1 { font-size: 13px; }
+}
+@media (max-width: 1023px) and (prefers-reduced-motion: reduce), (max-width: 1023px) and (update: slow) { .space-journey.planet-orbit .orbit-planet-surface { animation: none !important; transition: none; } }

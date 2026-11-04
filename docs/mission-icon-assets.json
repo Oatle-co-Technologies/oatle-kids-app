@@ -1,0 +1,158 @@
+{
+  "generator": "Built-in image_gen tool; one transparent image per reusable icon.",
+  "promptBase": "Use case: stylized-concept. Asset type: a single reusable transparent game UI icon for Oatle Kids, displayed over an existing textured planet. Render a premium colourful 3D cartoon toy object with rounded bevels, real thickness, soft sculpted highlights, subtle ambient occlusion, warm upper-left studio lighting, matching polished children's floating adventure islands. Front three-quarter view, tightly framed and centred, occupies 85% of square canvas. Genuine transparent background, no floor, no backdrop, no planet, no border, no card, no text except requested letters, no logos, no watermark. Keep silhouette very clear at 40px. Subject: ",
+  "assets": [
+    {
+      "key": "uppercase",
+      "subject": "three chunky freestanding uppercase letters A B C, exactly uppercase, A golden-yellow, B sky-blue, C candy-pink, playful compact triangular composition. Clearly extruded letter sides.",
+      "path": "public/mission-icons/uppercase.webp"
+    },
+    {
+      "key": "lowercase",
+      "subject": "three chunky lowercase letters a b c, exactly lowercase, a pink, b sky-blue, c golden-yellow, playful compact composition. Clearly extruded letter sides.",
+      "path": "public/mission-icons/lowercase.webp"
+    },
+    {
+      "key": "letter-pair",
+      "subject": "one large uppercase A in sky-blue and one lowercase a in golden-yellow, paired closely together, exactly Aa. Clearly extruded letter sides.",
+      "path": "public/mission-icons/letter-pair.webp"
+    },
+    {
+      "key": "lock",
+      "subject": "one chunky closed padlock with a rounded deep-indigo enamel body, thick silver U-shaped shackle, golden keyhole, bright polished edges and sculpted depth. Friendly child-safe toy padlock, easily identifiable.",
+      "path": "public/mission-icons/lock.webp"
+    },
+    {
+      "key": "ear",
+      "subject": "a friendly sculpted peach-coloured human ear, with two thick curved golden sound waves beside it. One clear ear and sound-wave symbol, no face.",
+      "path": "public/mission-icons/ear.webp"
+    },
+    {
+      "key": "book",
+      "subject": "a chunky open reading book, thick curved ivory pages with subtle tiny engraved lines, cobalt-blue cover and golden spine. No readable text.",
+      "path": "public/mission-icons/book.webp"
+    },
+    {
+      "key": "pencil",
+      "subject": "one chunky sharpened golden-yellow pencil with pink eraser, silver ferrule and visible graphite tip, diagonally upright, friendly rounded toy proportions.",
+      "path": "public/mission-icons/pencil.webp"
+    },
+    {
+      "key": "blocks",
+      "subject": "three chunky rounded building cubes in turquoise, purple and golden-yellow, stacked as a compact playful pyramid. Real three-dimensional cube faces and depth, tiny embossed letter shapes on the fronts.",
+      "path": "public/mission-icons/blocks.webp"
+    },
+    {
+      "key": "storybook",
+      "subject": "one chunky open purple storybook with curved ivory pages. A small colourful illustrated golden star, crescent moon and tiny blue castle rise in relief from the pages. Different silhouette and detail from a plain reading book. No readable text.",
+      "path": "public/mission-icons/storybook.webp"
+    },
+    {
+      "key": "trophy",
+      "subject": "one polished golden trophy cup with two round handles, an embossed five-point star on its front and a small deep-purple plinth. Warm shiny gold, friendly rounded proportions.",
+      "path": "public/mission-icons/trophy.webp"
+    },
+    {
+      "key": "numbers",
+      "subject": "three chunky freestanding numerals 1 2 3, exactly 123, in turquoise, golden yellow and coral-pink, compact playful triangular composition with clear extruded sides.",
+      "path": "public/mission-icons/numbers.webp"
+    },
+    {
+      "key": "shapes",
+      "subject": "a compact trio of chunky rounded geometric solids: turquoise sphere, purple cube and golden-yellow triangular prism. Visibly different shapes and soft toy-like bevels.",
+      "path": "public/mission-icons/shapes.webp"
+    },
+    {
+      "key": "palette",
+      "subject": "a chunky purple painter's palette with bright raised blobs of yellow, turquoise, pink and orange paint, plus one small rounded brush laid diagonally across it.",
+      "path": "public/mission-icons/palette.webp"
+    },
+    {
+      "key": "plus",
+      "subject": "a single thick rounded golden-yellow plus sign, flanked below by one turquoise counting cube and one pink counting cube. Bold legible raised mathematical + symbol, toy-like depth.",
+      "path": "public/mission-icons/plus.webp"
+    },
+    {
+      "key": "minus",
+      "subject": "a single thick rounded coral-pink minus sign, paired below with two turquoise counting cubes one slightly separated. Bold legible raised mathematical − symbol, toy-like depth.",
+      "path": "public/mission-icons/minus.webp"
+    },
+    {
+      "key": "sharing",
+      "subject": "three small rounded purple and turquoise baskets, each containing exactly two identical golden balls, arranged compactly to suggest equal groups and sharing.",
+      "path": "public/mission-icons/sharing.webp"
+    },
+    {
+      "key": "house",
+      "subject": "one small colourful toy house built from thick rounded wooden blocks: golden triangular roof, turquoise walls, purple door, pink chimney. A simple house silhouette with soft highlights.",
+      "path": "public/mission-icons/house.webp"
+    },
+    {
+      "key": "bridge",
+      "subject": "one small toy bridge built from chunky colourful rounded building blocks, golden horizontal deck, two turquoise pillars, purple arch opening. A clear bridge silhouette, no landscape.",
+      "path": "public/mission-icons/bridge.webp"
+    },
+    {
+      "key": "animal-food",
+      "subject": "a friendly small rounded golden puppy head looking down at a turquoise food bowl with a single biscuit, compact cheerful toy animal-feeding icon.",
+      "path": "public/mission-icons/animal-food.webp"
+    },
+    {
+      "key": "lion-puzzle",
+      "subject": "one chunky purple interlocking jigsaw puzzle piece with a raised friendly golden lion face with orange mane on its front. No scene, one coherent toy puzzle icon.",
+      "path": "public/mission-icons/lion-puzzle.webp"
+    },
+    {
+      "key": "cow-puzzle",
+      "subject": "one chunky turquoise interlocking jigsaw puzzle piece with a raised friendly black-and-white cow face with pink muzzle on its front. No scene, one coherent toy puzzle icon.",
+      "path": "public/mission-icons/cow-puzzle.webp"
+    },
+    {
+      "key": "turtle-puzzle",
+      "subject": "one chunky golden-yellow interlocking jigsaw puzzle piece with a raised friendly green turtle with turquoise shell on its front. No scene, one coherent toy puzzle icon.",
+      "path": "public/mission-icons/turtle-puzzle.webp"
+    },
+    {
+      "key": "music",
+      "subject": "a small cheerful toy drum in turquoise and purple with two golden drumsticks and one thick pink musical note beside it, compact playful music instrument icon.",
+      "path": "public/mission-icons/music.webp"
+    },
+    {
+      "key": "dance",
+      "subject": "two chunky colourful children's trainers, one turquoise and one purple with golden soles, posed as dancing feet, plus two small raised pink motion marks. No legs, no character.",
+      "path": "public/mission-icons/dance.webp"
+    },
+    {
+      "key": "circle",
+      "subject": "one thick rounded red circular disc with visible extruded ruby-red edge, slightly tilted to show its thickness, candy-like soft highlights. Exactly a circle, not a sphere.",
+      "path": "public/mission-icons/circle.webp"
+    },
+    {
+      "key": "square",
+      "subject": "one thick rounded golden-yellow square tile with a visible extruded amber edge, slightly tilted to show its thickness. Exactly a square with four equal sides, no symbols.",
+      "path": "public/mission-icons/square.webp"
+    },
+    {
+      "key": "triangle",
+      "subject": "one thick rounded sky-blue triangular tile with a visible extruded cobalt edge, slightly tilted to show its thickness. Exactly a triangle with three sides, no symbols.",
+      "path": "public/mission-icons/triangle.webp"
+    },
+    {
+      "key": "rectangle",
+      "subject": "one thick rounded emerald-green rectangular tile with a visible extruded forest-green edge, slightly tilted to show its thickness. Clearly wider than tall, exactly a rectangle, no symbols.",
+      "path": "public/mission-icons/rectangle.webp"
+    },
+    {
+      "key": "star",
+      "subject": "one thick rounded purple five-point star with a visible extruded violet edge, slightly tilted to show its thickness. Exactly five points, friendly toy-like proportions.",
+      "path": "public/mission-icons/star.webp"
+    }
+  ],
+  "transparentBackground": true,
+  "applicationExports": {
+    "format": "WebP",
+    "height": 256,
+    "quality": 86,
+    "alphaPreserved": true
+  }
+}
