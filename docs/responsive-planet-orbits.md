@@ -35,3 +35,5 @@ The status-bar spacing revision was additionally checked in Safari with simulate
 Physical-device touch, installed-PWA and real saved-session learning activities require manual review. No authentication, database, progress, curriculum, routing or adventure-selection changes were made.
 
 The centred-header revision passed Safari checks at 375, 390, 430, 768, 820 and 1024px widths, including short portrait/landscape cases and a missing-profile case. The original logo file and desktop stylesheet remain unchanged.
+
+The Big Kids adventure-selection homepage also reserves the phone’s top safe-area inset plus 32px before its logo. Its existing logo size, adventure homes and desktop layout are preserved. Safari position checks cover 375, 390, 430, 768, 820, 1023 and 1024px widths with simulated phone/tablet top insets.

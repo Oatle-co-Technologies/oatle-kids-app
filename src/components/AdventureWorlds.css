@@ -57,4 +57,10 @@
   .galaxy-orbit { top: 14%; height: 67%; width: 90%; left: 5%; transform: rotate(-9deg); }
   .galaxy-journey .journey-flight-status { margin-top: 8px; max-width: 290px; }
 }
+@media (max-width: 1023px) {
+  .adventure-hub.expedition-hub.big-kids-galaxy { --adventure-home-safe-top: env(safe-area-inset-top, 0px); padding-top: calc(32px + var(--adventure-home-safe-top)); }
+}
+@media (min-width: 1001px) and (max-width: 1023px) {
+  .big-kids-galaxy > .expedition-brand { top: calc(32px + var(--adventure-home-safe-top)); }
+}
 @media (prefers-reduced-motion: reduce), (update: slow) { .galaxy-journey .journey-planet { animation: none !important; } .galaxy-journey .journey-planet > img { transition: none; } }
