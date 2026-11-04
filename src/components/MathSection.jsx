@@ -1,6 +1,6 @@
 import { prepareMathQuestion, mathsQuestionNarration } from "../utils/mathsLanguage";
 import { selectAssessment, restoreAssessmentQuestions, assessmentResults as summarizeAssessment } from "../utils/assessmentSelection";
-import { withCompletedDestination } from "./spaceJourneyLogic";
+import { beginMissionRun, finishMissionRun } from "../utils/missionReplay";
 import BigKidsPlanetJourney from "./BigKidsPlanetJourney";
 import { PLANET_NAMES } from "./planetJourneyLayout";
 import {
@@ -2495,7 +2495,7 @@ export default function MathSection({
         setAssessmentAnswers(savedAttempt.answers);
         setAssessmentActive(false);
         setProgress(current => ({
-          ...withCompletedDestination(current, id), activeMission: id,
+          ...finishMissionRun(current, id), activeMission: id,
           assessmentResults: summarizeAssessment(assessmentSkills, savedAttempt.answers),
         }));
         setScreen("assessment-results");
@@ -2531,14 +2531,12 @@ export default function MathSection({
           [current.activeMission]: current.question,
         };
 
+        const run = selectedMission?.assessment
+          ? { ...current, missions }
+          : beginMissionRun({ ...current, missions }, id);
         return {
-        ...current,
-        missions,
-        activeMission:
-          id,
-        question: selectedMission?.assessment
-          ? assessmentQuestionIndex
-          : missions[id] || 0,
+          ...run, activeMission: id,
+          question: selectedMission?.assessment ? assessmentQuestionIndex : run.missions[id],
         };
       }
     );
@@ -2567,7 +2565,7 @@ export default function MathSection({
     (answers = assessmentAnswers) => {
       if (isAssessment) {
         setProgress(current => ({
-          ...withCompletedDestination(current, current.activeMission),
+          ...finishMissionRun(current, current.activeMission),
           assessmentResults: summarizeAssessment(assessmentSkills, answers),
         }));
         setAssessmentActive(false);
@@ -2579,7 +2577,7 @@ export default function MathSection({
 
       setProgress(
         (current) => ({
-          ...withCompletedDestination(current, current.activeMission),
+          ...finishMissionRun(current, current.activeMission),
           unlocked:
             Math.max(
               current.unlocked,
@@ -2779,6 +2777,10 @@ export default function MathSection({
               ? "Return to mission"
               : "Start mission"}
         </button>
+        {!mission.assessment && progress.question > 0 && <button type="button" className="secondary-button" onClick={() => {
+          setProgress(current => ({ ...beginMissionRun(current, mission.id, { restart: true }), question: 0 }));
+          beginMission();
+        }}>Start again</button>}
       </main>
     );
   }

@@ -41,7 +41,7 @@ import ReadingBalloonBreak from "./components/ReadingBalloonBreak";
 import AdventureWorlds from "./components/AdventureWorlds";
 import BigKidsPlanetJourney from "./components/BigKidsPlanetJourney";
 import { adventureEntryScreen } from "./components/bigKidsHomes";
-import { withCompletedDestination } from "./components/spaceJourneyLogic";
+import { beginMissionRun, finishMissionRun } from "./utils/missionReplay";
 import StorybookAdventure from "./components/StorybookAdventure";
 import SpaceBuilder from "./components/SpaceBuilder";
 
@@ -1233,7 +1233,7 @@ function App() {
   };
 
   const celebrateReadingMission = () => {
-    setProgress(current => withCompletedDestination(current, planet.id));
+    setProgress(current => finishMissionRun(current, planet.id));
     setScreen("celebration");
   };
 
@@ -1246,12 +1246,8 @@ function App() {
         [current.activePlanet]: current.question,
       };
 
-      return {
-        ...current,
-        missions,
-        activePlanet: id,
-        question: missions[id] || 0,
-      };
+      const run = id === 9 ? { ...current, missions } : beginMissionRun({ ...current, missions }, id);
+      return { ...run, activePlanet: id, question: run.missions[id] || 0 };
     });
 
     setFeedback("");
@@ -1698,7 +1694,7 @@ function App() {
     missionId
   ) => {
     setWritingProgress((current) => ({
-      ...withCompletedDestination(current, missionId),
+      ...finishMissionRun(current, missionId),
       missions: {
         ...current.missions,
         [missionId]: 0,
@@ -1721,9 +1717,8 @@ function App() {
       return;
     }
 
-    setWritingActivePlanet(
-      planetId
-    );
+    setWritingProgress(current => beginMissionRun(current, planetId));
+    setWritingActivePlanet(planetId);
 
     setScreen("writingPlanet");
   };
@@ -1754,12 +1749,9 @@ function App() {
           item.id === nextPlanetId
       );
 
-    setWritingProgress((current) => ({
-      ...current,
-      unlocked: Math.max(
-        current.unlocked,
-        nextPlanetId
-      ),
+    setWritingProgress(current => ({
+      ...beginMissionRun(current, nextPlanetId),
+      unlocked: Math.max(current.unlocked, nextPlanetId),
     }));
 
     setWritingActivePlanet(
@@ -1814,16 +1806,10 @@ function App() {
       return;
     }
 
-    setProgress((current) => ({
-      ...current,
-      unlocked: Math.max(
-        current.unlocked,
-        nextPlanetId
-      ),
-      activePlanet: nextPlanetId,
-      question:
-        current.missions?.[nextPlanetId] || 0,
-    }));
+    setProgress(current => {
+      const run = nextPlanetId === 9 ? current : beginMissionRun(current, nextPlanetId);
+      return { ...run, unlocked: Math.max(current.unlocked, nextPlanetId), activePlanet: nextPlanetId, question: run.missions?.[nextPlanetId] || 0 };
+    });
 
     setScreen(
       unlockedPlanet
@@ -1841,11 +1827,7 @@ function App() {
       startedMissions: {},
     });
 
-    setWritingProgress({
-      unlocked: 1,
-      missions: {},
-      startedMissions: {},
-    });
+    setWritingProgress(migrateWritingProgress(null));
 
     setWritingActivePlanet(1);
     setWritingCelebrationMission(null);
