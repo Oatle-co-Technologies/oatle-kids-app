@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { currentDestination, journeyPoints, JOURNEY_WIDTH, JOURNEY_STEP, routeBetween } from './spaceJourneyLogic';
 import './SpaceJourney.css';
 
-export default function SpaceJourney({ items, currentId, label = 'Adventure journey', storageKey, playful = false, positions, stageHeight, className = '', autoScrollCurrent = true }) {
+export default function SpaceJourney({ items, currentId, label = 'Adventure journey', storageKey, playful = false, positions, stageHeight, className = '', autoScrollCurrent = true, showMissionStatus = false, rocketLift = 55 }) {
   const [remembered] = useState(() => {
     try { return storageKey ? sessionStorage.getItem(storageKey) : null; } catch { return null; }
   });
@@ -75,15 +75,16 @@ export default function SpaceJourney({ items, currentId, label = 'Adventure jour
         </svg>
         <ol className="journey-destinations">
           {items.map((item, index) => <li key={item.id} className={`journey-stop ${item.locked ? 'is-locked' : ''} ${item.complete ? 'is-complete' : ''} ${index === current ? 'is-current' : ''} ${flying === item.id ? 'is-arriving' : ''}`} style={{ left: `${points[index].x / JOURNEY_WIDTH * 100}%`, top: points[index].y, '--destination-color': item.color || '#8de1ec' }}>
-            <button type="button" disabled={item.locked || flying !== null} onClick={() => choose(item, index)} aria-current={index === current ? 'step' : undefined} aria-label={`${item.title}. ${item.locked ? 'Locked. Complete the previous mission.' : item.complete ? 'Completed. Explore again.' : index === current ? 'Current destination.' : 'Explore.'}`}>
+            <button type="button" disabled={item.locked || flying !== null} onClick={() => choose(item, index)} aria-current={index === current ? 'step' : undefined} aria-label={`${item.title}. ${showMissionStatus ? `${item.subtitle}. ` : ''}${item.locked ? 'Locked. Complete the previous mission.' : item.complete ? 'Completed. Explore again.' : index === current ? 'Current destination.' : 'Explore.'}`}>
               {item.group && <span className="journey-group">{item.group}</span>}
               <span className="journey-planet">{item.art || <img src={item.image} alt="" loading="lazy" draggable="false" />}{item.badge && <span className="journey-world-badge">{item.badge}</span>}</span>
               <span className="journey-stamp">{item.locked ? '🔒' : item.complete ? '✓' : index === current ? '✦' : String(index + 1).padStart(2, '0')}</span>
-              <strong>{item.title}</strong><small>{item.locked ? 'Finish the stop before me' : item.subtitle}</small>
+              <strong>{item.title}</strong><small>{item.locked && !showMissionStatus ? 'Finish the stop before me' : item.subtitle}</small>
+              {showMissionStatus && <span className="journey-mission-status">{item.locked ? 'Locked · complete the previous planet' : index === current ? (item.complete ? 'Completed · rocket here' : 'Current planet · ready to explore') : item.complete ? 'Completed · explore again' : 'Ready to explore'}</span>}
             </button>
           </li>)}
         </ol>
-        {items.length > 0 && <div ref={ship} className={`journey-ship ${flying !== null ? 'is-flying' : ''}`} style={{ left: `${points[current].x / JOURNEY_WIDTH * 100}%`, top: points[current].y - 55 }} aria-hidden="true"><img src="/rocket/oatle-rocket.png" alt="" /><span className="journey-thruster" /></div>}
+        {items.length > 0 && <div ref={ship} className={`journey-ship ${flying !== null ? 'is-flying' : ''}`} style={{ left: `${points[current].x / JOURNEY_WIDTH * 100}%`, top: points[current].y - rocketLift }} aria-hidden="true"><img src="/rocket/oatle-rocket.png" alt="" /><span className="journey-thruster" /></div>}
       </div>
       <p className="journey-flight-status" role="status" aria-live="polite">{flying !== null ? `Flying to ${items.find(item => item.id === flying)?.title}…` : 'Choose a destination. Your rocket is ready.'}</p>
     </section>

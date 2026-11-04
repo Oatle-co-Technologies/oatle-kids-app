@@ -36,7 +36,8 @@ import LocalBackButton from "./components/LocalBackButton";
 import LittleExplorers from "./components/LittleExplorers";
 import CosmicPuzzles from "./components/CosmicPuzzles";
 import AdventureWorlds from "./components/AdventureWorlds";
-import SpaceJourney from "./components/SpaceJourney";
+import BigKidsPlanetJourney from "./components/BigKidsPlanetJourney";
+import { adventureEntryScreen } from "./components/bigKidsHomes";
 import { withCompletedDestination } from "./components/spaceJourneyLogic";
 import StorybookAdventure from "./components/StorybookAdventure";
 import SpaceBuilder from "./components/SpaceBuilder";
@@ -610,7 +611,6 @@ function AppNav({
         activeScreen === "map" ||
         activeScreen === "planet" ||
         activeScreen === "mission" ||
-        activeScreen === "launch" ||
         activeScreen === "math" ||
         activeScreen === "cosmicPuzzles" ||
         activeScreen === "spaceBuilder" ||
@@ -720,8 +720,6 @@ function App() {
     return group === "little" ? "littleExplorers" : group === "big" ? "explore" : "ageSelect";
   });
   const [ageGroup, setAgeGroup] = useState(savedAgeGroup);
-  const [launchAdventure, setLaunchAdventure] =
-    useState("reading");
 
   const [assessmentResults, setAssessmentResults] =
     useState(savedAssessmentResults);
@@ -1106,19 +1104,9 @@ function App() {
         (item) => item.id === writingCelebrationMission
       ) || selectedWritingPlanet;
 
-    const launchPrompts = {
-      reading:
-        "Reading Adventures. Travel across the planets and build your reading skills.",
-      counting:
-        "Maths Adventures. Count, match, add, and explore numbers among the stars.",
-      writing:
-        "Writing Adventures. Trace letters, numbers, shapes, and sentences.",
-    };
-
     const prompts = {
       explore:
         "Choose an adventure. Reading, counting, writing, arcade challenges, or storybooks.",
-      launch: launchPrompts[launchAdventure],
       map: "Choose a planet for your next reading mission.",
       planet: `Welcome to planet ${planet.name}. ${planet.description}.`,
       celebration: `Mission accomplished! You completed your mission on ${planet.name}.`,
@@ -1150,7 +1138,6 @@ function App() {
     };
   }, [
     ageGroup,
-    launchAdventure,
     planet.description,
     planet.name,
     screen,
@@ -2230,10 +2217,8 @@ function App() {
 
         <AdventureWorlds onAdventure={(id) => {
           stopSpeech();
-          if (["reading", "counting", "writing"].includes(id)) {
-            setLaunchAdventure(id);
-            setScreen("launch");
-          } else setScreen(id);
+          const nextScreen = adventureEntryScreen(id);
+          if (nextScreen) setScreen(nextScreen);
         }} />
       </main>
     );
@@ -2262,36 +2247,15 @@ function App() {
         soundOn={soundOn}
       />
     );
-  } else if (
-    screen === "writingMap"
-  ) {
-    content = (
-      <main className="page writing-map-page">
-        <LocalBackButton
-          className="page-back-button"
-          label="Explore"
-          onClick={() => setScreen("explore")}
-        />
-        <p className="eyebrow">
-          YOUR JOURNEY
-        </p>
-
-        <h1>
-          Writing Planet Map
-        </h1>
-
-        <p className="page-intro">
-          Complete each planet to unlock the next writing adventure.
-        </p>
-
-        <SpaceJourney label="Writing planet journey" currentId={writingActivePlanet} items={[
-          ...writingPlanets.map(item => ({ id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
-            locked: item.id > writingProgress.unlocked, complete: item.id < writingProgress.unlocked || Boolean(writingProgress.completedMissions?.[item.id]),
-            onSelect: () => startWritingPlanet(item.id) })),
-          { id: "scribbler", title: "Scribbler", subtitle: "A little moon for free drawing", image: earthImage, badge: "✎", onSelect: () => setScreen("scribbler") },
-        ]} />
-      </main>
-    );
+  } else if (screen === "writingMap") {
+    content = <BigKidsPlanetJourney title="Writing Planet Map" label="Writing planet journey"
+      description="Complete each planet to unlock the next writing adventure."
+      currentId={writingActivePlanet} onBack={() => setScreen("explore")}
+      extraActivity={{ title: "Scribbler", description: "Write, draw and explore freely.", onSelect: () => setScreen("scribbler") }}
+      items={writingPlanets.map(item => ({ id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
+        locked: item.id > writingProgress.unlocked, complete: item.id < writingProgress.unlocked || Boolean(writingProgress.completedMissions?.[item.id]),
+        onSelect: () => startWritingPlanet(item.id),
+      }))} />;
   } else if (
     screen === "writingPlanet"
   ) {
@@ -2551,133 +2515,15 @@ function App() {
         soundOn={soundOn}
       />
     );
-  } else if (
-    screen === "launch"
-  ) {
-    const launchContent = {
-      reading: {
-        eyebrow:
-          "READING MISSION",
-        title:
-          "Ready to explore the planets?",
-        description:
-          "Travel across the solar system and build your reading skills one star at a time.",
-        button:
-          "View planet map",
-        nextScreen: "map",
-      },
-
-      counting: {
-        eyebrow:
-          "COUNTING MISSION",
-        title:
-          "Ready to count among the stars?",
-        description:
-          "Practice numbers, counting, and early maths skills in a playful space adventure.",
-        button:
-          "Start counting",
-        nextScreen: "math",
-      },
-
-      writing: {
-        eyebrow:
-          "WRITING MISSION",
-        title:
-          "Ready to write among the stars?",
-        description:
-          "Trace letters, numbers, shapes, and simple sentences across your writing planets.",
-        button:
-          "View writing map",
-        nextScreen:
-          "writingMap",
-      },
-    }[launchAdventure] || {
-      eyebrow:
-        "MISSION CONTROL",
-      title:
-        "Your mission is ready!",
-      description:
-        "Choose an adventure and begin exploring.",
-      button: "Explore",
-      nextScreen: "explore",
-    };
-
-    content = (
-      <main
-        className={`launch-panel launch-${launchAdventure}`}
-      >
-        <LocalBackButton
-          className="page-back-button"
-          label="Explore"
-          onClick={() => setScreen("explore")}
-        />
-        <div
-          className="countdown-orbit"
-          aria-hidden="true"
-        >
-          <span>3</span>
-          <span>2</span>
-          <span>1</span>
-          <b>🚀</b>
-        </div>
-
-        <p className="eyebrow">
-          {
-            launchContent.eyebrow
-          }
-        </p>
-
-        <h1>
-          {
-            launchContent.title
-          }
-        </h1>
-
-        <p>
-          {
-            launchContent.description
-          }
-        </p>
-
-        {action(
-          launchContent.button,
-          () =>
-            setScreen(
-              launchContent.nextScreen
-            )
-        )}
-      </main>
-    );
-  } else if (
-    screen === "map"
-  ) {
-    content = (
-      <main className="page">
-        <LocalBackButton
-          className="page-back-button"
-          label="Explore"
-          onClick={() => setScreen("explore")}
-        />
-        <p className="eyebrow">
-          YOUR JOURNEY
-        </p>
-
-        <h1>
-          Planet Map
-        </h1>
-
-        <p className="page-intro">
-          Complete each planet to
-          unlock the next destination.
-        </p>
-
-        <SpaceJourney label="Reading planet journey" currentId={progress.activePlanet} items={planets.map(item => ({
-          id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
-          locked: item.id > progress.unlocked, complete: item.id < progress.unlocked || Boolean(progress.completedMissions?.[item.id]) || (item.id === 9 && Boolean(assessmentResults)),
-          onSelect: () => goToPlanet(item.id),
-        }))} />
-      </main>
-    );
+  } else if (screen === "map") {
+    content = <BigKidsPlanetJourney title="Reading Planet Map" label="Reading planet journey"
+      description="Complete each planet to unlock the next destination."
+      currentId={progress.activePlanet} onBack={() => setScreen("explore")}
+      items={planets.map(item => ({
+        id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
+        locked: item.id > progress.unlocked, complete: item.id < progress.unlocked || Boolean(progress.completedMissions?.[item.id]) || (item.id === 9 && Boolean(assessmentResults)),
+        onSelect: () => goToPlanet(item.id),
+      }))} />;
   } else if (
     screen === "planet"
   ) {

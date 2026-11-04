@@ -1,5 +1,6 @@
 import { withCompletedDestination } from "./spaceJourneyLogic";
-import SpaceJourney from "./SpaceJourney";
+import BigKidsPlanetJourney from "./BigKidsPlanetJourney";
+import { PLANET_NAMES } from "./planetJourneyLayout";
 import {
   useEffect,
   useLayoutEffect,
@@ -3146,34 +3147,14 @@ export default function MathSection({
     };
 
   if (screen === "map") {
-    return (
-      <main className="page math-page">
-        <LocalBackButton
-          className="page-back-button"
-          label="Explore"
-          onClick={onBack}
-        />
-        <p className="eyebrow">
-          YOUR JOURNEY
-        </p>
-
-        <h1>
-          Maths Map
-        </h1>
-
-        <p className="page-intro">
-          Complete each mission
-          to unlock the next
-          destination.
-        </p>
-
-        <SpaceJourney label="Maths mission journey" currentId={progress.activeMission} items={mathMissions.map(item => ({
-          id: item.id, title: item.title, subtitle: item.description, image: item.image, color: item.color,
-          locked: item.id > progress.unlocked, complete: item.id < progress.unlocked || Boolean(progress.completedMissions?.[item.id]) || (item.assessment && Object.keys(progress.assessmentResults || {}).length > 0),
-          onSelect: () => startMission(item.id),
-        }))} />
-      </main>
-    );
+    return <BigKidsPlanetJourney title="Maths Map" label="Maths mission journey"
+      description="Complete each mission to unlock the next destination."
+      currentId={progress.activeMission} onBack={onBack}
+      items={mathMissions.map(item => ({
+        id: item.id, title: PLANET_NAMES[item.id - 1], subtitle: item.title, image: item.image, color: item.color,
+        locked: item.id > progress.unlocked, complete: item.id < progress.unlocked || Boolean(progress.completedMissions?.[item.id]) || (item.assessment && Object.keys(progress.assessmentResults || {}).length > 0),
+        onSelect: () => startMission(item.id),
+      }))} />;
   }
 
   if (screen === "planet") {
