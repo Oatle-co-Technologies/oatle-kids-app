@@ -30,7 +30,7 @@ export const mathMissions = [
   {
     id: 1,
     title: "Number Recognition",
-    description: "Recognize the numbers from 0 to 20.",
+    description: "Start with numbers to 10. Try bigger numbers when you are ready.",
     color: "#ffbd59",
     image: mercuryImage,
     questionBanks: [numberQuestions],
@@ -39,7 +39,7 @@ export const mathMissions = [
   {
     id: 2,
     title: "Shape Explorers",
-    description: "Learn shape names, sides, and corners.",
+    description: "Meet the shapes. Look at their sides and corners.",
     color: "#55c6ff",
     image: venusImage,
     questionBanks: [
@@ -52,7 +52,7 @@ export const mathMissions = [
   {
     id: 3,
     title: "Counting Shapes",
-    description: "Count shapes and objects in space.",
+    description: "Count the shapes you can see.",
     color: "#55c6ff",
     image: earthImage,
     questionBanks: [countingShapeQuestions],
@@ -74,7 +74,7 @@ export const mathMissions = [
   {
     id: 5,
     title: "Matching & Sorting",
-    description: "Learn which things belong together.",
+    description: "Find things that match. Put them into groups.",
     color: "#66d17a",
     image: jupiterImage,
     questionBanks: [mathMatchingQuestions],
@@ -83,7 +83,7 @@ export const mathMissions = [
   {
     id: 6,
     title: "Adding Numbers",
-    description: "Put groups together to find the total.",
+    description: "Put things together. Count how many you have now.",
     color: "#ff9f43",
     image: saturnImage,
     questionBanks: [additionQuestions],
@@ -92,7 +92,7 @@ export const mathMissions = [
   {
     id: 7,
     title: "Taking Away",
-    description: "Take objects away and find what is left.",
+    description: "Take some things away. Count how many are left.",
     color: "#76d8e8",
     image: uranusImage,
     questionBanks: [subtractionQuestions],
@@ -101,7 +101,7 @@ export const mathMissions = [
   {
     id: 8,
     title: "Equal Groups & Sharing",
-    description: "Make equal groups and learn to share.",
+    description: "Put the same number in each group. Try sharing things equally.",
     color: "#c260a8",
     image: neptuneImage,
     questionBanks: [groupingQuestions],
@@ -109,8 +109,8 @@ export const mathMissions = [
 
   {
     id: 9,
-    title: "Maths Assessment",
-    description: "Show what you know across your maths adventures.",
+    title: "Maths Check-in",
+    description: "Let’s try a few maths activities. Take your time.",
     color: "#d9c5a4",
     image: plutoImage,
     assessment: true,

@@ -1,4 +1,4 @@
-import { shapes } from "./mathConstants";
+import { shapes } from "./mathConstants.js";
 
 const introduction = (name, connection) => ({
   type: "shape-introduction",
@@ -107,9 +107,9 @@ export const shapeFactQuestions = [
   // Circle
   property(
     "shape-sides",
-    "How many sides does a circle have?",
+    "How many straight sides does a circle have?",
     shapes.circle,
-    1,
+    0,
     [0, 1, 2]
   ),
 
@@ -124,7 +124,7 @@ export const shapeFactQuestions = [
   // Square
   property(
     "shape-sides",
-    "How many sides does a square have?",
+    "How many straight sides does a square have?",
     shapes.square,
     4,
     [3, 4, 5]
@@ -141,7 +141,7 @@ export const shapeFactQuestions = [
   // Triangle
   property(
     "shape-sides",
-    "How many sides does a triangle have?",
+    "How many straight sides does a triangle have?",
     shapes.triangle,
     3,
     [2, 3, 4]
@@ -158,7 +158,7 @@ export const shapeFactQuestions = [
   // Rectangle
   property(
     "shape-sides",
-    "How many sides does a rectangle have?",
+    "How many straight sides does a rectangle have?",
     shapes.rectangle,
     4,
     [3, 4, 5]
@@ -175,9 +175,9 @@ export const shapeFactQuestions = [
   // Oval
   property(
     "shape-sides",
-    "How many sides does an oval have?",
+    "How many straight sides does an oval have?",
     shapes.oval,
-    1,
+    0,
     [0, 1, 2]
   ),
 
@@ -192,7 +192,7 @@ export const shapeFactQuestions = [
   // Diamond
   property(
     "shape-sides",
-    "How many sides does a diamond have?",
+    "How many straight sides does a diamond have?",
     shapes.diamond,
     4,
     [3, 4, 5]
@@ -209,7 +209,7 @@ export const shapeFactQuestions = [
   // Star
   property(
     "shape-sides",
-    "How many sides does a star have?",
+    "How many straight sides does a star have?",
     shapes.star,
     10,
     [9, 10, 11]
@@ -226,9 +226,9 @@ export const shapeFactQuestions = [
   // Heart
   property(
     "shape-sides",
-    "How many sides does a heart have?",
+    "How many straight sides does a heart have?",
     shapes.heart,
-    1,
+    0,
     [0, 1, 2]
   ),
 
@@ -243,7 +243,7 @@ export const shapeFactQuestions = [
   // Pentagon
   property(
     "shape-sides",
-    "How many sides does a pentagon have?",
+    "How many straight sides does a pentagon have?",
     shapes.pentagon,
     5,
     [4, 5, 6]
@@ -260,7 +260,7 @@ export const shapeFactQuestions = [
   // Hexagon
   property(
     "shape-sides",
-    "How many sides does a hexagon have?",
+    "How many straight sides does a hexagon have?",
     shapes.hexagon,
     6,
     [5, 6, 7]
@@ -277,7 +277,7 @@ export const shapeFactQuestions = [
   // Octagon
   property(
     "shape-sides",
-    "How many sides does an octagon have?",
+    "How many straight sides does an octagon have?",
     shapes.octagon,
     8,
     [7, 8, 9]
@@ -294,9 +294,9 @@ export const shapeFactQuestions = [
   // Crescent
   property(
     "shape-sides",
-    "How many sides does a crescent have?",
+    "How many straight sides does a crescent have?",
     shapes.crescent,
-    1,
+    0,
     [0, 1, 2]
   ),
 
@@ -311,9 +311,9 @@ export const shapeFactQuestions = [
   // Semicircle
   property(
     "shape-sides",
-    "How many sides does a semicircle have?",
+    "How many straight sides does a semicircle have?",
     shapes.semicircle,
-    2,
+    1,
     [1, 2, 3]
   ),
 
