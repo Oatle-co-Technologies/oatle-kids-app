@@ -11,6 +11,7 @@ import elephantSound from '../sounds/animals/elephant.mp3';
 import './AnimalAdventure.css';
 import FeedAnimalScene from './FeedAnimalScene';
 import AnimalHomesScene from './AnimalHomesScene';
+import AnimalSoundScene from './AnimalSoundScene';
 
 export function AnimalIcon() {
   return <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
@@ -36,6 +37,7 @@ export default function AnimalAdventure({ onBack, soundOn, mission, onComplete }
   const [message, setMessage] = useState('');
   const audioRef = useRef(null);
   const roundTimer = useRef(null);
+  const narrationTimer = useRef(null);
   const advancing = useRef(false);
   const current = ANIMALS[round % ANIMALS.length];
   const homesFinished = done.length === ANIMALS.length;
@@ -44,12 +46,13 @@ export default function AnimalAdventure({ onBack, soundOn, mission, onComplete }
   useLittleMissionCompletion((mode === 'feed' && feedingFinished) || (mode === 'homes' && homesFinished) || (mode === 'sounds' && soundsFinished), onComplete);
 
   useEffect(() => {
-    if (!soundOn) { stopSpeech(); return undefined; }
+    if (!soundOn) { stopSpeech(); audioRef.current?.pause(); return undefined; }
     const prompt = mode === 'menu' ? 'Animal adventure. Feed an animal, find animal homes, or listen for animal sounds.'
       : mode === 'feed' ? `This is a ${current.name.toLowerCase()}. Drag food from the basket to the animal. You can also tap the food, then tap the animal.`
         : mode === 'homes' ? `Help the ${current.name.toLowerCase()} find its home. Drag the animal to a home, or tap the animal and then a home.`
-          : 'Listen carefully. Which animal made this sound?';
+          : 'Tap the flower to hear a sound. Then tap the animal you heard.';
     const timer = window.setTimeout(() => speak(prompt), 220);
+    narrationTimer.current = timer;
     return () => { window.clearTimeout(timer); stopSpeech(); };
   }, [mode, current, soundOn]);
 
@@ -90,9 +93,10 @@ export default function AnimalAdventure({ onBack, soundOn, mission, onComplete }
     } else celebrate('Let’s look at the other home.');
   }
   function chooseSound(animal) {
-    if (advancing.current || soundMatches.includes(animal.id)) return;
+    if (advancing.current || soundMatches.includes(current.id)) return;
+    audioRef.current?.pause();
     if (animal.id !== current.id) {
-      const feedback = 'No, that’s not it. Try another one.';
+      const feedback = 'Let’s listen again and try the other animal.';
       setMessage(feedback);
       if (soundOn) speak(feedback);
       return;
@@ -101,27 +105,24 @@ export default function AnimalAdventure({ onBack, soundOn, mission, onComplete }
     setSoundMatches(matches);
     celebrate(`Yes! That is ${animal.name}!`);
     if (matches.length === ANIMALS.length) return;
-    const nextAnimal = ANIMALS[(round + 1) % ANIMALS.length];
     advancing.current = true;
-    roundTimer.current = window.setTimeout(() => {
-      advancing.current = false;
-      setRound((value) => (value + 1) % ANIMALS.length);
-      setMessage('Listen carefully. Which animal made this sound?');
-      playSound(nextAnimal);
-    }, 850);
+    roundTimer.current = window.setTimeout(nextRound, 1600);
   }
-  function playSound(animal = current) {
-    if (!soundOn) return;
+  async function playSound(animal = current) {
+    if (!soundOn || advancing.current || soundMatches.includes(current.id)) return false;
+    window.clearTimeout(narrationTimer.current);
+    stopSpeech();
     audioRef.current?.pause();
     const audio = new Audio(ANIMAL_SOUNDS[animal.id]);
     audio.volume = 1;
     audioRef.current = audio;
-    audio.play().catch(() => setMessage('Tap “Hear it again” once more to play the sound.'));
     setMessage('Listen carefully.');
+    try { await audio.play(); return true; }
+    catch { setMessage('Tap the flower once more to hear the sound.'); return false; }
   }
   const title = mode === 'menu' ? 'Animal Adventure' : ACTIVITY_INFO[mode].title;
 
-  return <main className={`little-explorers-page animal-page ${mode === 'feed' ? 'is-feeding' : mode === 'homes' ? 'is-homing' : ''}`}>
+  return <main className={`little-explorers-page animal-page ${mode === 'feed' ? 'is-feeding' : mode === 'homes' ? 'is-homing' : mode === 'sounds' ? 'is-listening' : ''}`}>
     <header className="animal-header">
       <LocalBackButton label={mission ? 'Animal Adventure map' : mode === 'menu' ? 'Adventures' : 'Animal Adventure'} onClick={() => mission || mode === 'menu' ? onBack() : chooseMode('menu')} />
       <p className="eyebrow">{mission ? `PLANET ${mission.name.toUpperCase()} / ANIMALS` : 'LITTLE EXPLORERS / ANIMALS'}</p><h1>{title}</h1>
@@ -138,11 +139,10 @@ export default function AnimalAdventure({ onBack, soundOn, mission, onComplete }
     </> : mode === 'homes' ? <>
       <AnimalHomesScene key={current.id} animal={current} matched={done.includes(current.id)} onHome={matchAnimalToHome} />
       {homesFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('homes')}>Play again</button>}
-    </> : <section className="animal-play" aria-label="Hear the animal sound">
-      <button className="animal-listen" type="button" onClick={() => playSound()}><span aria-hidden="true">🔊</span> Hear it again</button><p className="animal-help">Which animal made that sound? The right animal will disappear, then you will hear a new sound.</p>
-      <div className="animal-choice-row">{ANIMALS.filter((animal) => !soundMatches.includes(animal.id)).map((animal) => <button key={animal.id} type="button" onClick={() => chooseSound(animal)}><span>{animal.emoji}</span><b>{animal.name}</b></button>)}</div>
+    </> : <>
+      <AnimalSoundScene key={current.id} animal={current} matched={soundMatches.includes(current.id)} soundOn={soundOn} onListen={() => playSound()} onChoose={chooseSound} />
       {soundsFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('sounds')}>Play again</button>}
-    </section>}
-    {mode !== 'menu' && <p className="animal-feedback" role="status" aria-live="polite">{message || (mode === 'feed' || mode === 'homes' ? '' : 'Choose and explore.')}</p>}
+    </>}
+    {mode !== 'menu' && <p className="animal-feedback" role="status" aria-live="polite">{message}</p>}
   </main>;
 }
