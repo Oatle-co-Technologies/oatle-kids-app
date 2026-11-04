@@ -14,19 +14,20 @@ function subscribe(callback) {
 }
 const viewportSnapshot = () => window.matchMedia(queries[0]).matches ? 'phone' : window.matchMedia(queries[1]).matches ? 'tablet' : 'wide';
 
-export default function BigKidsPlanetJourney({ title, description, label, items, currentId, onBack, childName, onProfile, emblem = '✏️' }) {
+export default function BigKidsPlanetJourney({ title, description, label, items, currentId, onBack, childName, onProfile, emblem = '✏️', notice = null }) {
   const mode = useSyncExternalStore(subscribe, viewportSnapshot, () => 'phone');
   const { points, height } = planetJourneyLayout(items.length, mode);
   const { completed, total } = planetJourneyProgress(items);
   const currentIndex = currentDestination(items, currentId);
   const journeyName = title.replace(/ Adventure$/, '');
   return (
-    <main className={`big-kids-planet-map planet-board-${mode}`}>
+    <main className={`big-kids-planet-map planet-board-${mode}${notice ? " has-writing-notice" : ""}`}>
       <header className="planet-map-toolbar">
         <div className="planet-map-brand-back"><img src="/oatle-kids-wordmark.webp" alt="Oatle Kids" /><LocalBackButton label="Adventures" onClick={onBack} /></div>
         <div className="planet-map-banner"><span className="planet-banner-emblem" aria-hidden="true">{emblem}</span><h1>{title}</h1><p>Your {journeyName} Journey</p></div>
         {childName && <button className="planet-map-profile" aria-label={`${childName} — Settings`} type="button" onClick={onProfile} disabled={!onProfile}><span aria-hidden="true">{childName.charAt(0).toUpperCase()}</span>{childName}<span aria-hidden="true">⌄</span></button>}
       </header>
+      {notice}
       <p className="planet-map-guidance">{description}</p>
       <ResponsivePlanetJourney adventureId={BIG_KIDS_HOMES.find(home => home.title === title)?.id} centerTitle={title} centerImage={BIG_KIDS_HOMES.find(home => home.title === title)?.image} centerEmblem={emblem} className="big-planet-journey" label={label} items={items} currentId={currentId}
         positions={points} stageHeight={height} autoScrollCurrent={mode !== 'wide' && currentIndex >= (mode === 'phone' ? 2 : 3)}

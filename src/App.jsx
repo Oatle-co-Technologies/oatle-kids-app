@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
+import WritingProfileReminder from "./components/WritingProfileReminder";
+import { missingWritingProfileFields } from "./utils/writingProfile";
 
 import { questions } from "./data/questions";
 import { lowercaseQuestions } from "./data/lowercaseQuestions";
@@ -740,6 +742,16 @@ function App() {
   const [childProfile, setChildProfile] =
     useState(savedChildProfile);
 
+  const [settingsReturnScreen, setSettingsReturnScreen] = useState(null);
+  const missingProfileFields = missingWritingProfileFields(childProfile);
+  const writingProfileIncomplete = missingProfileFields.length > 0;
+  const openSettings = (returnScreen = null) => {
+    setSettingsReturnScreen(returnScreen);
+    setScreen("settings");
+  };
+  const profileReminder = (returnScreen) => <WritingProfileReminder
+    missing={missingProfileFields} onSettings={() => openSettings(returnScreen)} />;
+
   const [feedback, setFeedback] = useState("");
   const [builtSentence, setBuiltSentence] =
     useState([]);
@@ -1122,7 +1134,9 @@ function App() {
         "Welcome to the Scribbler. You can turn your device sideways for more space. You can also keep it upright. Draw, write, erase, and add stickers to your picture.",
     };
 
-    const prompt = prompts[screen];
+    const needsProfileReminder = writingProfileIncomplete && (screen === "writingMap" || screen === "writingMission5" || (screen === "writingPlanet" && selectedWritingPlanet.id === 5));
+    const profilePrompt = "Before Sentence Writing, ask a grown-up to open Settings and add your nickname, age, favourite colour and number of siblings.";
+    const prompt = needsProfileReminder ? `${prompts[screen] || "Sentence Writing."} ${profilePrompt}` : prompts[screen];
     if (!prompt) {
       return undefined;
     }
@@ -1148,6 +1162,7 @@ function App() {
     soundOn,
     writingActivePlanet,
     writingCelebrationMission,
+    writingProfileIncomplete,
   ]);
 
   useEffect(() => {
@@ -2223,8 +2238,9 @@ function App() {
   } else if (screen === "writingMap") {
     content = <BigKidsPlanetJourney title="Writing Adventure" label="Writing planet journey"
       description="Complete each planet to unlock the next writing adventure."
+      notice={profileReminder("writingMap")}
       currentId={writingActivePlanet} onBack={() => setScreen("explore")}
-      childName={childProfile.name} onProfile={() => setScreen("settings")}
+      childName={childProfile.name} onProfile={() => openSettings()}
       items={[...writingPlanets.map(item => ({ id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
         locked: item.id > writingProgress.unlocked, complete: Boolean(writingProgress.completedMissions?.[item.id] ?? (item.id < writingProgress.unlocked)),
         onSelect: () => startWritingPlanet(item.id),
@@ -2279,7 +2295,8 @@ function App() {
           }. Get ready for your writing mission.
         </p>
 
-        {action(
+        {selectedWritingPlanet.id === 5 && profileReminder("writingPlanet")}
+        {(selectedWritingPlanet.id !== 5 || missingProfileFields.length === 0) && action(
           writingMissionStarted
             ? "Return to mission"
             : "Start mission",
@@ -2456,7 +2473,13 @@ function App() {
   } else if (
     screen === "writingMission5"
   ) {
-    content = (
+    content = missingProfileFields.length ? (
+      <main className="planet-overview writing-planet-overview">
+        <LocalBackButton label="Writing map" onClick={() => setScreen("writingMap")} />
+        <h1>Sentence Writing</h1>
+        {profileReminder("writingMission5")}
+      </main>
+    ) : (
       <SentenceWritingMission
         soundOn={soundOn}
         onBack={() =>
@@ -2471,7 +2494,7 @@ function App() {
         onProgress={(step) =>
           saveWritingMissionStep(5, step)
         }
-        childProfile={childProfile}
+        childProfile={Object.fromEntries(Object.entries(childProfile).map(([key, value]) => [key, String(value ?? "").trim()]))}
       />
     );
   } else if (
@@ -2487,14 +2510,14 @@ function App() {
         }
         soundOn={soundOn}
         childName={childProfile.name}
-        onProfile={() => setScreen("settings")}
+        onProfile={() => openSettings()}
       />
     );
   } else if (screen === "map") {
     content = <BigKidsPlanetJourney title="Reading Adventure" label="Reading planet journey"
       description="Complete each planet to unlock the next destination."
       currentId={progress.activePlanet} onBack={() => setScreen("explore")} emblem="Aa"
-      childName={childProfile.name} onProfile={() => setScreen("settings")}
+      childName={childProfile.name} onProfile={() => openSettings()}
       items={planets.map(item => ({
         id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
         locked: item.id > progress.unlocked, complete: item.id < progress.unlocked || Boolean(progress.completedMissions?.[item.id]) || (item.id === 9 && Boolean(assessmentResults)),
@@ -3318,6 +3341,10 @@ function App() {
   } else {
     content = (
       <main className="settings-panel">
+        <LocalBackButton label={settingsReturnScreen ? "Writing" : "Adventures"} onClick={() => {
+          setScreen(settingsReturnScreen || "explore");
+          setSettingsReturnScreen(null);
+        }} />
         <p className="eyebrow">
           MISSION CONTROL
         </p>
@@ -3435,6 +3462,13 @@ function App() {
               }
             />
           </label>
+          {settingsReturnScreen && <div className="writing-profile-return" aria-live="polite">
+            <p>{missingProfileFields.length ? `Add or check: ${missingProfileFields.join(", ")}.` : "Your child’s details are saved on this device."}</p>
+            <button type="button" className="primary-button" disabled={missingProfileFields.length > 0} onClick={() => {
+              setScreen(settingsReturnScreen);
+              setSettingsReturnScreen(null);
+            }}>Save and return to Writing</button>
+          </div>}
         </section>
 
         <label className="setting-row">
@@ -3512,9 +3546,7 @@ function App() {
             onExplore={() =>
               setScreen(ageGroup === "little" ? "littleExplorers" : "explore")
             }
-            onSettings={() =>
-              setScreen("settings")
-            }
+            onSettings={() => openSettings()}
             activeScreen={screen}
           />
         )}

@@ -113,3 +113,22 @@
   main.big-kids-planet-map .planet-map-banner h1 { font-size: 13px; }
 }
 @media (max-width: 1023px) and (prefers-reduced-motion: reduce), (max-width: 1023px) and (update: slow) { .space-journey.planet-orbit .orbit-planet-surface { animation: none !important; transition: none; } }
+/* Profile guidance needs its own row rather than the orbit's fixed viewport slot. */
+@media (max-width: 1023px) {
+  main.big-kids-planet-map.has-writing-notice {
+    height: auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'toolbar' 'profile' 'orbit';
+    grid-template-rows: auto auto minmax(350px, 60dvh);
+  }
+  main.big-kids-planet-map.has-writing-notice .planet-map-toolbar { grid-area: toolbar; }
+  main.big-kids-planet-map.has-writing-notice > .writing-profile-reminder { grid-area: profile; }
+  main.big-kids-planet-map.has-writing-notice > .responsive-planet-host { grid-area: orbit; }
+}
+@media (max-width: 1023px) and (orientation: landscape) {
+  main.big-kids-planet-map.has-writing-notice {
+    grid-template-columns: clamp(110px, 19vw, 150px) minmax(0, 1fr);
+    grid-template-areas: 'toolbar profile' 'orbit orbit';
+    grid-template-rows: auto minmax(320px, 80dvh);
+  }
+}
