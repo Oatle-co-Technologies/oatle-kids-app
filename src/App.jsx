@@ -35,6 +35,7 @@ import SentenceWritingMission from "./components/SentenceWritingMission";
 import LocalBackButton from "./components/LocalBackButton";
 import LittleExplorers from "./components/LittleExplorers";
 import CosmicPuzzles, { CosmicPuzzleEntry } from "./components/CosmicPuzzles";
+import StorybookAdventure from "./components/StorybookAdventure";
 import SpaceBuilder, { SpaceBuilderEntry } from "./components/SpaceBuilder";
 
 import mercuryImage from "./assets/images/planets/mercury.webp";
@@ -684,6 +685,7 @@ function AppNav({
         activeScreen === "math" ||
         activeScreen === "cosmicPuzzles" ||
         activeScreen === "spaceBuilder" ||
+        activeScreen === "storybooks" ||
         activeScreen === "writing" ||
         activeScreen === "writingMap" ||
         activeScreen === "writingPlanet" ||
@@ -2387,10 +2389,13 @@ function App() {
           </button>
 
         </div>
+        <button type="button" className="adventure-card" onClick={() => { stopSpeech(); setScreen("storybooks"); }}><span className="adventure-card-icon" aria-hidden="true">📚</span><strong>Storybook Adventure</strong><small>Open a book and turn the pages</small></button>
         <CosmicPuzzleEntry onClick={() => { stopSpeech(); setScreen("cosmicPuzzles"); }} />
         <SpaceBuilderEntry onClick={() => { stopSpeech(); setScreen("spaceBuilder"); }} />
       </main>
     );
+  } else if (screen === "storybooks") {
+    content = <StorybookAdventure onBack={() => setScreen("explore")} />;
   } else if (screen === "cosmicPuzzles") {
     content = <CosmicPuzzles onBack={() => setScreen("explore")} soundOn={soundOn} />;
   } else if (screen === "spaceBuilder") {

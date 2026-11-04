@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import StorybookAdventure from "./StorybookAdventure";
 import LocalBackButton from "./LocalBackButton";
 import BuildingAdventure, { BuildingIcon } from "./BuildingAdventure";
 import AnimalAdventure, { AnimalIcon } from "./AnimalAdventure";
@@ -1216,6 +1217,10 @@ export default function LittleExplorers({
     celebratePlanet();
   };
 
+  if (screen === "storybooks") {
+    return <StorybookAdventure onBack={showAdventures} />;
+  }
+
   if (screen === "building") {
     return <BuildingAdventure key={activePlanet.progressId} mission={activePlanet} onComplete={finishExtraMission} onBack={showMap} soundOn={soundOn} />;
   }
@@ -1788,6 +1793,7 @@ export default function LittleExplorers({
         </header>
 
         <section className="little-adventure-grid" aria-label="Little Space Adventures">
+          <button type="button" className="little-adventure-card" onClick={() => { stopSpeech(); setScreen("storybooks"); }}><span aria-hidden="true">📚</span><strong>Storybook Adventure</strong><small>Choose a book and turn the pages</small></button>
           {LITTLE_ADVENTURES.map((adventure) => {
             const completedPlanets = adventure.planets.filter((planet) =>
               isPlanetComplete(planet, adventure)
