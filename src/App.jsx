@@ -12,7 +12,7 @@ import { readingQuestions } from "./data/readingQuestions";
 import { sentenceQuestions } from "./data/sentenceQuestions";
 import { missingLettersQuestions } from "./data/missingLettersQuestions";
 import {
-  assessmentQuestions as plutoQuestions,
+  assessmentQuestions as plutoQuestionPool,
   assessmentSkills as plutoSkills,
 } from "./data/assessmentQuestions";
 import { speak, stopSpeech } from "./utils/speech";
@@ -21,6 +21,7 @@ import LoginPage from "./components/LoginPage";
 import PasswordRecovery from "./components/PasswordRecovery";
 import { supabase } from "./lib/supabase";
 
+import { selectAssessment, restoreAssessmentQuestions } from "./utils/assessmentSelection";
 import { generateOptions } from "./utils/generateOptions";
 import { generateReadingOptions } from "./utils/generateReadingOptions";
 import { generateSentenceOptions } from "./utils/generateSentenceOptions";
@@ -229,13 +230,17 @@ const savedReadingAssessmentAttempt = () => {
       localStorage.getItem(READING_ASSESSMENT_ATTEMPT_KEY)
     );
 
+    const questions = restoreAssessmentQuestions(saved?.questionIds, plutoQuestionPool);
+    const valid = questions.length === plutoSkills.length * 4;
     return {
-      active: Boolean(saved?.active),
-      scores: saved?.scores || emptyPlutoResults(),
+      active: Boolean(saved?.active) && valid,
+      questions,
+      answered: valid ? Math.min(Math.max(0, saved?.answered || 0), questions.length) : 0,
+      scores: valid ? saved?.scores || emptyPlutoResults() : emptyPlutoResults(),
     };
   } catch {
     return {
-      active: false,
+      active: false, questions: [], answered: 0,
       scores: emptyPlutoResults(),
     };
   }
@@ -725,6 +730,12 @@ function App() {
 
   const [readingAssessmentActive, setReadingAssessmentActive] =
     useState(() => savedReadingAssessmentAttempt().active);
+  const [readingAssessmentQuestions, setReadingAssessmentQuestions] = useState(() => {
+    const saved = savedReadingAssessmentAttempt();
+    return saved.questions.length ? saved.questions : selectAssessment(plutoQuestionPool, plutoSkills, 4);
+  });
+  const [readingAssessmentAnswered, setReadingAssessmentAnswered] = useState(() => savedReadingAssessmentAttempt().answered);
+
 
   const [soundPreference, setSoundOn] = useState(true);
   const soundOn = soundPreference && hasAccess && !authLoading && !accessLoading;
@@ -747,6 +758,7 @@ function App() {
     useState([]);
 
   const advanceTimer = useRef(null);
+  useEffect(() => () => window.clearTimeout(advanceTimer.current), [screen]);
   const victoryAudioRef = useRef(null);
   const effectAudioRef = useRef(null);
 
@@ -856,12 +868,12 @@ function App() {
       return planet.id === 8
         ? planet.questions
         : planet.id === 9
-          ? plutoQuestions
+          ? readingAssessmentQuestions
           : planet.id === 3
             ? shuffleArray(createMatchingQuestions())
             : shuffleArray(planet.questions);
     },
-    [planet.id, planet.questions, readingMissionRun]
+    [planet.id, planet.questions, readingMissionRun, readingAssessmentQuestions]
   );
 
   const question =
@@ -928,7 +940,7 @@ function App() {
   }, [question, planet.id]);
 
   const wordOrderOptions = useMemo(() => {
-    if (!question || planet.id !== 4) {
+    if (!question || (planet.id !== 4 && question.type !== "word-order")) {
       return [];
     }
 
@@ -997,9 +1009,11 @@ function App() {
       JSON.stringify({
         active: readingAssessmentActive,
         scores: assessmentScores,
+        questionIds: readingAssessmentQuestions.map(q => q.assessmentId),
+        answered: readingAssessmentAnswered,
       })
     );
-  }, [assessmentScores, readingAssessmentActive]);
+  }, [assessmentScores, readingAssessmentActive, readingAssessmentQuestions, readingAssessmentAnswered]);
 
   /*
    * Central reading speech.
@@ -1260,16 +1274,24 @@ function App() {
     const savedAttempt = savedReadingAssessmentAttempt();
 
     if (!savedAttempt.active) {
+      setReadingAssessmentQuestions(selectAssessment(plutoQuestionPool, plutoSkills, 4, savedAttempt.questions.map(q => q.assessmentId)));
+      setReadingAssessmentAnswered(0);
       setAssessmentScores(emptyPlutoResults());
       setReadingAssessmentActive(true);
     } else {
+      setReadingAssessmentQuestions(savedAttempt.questions);
+      setReadingAssessmentAnswered(savedAttempt.answered);
       setAssessmentScores(savedAttempt.scores);
+      if (savedAttempt.answered === savedAttempt.questions.length) {
+        finishPlutoAssessment(savedAttempt.scores);
+        return;
+      }
     }
 
     setProgress((current) => ({
       ...current,
       question: savedAttempt.active
-        ? current.missions?.[9] || current.question || 0
+        ? savedAttempt.answered
         : 0,
     }));
 
@@ -1293,6 +1315,7 @@ function App() {
     };
 
     setAssessmentScores(nextScores);
+    setReadingAssessmentAnswered(progress.question + 1);
 
     return nextScores;
   };
@@ -2540,9 +2563,9 @@ function App() {
               ? "Return to story"
               : "Read story"
             : planet.id === 9
-              ? readingMissionStarted
+              ? readingAssessmentActive
                 ? "Return to assessment"
-                : "Start assessment"
+                : assessmentResults ? "Try a new assessment" : "Start assessment"
               : readingMissionStarted
                 ? "Return to mission"
                 : "Start mission",
