@@ -1,0 +1,67 @@
+.space-journey { width: min(840px, 100%); margin: 24px auto 0; color: #f5f3ff; }
+.journey-key { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 24px; color: #c5d9ea; font: 700 .75rem/1.5 'Nunito', sans-serif; }
+.journey-key span:first-child { color: #ffe1a0; }
+.journey-stage { position: relative; isolation: isolate; margin-top: 18px; background: radial-gradient(ellipse at 20% 18%, #4e56a51c, transparent 40%), radial-gradient(ellipse at 85% 60%, #2c9eac17, transparent 42%); }
+.journey-stage::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle, #f8e5b688 1px, transparent 2px), radial-gradient(circle, #b8d9e577 1px, transparent 2px); background-size: 113px 157px, 199px 227px; background-position: 22px 44px, 81px 7px; pointer-events: none; opacity: .55; }
+.journey-routes { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.journey-routes path { fill: none; stroke-width: 2; stroke-dasharray: 5 9; vector-effect: non-scaling-stroke; }
+.journey-route-open { stroke: #88d9dc99; }
+.journey-route-locked { stroke: #7683a84d; }
+.journey-destinations { list-style: none; margin: 0; padding: 0; }
+.journey-stop { position: absolute; width: min(180px, 43%); transform: translate(-50%, -45%); text-align: center; }
+.journey-stop button { position: relative; display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 158px; padding: 8px 4px; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; touch-action: manipulation; }
+.journey-planet { display: grid; place-items: center; position: relative; width: 98px; height: 98px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--destination-color) 16%, transparent), transparent 70%); }
+.journey-planet::after { content: ''; position: absolute; inset: -10px; border: 1px solid color-mix(in srgb, var(--destination-color) 32%, transparent); border-radius: 50%; transform: rotate(-25deg) scaleY(.65); pointer-events: none; }
+.journey-planet > img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 8px 14px #0005); transition: transform .2s; }
+.journey-planet > svg { width: 90%; height: 90%; }
+.journey-planet .little-planet-visual { width: 98px; height: 98px; background: none; box-shadow: none; border: 0; }
+.journey-stamp { position: absolute; top: 76px; right: calc(50% - 58px); display: grid; place-items: center; min-width: 25px; height: 25px; padding: 0 5px; box-sizing: border-box; border: 1px solid #9ab8cf; border-radius: 50%; background: #17243b; font: 800 .75rem 'Nunito', sans-serif; color: #d4edff; }
+.journey-stop strong { margin-top: 14px; font: 800 clamp(.95rem, 2.7vw, 1.15rem)/1.2 'Nunito', sans-serif; text-shadow: 0 2px 10px #070f2d; }
+.journey-stop small { margin-top: 6px; color: #bed0e5; font: 600 .76rem/1.4 'Nunito', sans-serif; max-width: 175px; }
+.journey-stop.is-current .journey-planet::after { border: 2px solid #ffdc8c; box-shadow: 0 0 24px #ffdc8c1c; }
+.journey-stop.is-current strong { color: #ffe1a0; }
+.journey-stop.is-complete .journey-stamp { background: #18473e; color: #b5f2ca; border-color: #8ccaa7; }
+.journey-stop.is-locked .journey-planet { filter: grayscale(.85); opacity: .45; }
+.journey-stop.is-locked strong, .journey-stop.is-locked small { color: #8e9bb6; }
+.journey-stop button:disabled { cursor: default; }
+.journey-stop button:focus-visible { outline: 3px solid #ffdd8a; outline-offset: 4px; border-radius: 40px; }
+.journey-stop button:hover:not(:disabled) .journey-planet > img { transform: translateY(-4px) scale(1.06); }
+.journey-ship { position: absolute; z-index: 3; width: 64px; height: 64px; pointer-events: none; transform: translate(-50%, -50%); }
+.journey-ship > img { position: relative; width: 100%; height: 100%; object-fit: contain; z-index: 1; filter: drop-shadow(0 3px 7px #05091e); }
+.journey-thruster { position: absolute; width: 20px; height: 12px; border-radius: 100%; left: 6px; bottom: 8px; transform: rotate(-45deg); background: #ffc169; opacity: 0; box-shadow: -5px 5px 12px #fd8d4a; }
+.is-flying .journey-thruster { opacity: .8; animation: journey-thrust .2s ease-in-out infinite alternate; }
+.journey-flight-status { min-height: 24px; text-align: center; color: #bed0e5; font: 600 .8rem 'Nunito', sans-serif; }
+.space-journey-playful .journey-planet { width: 112px; height: 112px; }
+.space-journey-playful .journey-stop strong { font-size: 1.2rem; }
+.space-journey-playful .journey-stamp { top: 90px; }
+@keyframes journey-thrust { to { transform: rotate(-45deg) scale(.8); opacity: .5; } }
+@media (max-width: 420px) { .journey-planet { width: 86px; height: 86px; } .journey-stop small { font-size: .72rem; } }
+@media (prefers-reduced-motion: reduce) { .space-journey *, .journey-ship { animation: none !important; transition: none !important; } }
+.journey-group { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); width: 210px; color: #a8dce5; font: 800 .59rem/1.4 'Nunito', sans-serif; letter-spacing: .13em; }
+.journey-world-badge { position: absolute; inset: auto -8px 2px auto; padding: 5px 9px; background: #192841; color: #ffdc8c; border: 1px solid #688aa7; border-radius: 12px; font: 900 1.05rem 'Nunito', sans-serif; }
+.journey-books { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; width: 128px; transform: rotate(-7deg); }
+.journey-books img { width: 100%; height: 42px; object-fit: contain; background: #102038; border-radius: 4px; box-shadow: 0 3px 8px #0005; }
+.little-journey-world { display: block; position: relative; width: 112px; height: 112px; }
+.little-journey-world > img { width: 100%; height: 100%; object-fit: contain; }
+.little-journey-world > span { position: absolute; inset: 16px; display: grid; place-items: center; font-size: 3rem; filter: drop-shadow(0 3px 5px #0008); }
+.little-journey-world svg { width: 75px; height: 75px; }
+.expedition-brand { display: block; width: 155px; height: auto; margin: 0 auto 20px; }
+.adventure-hub.expedition-hub { display: block; padding-bottom: 120px; overflow: visible; min-height: 100dvh; }
+.adventure-hub.expedition-hub h1 { font: 900 clamp(2rem, 6vw, 3.5rem)/1.12 'Nunito', sans-serif; max-width: 700px; margin: 8px auto; }
+.expedition-hub .eyebrow, .expedition-hub h1, .expedition-hub .page-intro { animation: none; text-align: center; }
+.expedition-hub .page-intro { max-width: 500px; margin: 14px auto 28px; }
+.little-adventure-page.expedition-hub { width: min(100%, 1000px); }
+.journey-stamp { top: 0; }
+.space-journey-playful .journey-stamp { top: 0; }
+.little-adventure-page.expedition-hub { margin-inline: auto; background: transparent; }
+.expedition-hub h1, .expedition-hub .little-map-header h1, .little-map-page .little-map-header h1, .page:has(> .space-journey) > h1 { color: #fff0d6; font: 900 clamp(1.8rem, 5vw, 3.1rem)/1.15 'Nunito', sans-serif; text-shadow: none; }
+.age-choice-panel { position: relative; }
+.age-choice-panel .expedition-brand { width: 135px; }
+.age-choice-grid { display: flex; justify-content: center; gap: clamp(24px, 6vw, 80px); flex-wrap: wrap; }
+.age-choice-card { position: relative; isolation: isolate; width: min(300px, 80vw); min-height: 300px; padding: 28px; border-radius: 50%; border: 1px solid #9bbfe13d; background: radial-gradient(circle at 40% 30%, #374e7077, #101e3ce0 70%); box-shadow: 0 18px 45px #030b2038; }
+.age-choice-card::before { content: ''; position: absolute; inset: 10px; z-index: -1; background: var(--age-world) center/contain no-repeat; opacity: .15; border-radius: 50%; }
+.age-choice-card::after { content: ''; position: absolute; inset: -12px; border: 1px dashed #a4cfdf66; border-radius: 50%; transform: rotate(-20deg) scaleY(.88); pointer-events: none; }
+.age-choice-card:hover { transform: translateY(-4px); border-color: #ffde9a; }
+.age-choice-card:focus-visible { outline: 3px solid #ffde9a; outline-offset: 8px; }
+@media (max-width: 500px) { .age-choice-card { min-height: 270px; width: min(270px, 80vw); } .expedition-brand { width: 130px; } }
+@media (prefers-reduced-motion: reduce) { .age-choice-card { transition: none; } .age-choice-card:hover { transform: none; } }

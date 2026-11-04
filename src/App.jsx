@@ -34,10 +34,12 @@ import ShapeTracingMission from "./components/ShapeTracingMission";
 import SentenceWritingMission from "./components/SentenceWritingMission";
 import LocalBackButton from "./components/LocalBackButton";
 import LittleExplorers from "./components/LittleExplorers";
-import CosmicPuzzles, { CosmicPuzzleEntry } from "./components/CosmicPuzzles";
-import StorybookEntry from "./components/StorybookEntry";
+import CosmicPuzzles from "./components/CosmicPuzzles";
+import AdventureWorlds from "./components/AdventureWorlds";
+import SpaceJourney from "./components/SpaceJourney";
+import { withCompletedDestination } from "./components/spaceJourneyLogic";
 import StorybookAdventure from "./components/StorybookAdventure";
-import SpaceBuilder, { SpaceBuilderEntry } from "./components/SpaceBuilder";
+import SpaceBuilder from "./components/SpaceBuilder";
 
 import mercuryImage from "./assets/images/planets/mercury.webp";
 import venusImage from "./assets/images/planets/venus.webp";
@@ -539,27 +541,6 @@ function SettingsIcon() {
   );
 }
 
-function NumberIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <text
-        x="12"
-        y="17"
-        textAnchor="middle"
-        fontSize="13"
-        fontWeight="800"
-        fill="currentColor"
-      >
-        123
-      </text>
-    </svg>
-  );
-}
-
 function BookIcon() {
   return (
     <svg
@@ -586,31 +567,6 @@ function BookIcon() {
   );
 }
 
-function PencilIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="m15.5 5.5 3 3L8 19H5v-3z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="m14 7 3 3"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 
 function LittleExplorerIcon() {
   return (
@@ -753,7 +709,7 @@ function App() {
     useState(savedWritingProgress);
 
   const [writingActivePlanet, setWritingActivePlanet] =
-    useState(1);
+    useState(() => Math.min(writingPlanets.length, Math.max(1, savedWritingProgress().unlocked || 1)));
 
   const [writingCelebrationMission, setWritingCelebrationMission] =
     useState(null);
@@ -1306,6 +1262,11 @@ function App() {
     }, 500);
   };
 
+  const celebrateReadingMission = () => {
+    setProgress(current => withCompletedDestination(current, planet.id));
+    setScreen("celebration");
+  };
+
   const goToPlanet = (id) => {
     setProgress((current) => {
       const saved = savedGame();
@@ -1381,7 +1342,7 @@ function App() {
   const finishPlutoAssessment = (scores) => {
     setAssessmentResults(scores);
     setReadingAssessmentActive(false);
-    setScreen("celebration");
+    celebrateReadingMission();
   };
 
   const advancePlutoAssessment = (
@@ -1435,7 +1396,7 @@ function App() {
       return;
     }
 
-    setScreen("celebration");
+    celebrateReadingMission();
   };
 
   const removeSentenceWord = (index) => {
@@ -1545,7 +1506,7 @@ function App() {
           nextScores
         );
       } else {
-        setScreen("celebration");
+        celebrateReadingMission();
       }
 
       setIsProcessing(false);
@@ -1635,7 +1596,7 @@ function App() {
         return;
       }
 
-      setScreen("celebration");
+      celebrateReadingMission();
 
       setIsProcessing(false);
     }, 3000);
@@ -1717,7 +1678,7 @@ function App() {
             nextScores
           );
         } else {
-          setScreen("celebration");
+          celebrateReadingMission();
         }
 
         setIsProcessing(false);
@@ -1748,7 +1709,7 @@ function App() {
           nextScores
         );
       } else {
-        setScreen("celebration");
+        celebrateReadingMission();
       }
 
       setIsProcessing(false);
@@ -1759,7 +1720,7 @@ function App() {
     missionId
   ) => {
     setWritingProgress((current) => ({
-      ...current,
+      ...withCompletedDestination(current, missionId),
       missions: {
         ...current.missions,
         [missionId]: 0,
@@ -2205,6 +2166,7 @@ function App() {
     content = (
       <main className="age-choice-page">
         <div className="age-choice-panel">
+          <img className="expedition-brand" src="/oatle-kids-wordmark.webp" alt="Oatle Kids" />
           <p className="eyebrow">CHOOSE AN ADVENTURE</p>
           <h1>How old is your little explorer?</h1>
           <p className="age-choice-intro">
@@ -2214,6 +2176,7 @@ function App() {
           <div className="age-choice-grid" aria-label="Choose a child age group">
             <button
               className="age-choice-card age-choice-little"
+              style={{ "--age-world": `url(${earthImage})` }}
               onClick={() => selectAgeGroup("little")}
               type="button"
             >
@@ -2227,6 +2190,7 @@ function App() {
 
             <button
               className="age-choice-card age-choice-big"
+              style={{ "--age-world": `url(${saturnImage})` }}
               onClick={() => selectAgeGroup("big")}
               type="button"
             >
@@ -2249,13 +2213,14 @@ function App() {
     screen === "explore"
   ) {
     content = (
-      <main className="page adventure-hub">
+      <main className="page adventure-hub expedition-hub big-kids-galaxy">
+        <img className="expedition-brand" src="/oatle-kids-wordmark.webp" alt="Oatle Kids" />
         <p className="eyebrow">
           LET'S EXPLORE
         </p>
 
         <h1>
-          What shall we explore?
+          Choose an <em>Adventure</em>
         </h1>
 
         <p className="page-intro">
@@ -2263,71 +2228,13 @@ function App() {
           let's go!
         </p>
 
-        <div className="adventure-grid">
-          <button
-            className="adventure-card"
-            onClick={() => {
-              setLaunchAdventure(
-                "reading"
-              );
-              setScreen("launch");
-            }}
-            type="button"
-          >
-            <span className="adventure-card-icon">
-              <BookIcon />
-            </span>
-
-            <strong>
-              Reading
-            </strong>
-            <small>Ages 4–7</small>
-          </button>
-
-          <button
-            className="adventure-card"
-            onClick={() => {
-              setLaunchAdventure(
-                "counting"
-              );
-              setScreen("launch");
-            }}
-            type="button"
-          >
-            <span className="adventure-card-icon">
-              <NumberIcon />
-            </span>
-
-            <strong>
-              Counting
-            </strong>
-            <small>Ages 4–7</small>
-          </button>
-
-          <button
-            className="adventure-card"
-            onClick={() => {
-              setLaunchAdventure(
-                "writing"
-              );
-              setScreen("launch");
-            }}
-            type="button"
-          >
-            <span className="adventure-card-icon">
-              <PencilIcon />
-            </span>
-
-            <strong>
-              Writing
-            </strong>
-            <small>Ages 4–7</small>
-          </button>
-
-        </div>
-        <CosmicPuzzleEntry onClick={() => { stopSpeech(); setScreen("cosmicPuzzles"); }} />
-        <SpaceBuilderEntry onClick={() => { stopSpeech(); setScreen("spaceBuilder"); }} />
-        <StorybookEntry onClick={() => { stopSpeech(); setScreen("storybooks"); }} />
+        <AdventureWorlds onAdventure={(id) => {
+          stopSpeech();
+          if (["reading", "counting", "writing"].includes(id)) {
+            setLaunchAdventure(id);
+            setScreen("launch");
+          } else setScreen(id);
+        }} />
       </main>
     );
   } else if (screen === "storybooks") {
@@ -2377,78 +2284,12 @@ function App() {
           Complete each planet to unlock the next writing adventure.
         </p>
 
-        <div className="planet-map writing-map">
-          {writingPlanets.map(
-            (item) => {
-              const locked =
-                item.id >
-                writingProgress.unlocked;
-
-              return (
-                <button
-                  key={item.id}
-                  className={`planet-card ${
-                    locked
-                      ? "locked"
-                      : ""
-                  }`}
-                  style={{
-                    "--planet":
-                      item.color,
-                  }}
-                  disabled={locked}
-                  onClick={() =>
-                    startWritingPlanet(
-                      item.id
-                    )
-                  }
-                  type="button"
-                >
-                  {locked ? (
-                    <span className="writing-map-lock">
-                      🔒
-                    </span>
-                  ) : (
-                    <PlanetVisual
-                      planet={item}
-                      className="planet-art"
-                    />
-                  )}
-
-                  <strong>
-                    {item.name}
-                  </strong>
-
-                  <small>
-                    {locked
-                      ? "Complete the previous planet"
-                      : item.description}
-                  </small>
-                </button>
-              );
-            }
-          )}
-
-          <button
-            className="planet-card writing-map-free"
-            type="button"
-            onClick={() =>
-              setScreen("scribbler")
-            }
-          >
-            <span className="writing-map-icon">
-              ✏️
-            </span>
-
-            <strong>
-              Scribbler
-            </strong>
-
-            <small>
-              Write, draw and explore freely.
-            </small>
-          </button>
-        </div>
+        <SpaceJourney label="Writing planet journey" currentId={writingActivePlanet} items={[
+          ...writingPlanets.map(item => ({ id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
+            locked: item.id > writingProgress.unlocked, complete: item.id < writingProgress.unlocked || Boolean(writingProgress.completedMissions?.[item.id]),
+            onSelect: () => startWritingPlanet(item.id) })),
+          { id: "scribbler", title: "Scribbler", subtitle: "A little moon for free drawing", image: earthImage, badge: "✎", onSelect: () => setScreen("scribbler") },
+        ]} />
       </main>
     );
   } else if (
@@ -2830,58 +2671,11 @@ function App() {
           unlock the next destination.
         </p>
 
-        <div className="planet-map">
-          {planets.map(
-            (item) => {
-              const locked =
-                item.id >
-                progress.unlocked;
-
-              return (
-                <button
-                  key={item.id}
-                  className={`planet-card ${
-                    locked
-                      ? "locked"
-                      : ""
-                  }`}
-                  style={{
-                    "--planet":
-                      item.color,
-                  }}
-                  disabled={locked}
-                  onClick={() =>
-                    goToPlanet(
-                      item.id
-                    )
-                  }
-                  type="button"
-                >
-                  {locked ? (
-                    <span>
-                      🔒
-                    </span>
-                  ) : (
-                    <PlanetVisual
-                      planet={item}
-                      className="planet-art"
-                    />
-                  )}
-
-                  <strong>
-                    {item.name}
-                  </strong>
-
-                  <small>
-                    {locked
-                      ? "Complete the previous planet"
-                      : item.description}
-                  </small>
-                </button>
-              );
-            }
-          )}
-        </div>
+        <SpaceJourney label="Reading planet journey" currentId={progress.activePlanet} items={planets.map(item => ({
+          id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
+          locked: item.id > progress.unlocked, complete: item.id < progress.unlocked || Boolean(progress.completedMissions?.[item.id]) || (item.id === 9 && Boolean(assessmentResults)),
+          onSelect: () => goToPlanet(item.id),
+        }))} />
       </main>
     );
   } else if (

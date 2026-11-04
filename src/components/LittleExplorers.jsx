@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import StorybookEntry from "./StorybookEntry";
+import SpaceJourney from "./SpaceJourney";
+import { storybooks } from "../data/storybooks";
 import StorybookAdventure from "./StorybookAdventure";
 import LocalBackButton from "./LocalBackButton";
 import BuildingAdventure, { BuildingIcon } from "./BuildingAdventure";
@@ -634,8 +635,10 @@ export default function LittleExplorers({
   };
 
   const openAdventure = (adventureId) => {
+    const adventure = LITTLE_ADVENTURES.find(item => item.id === adventureId);
+    const next = adventure?.planets.find(planet => !isPlanetComplete(planet, adventure));
     setActiveAdventureId(adventureId);
-    setActivePlanetId(1);
+    setActivePlanetId(next?.id || adventure?.planets.at(-1)?.id || 1);
     setScreen("map");
   };
 
@@ -1780,7 +1783,8 @@ export default function LittleExplorers({
 
   if (screen === "adventures") {
     return (
-      <main className="little-explorers-page little-adventure-page">
+      <main className="little-explorers-page little-adventure-page expedition-hub">
+        <img className="expedition-brand" src="/oatle-kids-wordmark.webp" alt="Oatle Kids" />
         <LocalBackButton
           className="page-back-button"
           label={backLabel}
@@ -1793,28 +1797,16 @@ export default function LittleExplorers({
           <p>Choose a section, then a little activity.</p>
         </header>
 
-        <section className="little-adventure-grid" aria-label="Little Space Adventures">
-        <StorybookEntry onClick={() => { stopSpeech(); setScreen("storybooks"); }} />
-          {LITTLE_ADVENTURES.map((adventure) => {
-            const completedPlanets = adventure.planets.filter((planet) =>
-              isPlanetComplete(planet, adventure)
-            ).length;
-
-            return (
-              <button
-                key={adventure.id}
-                type="button"
-                className={`little-adventure-card little-adventure-${adventure.id}`}
-                onClick={() => openAdventure(adventure.id)}
-              >
-                <span aria-hidden="true">{adventure.id === "building" ? <BuildingIcon /> : adventure.id === "animals" ? <AnimalIcon /> : adventure.id === "puzzles" ? <PuzzleIcon /> : adventure.id === "music" ? <MusicIcon /> : adventure.icon}</span>
-                <strong>{adventure.title}</strong>
-                <small>{adventure.description}</small>
-                <b>{completedPlanets} of {adventure.planets.length} planets</b>
-              </button>
-            );
-          })}
-        </section>
+        <SpaceJourney playful label="Little Explorers adventure destinations" storageKey="oatle-little-adventure-destination" items={[
+          ...LITTLE_ADVENTURES.map((adventure, index) => {
+            const completeCount = adventure.planets.filter(planet => isPlanetComplete(planet, adventure)).length;
+            const icon = adventure.id === "building" ? <BuildingIcon /> : adventure.id === "animals" ? <AnimalIcon /> : adventure.id === "puzzles" ? <PuzzleIcon /> : adventure.id === "music" ? <MusicIcon /> : adventure.icon;
+            return { id: adventure.id, title: adventure.title, subtitle: `${completeCount} of ${adventure.planets.length} planets explored`,
+              image: PLANET_ART[index % PLANET_ART.length].image, art: <span className="little-journey-world"><img src={PLANET_ART[index % PLANET_ART.length].image} alt="" /><span>{icon}</span></span>,
+              complete: completeCount === adventure.planets.length, onSelect: () => openAdventure(adventure.id) };
+          }),
+          { id: "storybooks", title: "Storybook Adventure", subtitle: "A little world of picture books", art: <span className="journey-books">{storybooks.map(book => <img src={book.cover} key={book.id} alt="" />)}</span>, onSelect: () => { stopSpeech(); setScreen("storybooks"); } },
+        ]} />
 
         <p className="little-grownup-note">
           Grown-ups: each section has its own activities. Play and explore together.
@@ -1837,37 +1829,11 @@ export default function LittleExplorers({
         <p>Complete each planet to unlock the next mission.</p>
       </header>
 
-      <section className="little-planet-grid" aria-label={`${activeAdventure.title} planet map`}>
-        {activeAdventure.planets.map((planet, index) => {
-          const previousPlanet = activeAdventure.planets[index - 1];
-          const locked = Boolean(
-            previousPlanet && !isPlanetComplete(previousPlanet)
-          );
-          const isComplete = isPlanetComplete(planet);
-
-          return (
-            <button
-              key={planet.progressId}
-              type="button"
-              className={locked ? "locked" : ""}
-              style={{ "--little-map-border": planet.colour }}
-              disabled={locked}
-              onClick={() => openPlanet(planet.id)}
-            >
-              {locked ? (
-                <span className="little-planet-lock" aria-hidden="true">🔒</span>
-              ) : (
-                <LittlePlanetVisual planet={planet} />
-              )}
-              <strong>{planet.name}</strong>
-              <small>
-                {locked ? "Complete the previous planet" : planet.missionTitle}
-              </small>
-              {isComplete && <b aria-label="Completed">✓</b>}
-            </button>
-          );
-        })}
-      </section>
+      <SpaceJourney key={activeAdventure.id} playful label={`${activeAdventure.title} planet journey`} currentId={activePlanetId} items={activeAdventure.planets.map((planet, index) => ({
+        id: planet.id, title: planet.name, subtitle: planet.missionTitle, image: planet.image, color: planet.colour,
+        locked: Boolean(index > 0 && !isPlanetComplete(activeAdventure.planets[index - 1])),
+        complete: isPlanetComplete(planet), onSelect: () => openPlanet(planet.id),
+      }))} />
 
       <p className="little-grownup-note">
         Grown-ups: these little missions are made for playing together.

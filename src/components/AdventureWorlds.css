@@ -1,0 +1,60 @@
+/* Only Big Kids' selection screen uses these dimensional homes. */
+.adventure-hub.expedition-hub.big-kids-galaxy {
+  position: relative; isolation: isolate; width: 100%; max-width: none; min-height: 100dvh;
+  padding: 32px clamp(12px, 3vw, 48px) 110px; overflow: hidden;
+  background: linear-gradient(180deg, #080b2277, #080b2200 35%, #0d123244), url('/adventure-homes/galaxy.webp') center bottom / cover no-repeat, #080b24;
+}
+.big-kids-galaxy > .expedition-brand { position: absolute; top: 22px; left: clamp(16px, 3vw, 42px); width: clamp(110px, 12vw, 165px); margin: 0; }
+.big-kids-galaxy > .eyebrow { margin: 12px auto 8px; color: #c5baff; font-size: .72rem; letter-spacing: .18em; }
+.big-kids-galaxy > h1 { max-width: 750px; margin: 8px auto 0; padding-inline: 40px; font-size: clamp(2rem, 4vw, 3.6rem); color: #fff9e9; text-shadow: 0 4px 0 #372e60, 0 10px 30px #02051e; }
+.big-kids-galaxy > h1 em { color: #ffcf71; font-style: normal; }
+.big-kids-galaxy > .page-intro { color: #ddd9f1; font-size: .95rem; margin: 16px auto 0; }
+.galaxy-environment { position: relative; width: min(1280px, 100%); margin: 0 auto; }
+.galaxy-journey { width: 100%; margin: 0; }
+.galaxy-journey .journey-key, .galaxy-journey .journey-stamp, .galaxy-journey .journey-group { display: none; }
+.galaxy-journey .journey-stage { margin-top: 0; background: none; }
+.galaxy-journey .journey-stage::before { opacity: .2; }
+.galaxy-journey .journey-route-open { stroke: #ffd77c66; stroke-width: 1.5; stroke-dasharray: 2 10; }
+.galaxy-journey .journey-stop { width: 27%; max-width: 310px; z-index: 1; }
+.galaxy-journey .journey-stop button { min-height: 285px; padding: 0 4px 8px; }
+.galaxy-journey .journey-planet { width: 100%; height: 245px; border-radius: 0; background: none; animation: galaxy-home-hover 5.5s ease-in-out infinite; }
+.galaxy-journey .journey-stop:nth-child(even) .journey-planet { animation-delay: -2.2s; }
+.galaxy-journey .journey-stop:nth-child(3n) .journey-planet { animation-delay: -3.7s; }
+.galaxy-journey .journey-planet::after { display: none; }
+.galaxy-journey .journey-planet > img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 15px 16px #03051d88) drop-shadow(0 3px 9px #c45eff30); transition: transform .3s, filter .3s; }
+.galaxy-journey .journey-stop strong {
+  position: relative; z-index: 1; display: block; min-width: 155px; max-width: 235px; margin: -24px 8px 0; padding: 10px 18px;
+  border: 2px solid #f1c57dc9; border-radius: 50px; background: linear-gradient(160deg, #373251f5, #141833f5);
+  box-shadow: inset 0 2px 7px #ffffff20, 0 5px 0 #0c102e88, 0 8px 22px #05051d66;
+  color: #fff7e7; font: 900 clamp(1.05rem, 1.7vw, 1.4rem)/1.12 'Nunito', sans-serif; text-shadow: 0 2px 2px #0006;
+}
+.galaxy-journey .journey-stop small { max-width: 230px; margin-top: 9px; color: #ded9f0; font-size: .74rem; text-shadow: 0 2px 6px #05051e; }
+.galaxy-journey .is-current strong { border-color: #ffdf9b; color: #ffe2a6; }
+.galaxy-journey .journey-stop button:hover:not(:disabled) .journey-planet > img,
+.galaxy-journey .is-arriving .journey-planet > img { transform: scale(1.045); filter: drop-shadow(0 12px 18px #02051d99) drop-shadow(0 0 18px var(--destination-color)); }
+.galaxy-journey .is-arriving strong { border-color: #fff0be; box-shadow: 0 0 24px #f7c26c55, inset 0 2px 7px #fff2; }
+.galaxy-journey .journey-stop button:focus-visible { outline: 3px solid #fff0b5; outline-offset: 8px; border-radius: 45%; }
+.galaxy-journey .journey-ship { z-index: 4; }
+.galaxy-journey .journey-flight-status { margin: 8px auto 0; position: relative; z-index: 1; color: #eee1fc; }
+.galaxy-orbit { position: absolute; pointer-events: none; top: 24%; left: 0; width: 100%; height: 43%; border: 1px solid #f6cb7455; border-top-color: transparent; border-radius: 50%; transform: rotate(-8deg); box-shadow: 0 3px 14px #f7b86722, inset 0 -2px 12px #cf78ff16; }
+@keyframes galaxy-home-hover { 0%, 100% { transform: translateY(0) rotate(-.6deg); } 50% { transform: translateY(-9px) rotate(.6deg); } }
+@media (min-width: 641px) and (max-width: 1000px) {
+  .big-kids-galaxy > .expedition-brand { position: relative; inset: auto; width: 115px; margin: 0 auto 8px; }
+  .galaxy-journey .journey-planet { height: 215px; }
+  .galaxy-journey .journey-stop { width: 30%; }
+  .galaxy-journey .journey-stop strong { min-width: 0; padding: 10px 14px; }
+}
+@media (max-width: 640px) {
+  .adventure-hub.expedition-hub.big-kids-galaxy { padding-top: 18px; background-position: 58% bottom; }
+  .big-kids-galaxy > .expedition-brand { position: relative; inset: auto; width: 120px; margin: 0 auto 10px; }
+  .big-kids-galaxy > h1 { padding: 0; font-size: clamp(1.8rem, 7vw, 2.5rem); }
+  .big-kids-galaxy > .page-intro { padding-inline: 16px; font-size: .85rem; }
+  .galaxy-journey .journey-stop { width: 47%; max-width: 250px; }
+  .galaxy-journey .journey-stop button { min-height: 225px; }
+  .galaxy-journey .journey-planet { height: 185px; }
+  .galaxy-journey .journey-stop strong { font-size: .98rem; min-width: 0; max-width: 100%; margin-top: -14px; padding: 8px 12px; }
+  .galaxy-journey .journey-stop small { font-size: .67rem; max-width: 150px; }
+  .galaxy-orbit { top: 14%; height: 67%; width: 90%; left: 5%; transform: rotate(-9deg); }
+  .galaxy-journey .journey-flight-status { margin-top: 8px; max-width: 290px; }
+}
+@media (prefers-reduced-motion: reduce), (update: slow) { .galaxy-journey .journey-planet { animation: none !important; } .galaxy-journey .journey-planet > img { transition: none; } }

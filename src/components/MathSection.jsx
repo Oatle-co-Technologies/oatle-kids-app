@@ -1,3 +1,5 @@
+import { withCompletedDestination } from "./spaceJourneyLogic";
+import SpaceJourney from "./SpaceJourney";
 import {
   useEffect,
   useLayoutEffect,
@@ -2493,50 +2495,6 @@ function OptionVisual({
   return option;
 }
 
-function MissionCard({
-  mission,
-  locked,
-  onSelect,
-}) {
-  return (
-    <button
-      className={`planet-card math-mission-card ${
-        locked
-          ? "locked"
-          : ""
-      }`}
-      style={{
-        "--mission-color":
-          mission.color,
-      }}
-      disabled={locked}
-      onClick={onSelect}
-    >
-      {locked ? (
-        <span className="math-mission-number">
-          🔒
-        </span>
-      ) : (
-        <img
-          className="math-mission-planet"
-          src={mission.image}
-          alt=""
-        />
-      )}
-
-      <strong>
-        {mission.title}
-      </strong>
-
-      <small>
-        {locked
-          ? "Complete the previous mission"
-          : mission.description}
-      </small>
-    </button>
-  );
-}
-
 function shuffleOptions(
   options
 ) {
@@ -3034,7 +2992,7 @@ export default function MathSection({
 
       setProgress(
         (current) => ({
-          ...current,
+          ...withCompletedDestination(current, current.activeMission),
           unlocked:
             Math.max(
               current.unlocked,
@@ -3209,25 +3167,11 @@ export default function MathSection({
           destination.
         </p>
 
-        <div className="planet-map">
-          {mathMissions.map(
-            (item) => (
-              <MissionCard
-                key={item.id}
-                mission={item}
-                locked={
-                  item.id >
-                  progress.unlocked
-                }
-                onSelect={() =>
-                  startMission(
-                    item.id
-                  )
-                }
-              />
-            )
-          )}
-        </div>
+        <SpaceJourney label="Maths mission journey" currentId={progress.activeMission} items={mathMissions.map(item => ({
+          id: item.id, title: item.title, subtitle: item.description, image: item.image, color: item.color,
+          locked: item.id > progress.unlocked, complete: item.id < progress.unlocked || Boolean(progress.completedMissions?.[item.id]) || (item.assessment && Object.keys(progress.assessmentResults || {}).length > 0),
+          onSelect: () => startMission(item.id),
+        }))} />
       </main>
     );
   }
