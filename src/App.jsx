@@ -33,6 +33,7 @@ import AlphabetTracingMission from "./components/AlphabetTracingMission";
 import NumberTracingMission from "./components/NumberTracingMission";
 import ShapeTracingMission from "./components/ShapeTracingMission";
 import SentenceWritingMission from "./components/SentenceWritingMission";
+import { migrateWritingProgress } from "./data/wordWriting";
 import LocalBackButton from "./components/LocalBackButton";
 import LittleExplorers from "./components/LittleExplorers";
 import CosmicPuzzles from "./components/CosmicPuzzles";
@@ -317,22 +318,9 @@ const savedGame = () => {
 
 const savedWritingProgress = () => {
   try {
-    const saved = JSON.parse(
-      localStorage.getItem("atli-writing-progress")
-    );
-
-    return {
-      unlocked: 1,
-      missions: {},
-      startedMissions: {},
-      ...(saved || {}),
-    };
+    return migrateWritingProgress(JSON.parse(localStorage.getItem("atli-writing-progress")));
   } catch {
-    return {
-      unlocked: 1,
-      missions: {},
-      startedMissions: {},
-    };
+    return migrateWritingProgress(null);
   }
 };
 
@@ -390,8 +378,16 @@ const writingPlanets = [
     name: "Mars",
     image: marsImage,
     color: "#EF5B5B",
-    description: "Write simple sentences",
+    description: "Write ten simple words",
     mission: "writingMission4",
+  },
+  {
+    id: 5,
+    name: "Jupiter",
+    image: jupiterImage,
+    color: "#D6B44C",
+    description: "Write simple sentences",
+    mission: "writingMission5",
   },
 ];
 
@@ -625,6 +621,7 @@ function AppNav({
         activeScreen === "writingMission2" ||
         activeScreen === "writingMission3" ||
         activeScreen === "writingMission4" ||
+        activeScreen === "writingMission5" ||
         activeScreen === "littleExplorers",
     },
     {
@@ -2247,7 +2244,7 @@ function App() {
       currentId={writingActivePlanet} onBack={() => setScreen("explore")}
       childName={childProfile.name} onProfile={() => setScreen("settings")}
       items={[...writingPlanets.map(item => ({ id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
-        locked: item.id > writingProgress.unlocked, complete: item.id < writingProgress.unlocked || Boolean(writingProgress.completedMissions?.[item.id]),
+        locked: item.id > writingProgress.unlocked, complete: Boolean(writingProgress.completedMissions?.[item.id] ?? (item.id < writingProgress.unlocked)),
         onSelect: () => startWritingPlanet(item.id),
       })), { id: "scribbler", title: "Scribbler", subtitle: "Write, draw and explore freely.", image: jupiterImage, color: "#D6B44C", free: true, onSelect: () => setScreen("scribbler") }]} />;
   } else if (
@@ -2413,9 +2410,7 @@ function App() {
       <AlphabetTracingMission
         soundOn={soundOn}
         onBack={() =>
-          setScreen(
-            "writingPlanet"
-          )
+          setScreen("writingMap")
         }
         onComplete={() =>
           completeWritingMission(1)
@@ -2435,9 +2430,7 @@ function App() {
       <NumberTracingMission
         soundOn={soundOn}
         onBack={() =>
-          setScreen(
-            "writingPlanet"
-          )
+          setScreen("writingMap")
         }
         onComplete={() =>
           completeWritingMission(2)
@@ -2457,9 +2450,7 @@ function App() {
       <ShapeTracingMission
         soundOn={soundOn}
         onBack={() =>
-          setScreen(
-            "writingPlanet"
-          )
+          setScreen("writingMap")
         }
         onComplete={() =>
           completeWritingMission(3)
@@ -2475,22 +2466,28 @@ function App() {
   } else if (
     screen === "writingMission4"
   ) {
+    content = <SentenceWritingMission mode="words" soundOn={soundOn}
+      onBack={() => setScreen("writingMap")}
+      onComplete={() => completeWritingMission(4)}
+      initialStep={writingProgress.missions?.[4] || 0}
+      onProgress={step => saveWritingMissionStep(4, step)} />;
+  } else if (
+    screen === "writingMission5"
+  ) {
     content = (
       <SentenceWritingMission
         soundOn={soundOn}
         onBack={() =>
-          setScreen(
-            "writingPlanet"
-          )
+          setScreen("writingMap")
         }
         onComplete={() =>
-          completeWritingMission(4)
+          completeWritingMission(5)
         }
         initialStep={
-          writingProgress.missions?.[4] || 0
+          writingProgress.missions?.[5] || 0
         }
         onProgress={(step) =>
-          saveWritingMissionStep(4, step)
+          saveWritingMissionStep(5, step)
         }
         childProfile={childProfile}
       />
@@ -3521,7 +3518,7 @@ function App() {
   }
 
   const showBottomNav =
-    user && hasAccess && ageGroup && screen !== "scribbler";
+    user && hasAccess && ageGroup && screen !== "scribbler" && !screen.startsWith("writingMission");
 
   return (
     <div className={`app ${showBottomNav ? "app-with-bottom-nav" : ""}`}>

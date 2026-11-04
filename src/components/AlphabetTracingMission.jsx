@@ -1,3 +1,4 @@
+import WritingBackButton from "./WritingBackButton";
 import { useEffect, useRef, useState } from "react";
 import "./AlphabetTracingMission.css";
 import { speak, stopSpeech } from "../utils/speech";
@@ -438,14 +439,7 @@ export default function AlphabetTracingMission({
 
       <div className="alphabet-mission-header">
 
-        <button
-          type="button"
-          className="alphabet-back-button"
-          onClick={onBack}
-          aria-label="Back"
-        >
-          ←
-        </button>
+        <WritingBackButton onBack={onBack} />
 
         <div className="alphabet-mission-title">
 
