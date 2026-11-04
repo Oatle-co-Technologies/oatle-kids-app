@@ -58,7 +58,7 @@ const addSkill = (questions, skill) =>
       assessmentId: [
         skill,
         question.type,
-        question.prompt,
+        question.assessmentKey || question.prompt,
         String(question.answer),
       ].join("::"),
     }));

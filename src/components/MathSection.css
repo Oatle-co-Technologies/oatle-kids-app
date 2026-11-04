@@ -1150,3 +1150,14 @@
     margin-top: 0;
   }
 }
+
+/* Colour mixing uses spoken words and named paint spots, not equations. */
+.colour-mix-scene{display:flex;flex-direction:column;align-items:center;gap:20px;min-height:0;margin:24px auto}
+.colour-mix-pair{display:flex;align-items:flex-start;justify-content:center;gap:20px;width:100%}
+.colour-mix-ingredient{display:flex;align-items:center;gap:20px}
+.colour-mix-paint{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0;min-width:0}
+.colour-mix-spot{display:block;width:clamp(64px,17vw,96px);height:clamp(64px,17vw,96px);border:4px solid #fff;border-radius:48% 52% 42% 58% / 54% 42% 58% 46%;box-sizing:border-box;box-shadow:inset -6px -7px 0 #00000012,0 0 16px #ffffff22}
+.colour-mix-paint figcaption{font-size:clamp(.95rem,3.5vw,1.15rem);font-weight:800;line-height:1.4;color:#eef4ff;text-transform:capitalize;overflow-wrap:anywhere}
+.colour-mix-and{font-size:1rem;color:#c6d7ef;align-self:flex-start;margin-top:clamp(20px,5vw,34px)}
+.colour-mix-made{padding-top:4px}.colour-mix-made figcaption{text-transform:none;color:#ffdd83}
+@media(max-width:380px){.colour-mix-pair,.colour-mix-ingredient{gap:12px}.colour-mix-scene{margin:18px auto;gap:16px}}
