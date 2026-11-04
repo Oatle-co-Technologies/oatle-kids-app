@@ -2915,3 +2915,23 @@ button:focus-visible,
 .login-password-toggle:focus-visible { outline: 2px solid #8fe7ff; outline-offset: -3px; }
 .login-password-input input::-ms-reveal { display: none; }
 .checkout-consent{display:flex;align-items:flex-start;gap:10px;text-align:left;margin:20px 0 16px;padding:14px;border:1px solid rgba(143,231,255,.35);border-radius:14px;background:rgba(17,26,66,.65);font-size:12px;line-height:1.55;color:#d5def7}.checkout-consent input{flex:0 0 auto;width:18px;height:18px;margin-top:2px;accent-color:#66ff66}.checkout-consent a{color:#8fe7ff;text-underline-offset:2px}.checkout-consent:focus-within{outline:3px solid #8fe7ff;outline-offset:3px}
+
+.writing-profile-reminder {
+  width: min(100%, 720px);
+  box-sizing: border-box;
+  margin: 18px auto;
+  padding: 20px;
+  border: 2px solid #d6b44c;
+  border-radius: 20px;
+  background: #10233f;
+  color: #fff;
+  text-align: left;
+}
+.writing-profile-reminder h2 { font-size: 1.2rem; margin: 0 0 10px; color: #ffe69b; }
+.writing-profile-reminder p { line-height: 1.5; margin: 10px 0; }
+.writing-profile-reminder button, .writing-profile-return button { min-height: 48px; max-width: 100%; white-space: normal; }
+.writing-profile-return { margin-top: 20px; }
+.writing-profile-return button:disabled { opacity: .55; cursor: not-allowed; }
+.writing-profile-reminder button, .writing-profile-return button {
+  scroll-margin-block: 130px;
+}
