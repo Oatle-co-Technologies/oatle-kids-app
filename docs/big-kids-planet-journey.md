@@ -1,5 +1,7 @@
 # Big Kids planet journeys
 
+The current mobile/tablet presentation is documented in [Responsive planet journeys](responsive-planet-orbits.md). The desktop composition described below is preserved.
+
 The latest revision follows the supplied Writing Adventure reference's composition: a bevelled purple/gold title banner with a circular emblem, brand/back controls at the left, an optional profile control using the child's saved name, compact numbered planet/mission capsules, a bright continuous golden looping path, and a bottom progress dock with green completion orbs.
 
 ## Original content and artwork

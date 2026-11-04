@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import SpaceJourney from "./SpaceJourney";
+import ResponsivePlanetJourney from "./ResponsivePlanetJourney";
 import { storybooks } from "../data/storybooks";
 import StorybookAdventure from "./StorybookAdventure";
 import LocalBackButton from "./LocalBackButton";
@@ -1829,7 +1830,7 @@ export default function LittleExplorers({
         <p>Complete each planet to unlock the next mission.</p>
       </header>
 
-      <SpaceJourney key={activeAdventure.id} playful label={`${activeAdventure.title} planet journey`} currentId={activePlanetId} items={activeAdventure.planets.map((planet, index) => ({
+      <ResponsivePlanetJourney centerTitle={activeAdventure.title} centerImage={activeAdventure.id === "building" ? "/adventure-homes/builder.webp" : undefined} centerEmblem={activeAdventure.id === "animals" ? <AnimalIcon /> : activeAdventure.id === "puzzles" ? <PuzzleIcon /> : activeAdventure.id === "music" ? <MusicIcon /> : activeAdventure.icon || "✦"} key={activeAdventure.id} playful label={`${activeAdventure.title} planet journey`} currentId={activePlanetId} items={activeAdventure.planets.map((planet, index) => ({
         id: planet.id, title: planet.name, subtitle: planet.missionTitle, image: planet.image, color: planet.colour,
         locked: Boolean(index > 0 && !isPlanetComplete(activeAdventure.planets[index - 1])),
         complete: isPlanetComplete(planet), onSelect: () => openPlanet(planet.id),

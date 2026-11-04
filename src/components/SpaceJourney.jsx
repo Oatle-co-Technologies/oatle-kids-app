@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { currentDestination, journeyPoints, JOURNEY_WIDTH, JOURNEY_STEP, routeBetween } from './spaceJourneyLogic';
 import './SpaceJourney.css';
 
-export default function SpaceJourney({ items, currentId, label = 'Adventure journey', storageKey, playful = false, positions, stageHeight, className = '', autoScrollCurrent = true, showMissionStatus = false, rocketLift = 55, pathBuilder = routeBetween, compactLabels = false, numberedStops = false }) {
+export default function SpaceJourney({ items, currentId, label = 'Adventure journey', storageKey, playful = false, positions, stageHeight, className = '', autoScrollCurrent = true, showMissionStatus = false, rocketLift = 55, pathBuilder = routeBetween, compactLabels = false, numberedStops = false, centerContent, closingPath }) {
   const [remembered] = useState(() => {
     try { return storageKey ? sessionStorage.getItem(storageKey) : null; } catch { return null; }
   });
@@ -69,12 +69,14 @@ export default function SpaceJourney({ items, currentId, label = 'Adventure jour
     <section className={`space-journey ${playful ? 'space-journey-playful' : ''} ${className}`}  aria-label={label}>
       <div className="journey-key"><span>✦ Your next stop</span><span>✓ Explored</span><span>🔒 Up ahead</span></div>
       <div ref={stage} className="journey-stage" style={{ height }}>
+        {centerContent}
         <svg className="journey-routes" viewBox={`0 0 ${JOURNEY_WIDTH} ${height}`} preserveAspectRatio="none" aria-hidden="true">
           {points.slice(1).map((_, index) => <path key={items[index + 1].id} d={pathBuilder(points, index, index + 1)} className={items[index + 1].locked ? 'journey-route-locked' : 'journey-route-open'} />)}
+          {closingPath && <path d={closingPath} className="journey-route-orbit" />}
           <path ref={flightPath} fill="none" stroke="none" />
         </svg>
         <ol className="journey-destinations">
-          {items.map((item, index) => <li key={item.id} className={`journey-stop ${item.locked ? 'is-locked' : ''} ${item.complete ? 'is-complete' : ''} ${index === current ? 'is-current' : ''} ${flying === item.id ? 'is-arriving' : ''}`} style={{ left: `${points[index].x / JOURNEY_WIDTH * 100}%`, top: points[index].y, '--destination-color': item.color || '#8de1ec' }}>
+          {items.map((item, index) => <li key={item.id} className={`journey-stop ${item.locked ? 'is-locked' : ''} ${item.complete ? 'is-complete' : ''} ${index === current ? 'is-current' : ''} ${flying === item.id ? 'is-arriving' : ''}`} style={{ left: `${points[index].x / JOURNEY_WIDTH * 100}%`, top: points[index].y, '--destination-color': item.color || '#8de1ec', '--orbit-label-x': points[index].orbit ? `${points[index].labelX}px` : undefined, '--orbit-label-y': points[index].orbit ? `${points[index].labelY}px` : undefined, '--orbit-label-own-width': points[index].orbit ? `${points[index].labelRect.width}px` : undefined }}>
             <button type="button" disabled={item.locked || flying !== null} onClick={() => choose(item, index)} aria-current={index === current ? 'step' : undefined} aria-label={`${item.title}. ${showMissionStatus ? `${item.subtitle}. ` : ''}${item.locked ? 'Locked. Complete the previous mission.' : item.complete ? 'Completed. Explore again.' : index === current ? 'Current destination.' : 'Explore.'}`}>
               {item.group && <span className="journey-group">{item.group}</span>}
               <span className="journey-planet">{item.art || <img src={item.image} alt="" loading="lazy" draggable="false" />}{item.badge && <span className="journey-world-badge">{item.badge}</span>}</span>
