@@ -17,7 +17,7 @@ test('all mission counts clear phone insets and use spare bottom space without c
     const landscape=w>=560&&w>h&&h<600;
     const nav=(w<=700?72:82)+safeInset;
     const sidebar=landscape?Math.max(110,Math.min(150,w*.19))+12:0;
-    const spacing=landscape?(h<=350?8:24):48+(h<=750?140:152);
+    const spacing=landscape?(h<=350?8:24):48+(h<=750?168:172);
     const minimum=landscape&&h>350?220:190;
     const contentHeight=Math.max(minimum,h-nav-topInset-spacing);
     const sideInset=landscape?47:0;

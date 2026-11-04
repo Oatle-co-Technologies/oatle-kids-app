@@ -6,7 +6,7 @@ export function isOrbitViewport(width) { return width < ORBIT_BREAKPOINT; }
 export function planetOrbitLayout(count, hostWidth, viewportWidth, viewportHeight, measuredNavHeight, hostHeight) {
   const landscape = viewportWidth >= 560 && viewportWidth > viewportHeight && viewportHeight < 600;
   const navHeight = measuredNavHeight || (viewportWidth <= 700 ? 72 : 82);
-  const reserved = landscape ? (viewportHeight <= 350 ? 8 : 24) : viewportHeight <= 750 ? 188 : 200;
+  const reserved = landscape ? (viewportHeight <= 350 ? 8 : 24) : viewportHeight <= 750 ? 216 : 220;
   const width = Math.max(100, hostWidth);
   const height = Math.max(190, hostHeight || viewportHeight - navHeight - reserved);
   const diameter = Math.min(width, height);
