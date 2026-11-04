@@ -1,0 +1,25 @@
+.animal-page.is-homing { background: linear-gradient(#193a59, #346361); }
+.is-homing .animal-header h1 { font-family: 'Nunito', sans-serif; font-weight: 1000; }
+.animal-homes-meadow { position: relative; isolation: isolate; width: min(860px, 100%); margin: 20px auto 0; overflow: hidden; color: #23452f; text-align: center; background: radial-gradient(ellipse at 10% 100%, #8bc377 0 42%, transparent 42.5%), radial-gradient(ellipse at 90% 100%, #7ab56e 0 45%, transparent 45.5%), linear-gradient(#b2e5ee 0 40%, #a5ce83 40%); }
+.homes-scene-instruction { margin: 18px 10px 0; font: 1000 clamp(1.1rem,3vw,1.5rem)/1.4 'Nunito',sans-serif; }
+.homes-scenery { display: flex; align-items: start; justify-content: space-around; gap: 12px; padding: 10px 12px 0; }
+.homes-scenery-home { position: relative; display: block; width: min(40%,260px); padding: 0; border: 0; background: none; color: #23452f; cursor: pointer; touch-action: manipulation; }
+.homes-scenery-home > svg { display: block; width: 100%; height: auto; pointer-events: none; }
+.homes-scenery-home:disabled { opacity: 1; cursor: default; }
+.homes-place-name { display: block; margin-top: 0; font: 900 clamp(.85rem,2.7vw,1.1rem)/1.4 'Nunito',sans-serif; }
+.homes-scenery-home.is-visiting > svg { filter: drop-shadow(0 0 8px #fff6ab); }
+.homes-waiting-animal { position: relative; z-index: 3; display: block; width: 210px; height: 210px; margin: 10px auto 0; padding: 0; border: 0; border-radius: 50%; background: none; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.homes-waiting-animal > svg { width: 100%; height: 100%; pointer-events: none; }
+.homes-waiting-animal[aria-pressed=true] { filter: drop-shadow(0 0 7px #fff6ab); }
+.homes-waiting-animal.is-lifted { opacity: .12; }
+.homes-waiting-animal.is-entering { animation: homes-go-inside 1.15s ease-in-out forwards; }
+.homes-waiting-animal.is-exploring { animation: homes-visit-return 1.2s ease-in-out; }
+.homes-waiting-animal:disabled { cursor: default; }
+.homes-scene-hint { margin: 0 auto 20px; padding: 0 14px; max-width: 450px; min-height: 2.8em; font: 800 .9rem/1.5 'Nunito',sans-serif; }
+.homes-animal-ghost { position: fixed; z-index: 11000; width: 150px; height: 150px; transform: translate(-50%,-50%); pointer-events: none; filter: drop-shadow(0 7px 4px #0003); }
+.homes-arrived-animal { position: absolute; left: 30%; top: 35%; width: 40%; pointer-events: none; animation: homes-arrive 1.2s ease-in both; }
+@keyframes homes-go-inside { 70% { opacity: 1; } to { transform: translate(var(--home-x),var(--home-y)) scale(.18); opacity: 0; } }
+@keyframes homes-visit-return { 45%,55% { transform: translate(var(--home-x),var(--home-y)) scale(.4); } }
+@keyframes homes-arrive { 0%,80% { opacity: 0; } to { opacity: 1; } }
+@media (max-width:480px) { .is-homing.animal-page { padding-inline: 10px; } .homes-scenery { gap: 6px; padding-inline: 6px; } .homes-scenery-home { width: 48%; } .homes-waiting-animal { width: 190px; height: 190px; margin-top: 25px; } }
+@media (prefers-reduced-motion:reduce) { .animal-homes-meadow *, .homes-animal-ghost { animation: none !important; transition: none !important; } .homes-waiting-animal.is-entering { opacity: 0; } }
