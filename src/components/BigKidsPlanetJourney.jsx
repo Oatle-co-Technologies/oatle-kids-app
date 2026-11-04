@@ -2,40 +2,40 @@ import { useSyncExternalStore } from 'react';
 import LocalBackButton from './LocalBackButton';
 import SpaceJourney from './SpaceJourney';
 import { currentDestination } from './spaceJourneyLogic';
-import { planetJourneyLayout, planetJourneyProgress } from './planetJourneyLayout';
+import { planetJourneyLayout, planetJourneyProgress, planetJourneyRoute } from './planetJourneyLayout';
 import './BigKidsPlanetJourney.css';
 
-const query = '(max-width: 640px)';
+const queries = ['(max-width: 640px)', '(max-width: 999px)'];
 function subscribe(callback) {
-  const media = window.matchMedia(query);
-  media.addEventListener('change', callback);
-  return () => media.removeEventListener('change', callback);
+  const media = queries.map(query => window.matchMedia(query));
+  media.forEach(item => item.addEventListener('change', callback));
+  return () => media.forEach(item => item.removeEventListener('change', callback));
 }
-const compactSnapshot = () => window.matchMedia(query).matches;
+const viewportSnapshot = () => window.matchMedia(queries[0]).matches ? 'phone' : window.matchMedia(queries[1]).matches ? 'tablet' : 'wide';
 
-export default function BigKidsPlanetJourney({ title, description, label, items, currentId, onBack, extraActivity }) {
-  const compact = useSyncExternalStore(subscribe, compactSnapshot, () => true);
-  const { points, height } = planetJourneyLayout(items.length, compact);
+export default function BigKidsPlanetJourney({ title, description, label, items, currentId, onBack, childName, onProfile, emblem = '✏️' }) {
+  const mode = useSyncExternalStore(subscribe, viewportSnapshot, () => 'phone');
+  const { points, height } = planetJourneyLayout(items.length, mode);
   const { completed, total } = planetJourneyProgress(items);
   const currentIndex = currentDestination(items, currentId);
-  const current = items[currentIndex];
+  const journeyName = title.replace(/ Adventure$/, '');
   return (
-    <main className="big-kids-planet-map">
-      <LocalBackButton className="planet-map-back" label="Adventures" onClick={onBack} />
-      <header className="planet-journey-header">
-        <img src="/oatle-kids-wordmark.webp" alt="Oatle Kids" />
-        <p className="eyebrow">YOUR GALAXY JOURNEY</p>
-        <h1>{title}</h1>
-        <p className="planet-journey-description">{description}</p>
-        <div className="planet-journey-progress">
-          <p><strong>{completed} of {total}</strong> planets completed</p>
-          <progress aria-label={`${title} completion`} value={completed} max={Math.max(1, total)} />
-          <small>Your rocket is at {current?.title || 'the first available planet'}.</small>
-        </div>
-        {extraActivity && <button className="planet-free-activity" type="button" onClick={extraActivity.onSelect}>{extraActivity.title} <span>· {extraActivity.description}</span> →</button>}
+    <main className={`big-kids-planet-map planet-board-${mode}`}>
+      <header className="planet-map-toolbar">
+        <div className="planet-map-brand-back"><img src="/oatle-kids-wordmark.webp" alt="Oatle Kids" /><LocalBackButton label="Adventures" onClick={onBack} /></div>
+        <div className="planet-map-banner"><span className="planet-banner-emblem" aria-hidden="true">{emblem}</span><h1>{title}</h1><p>Your {journeyName} Journey</p></div>
+        {childName && <button className="planet-map-profile" aria-label={`${childName} — Settings`} type="button" onClick={onProfile} disabled={!onProfile}><span aria-hidden="true">{childName.charAt(0).toUpperCase()}</span>{childName}<span aria-hidden="true">⌄</span></button>}
       </header>
+      <p className="planet-map-guidance">{description}</p>
       <SpaceJourney className="big-planet-journey" label={label} items={items} currentId={currentId}
-        positions={points} stageHeight={height} autoScrollCurrent={currentIndex >= (compact ? 2 : 3)} showMissionStatus rocketLift={0} />
+        positions={points} stageHeight={height} autoScrollCurrent={mode !== 'wide' && currentIndex >= (mode === 'phone' ? 2 : 3)}
+        pathBuilder={planetJourneyRoute} showMissionStatus compactLabels numberedStops rocketLift={0} />
+      <section className="planet-journey-progress" aria-label={`${journeyName} journey progress`}>
+        <strong>Your Progress</strong>
+        <div className="planet-progress-orbs" aria-hidden="true">{items.filter(item => !item.free).map(item => <span key={item.id} className={item.complete ? 'is-complete' : ''} />)}</div>
+        <b>{completed} of {total}</b>
+        <progress aria-label={`${title} completion`} value={completed} max={Math.max(1, total)} />
+      </section>
     </main>
   );
 }

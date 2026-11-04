@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { currentDestination, journeyPoints, JOURNEY_WIDTH, JOURNEY_STEP, routeBetween } from './spaceJourneyLogic';
 import './SpaceJourney.css';
 
-export default function SpaceJourney({ items, currentId, label = 'Adventure journey', storageKey, playful = false, positions, stageHeight, className = '', autoScrollCurrent = true, showMissionStatus = false, rocketLift = 55 }) {
+export default function SpaceJourney({ items, currentId, label = 'Adventure journey', storageKey, playful = false, positions, stageHeight, className = '', autoScrollCurrent = true, showMissionStatus = false, rocketLift = 55, pathBuilder = routeBetween, compactLabels = false, numberedStops = false }) {
   const [remembered] = useState(() => {
     try { return storageKey ? sessionStorage.getItem(storageKey) : null; } catch { return null; }
   });
@@ -47,7 +47,7 @@ export default function SpaceJourney({ items, currentId, label = 'Adventure jour
     const timer = window.setTimeout(finish, 850);
     cancel.current = () => { settled = true; clearTimeout(timer); animation?.cancel(); lock.current = false; };
     try {
-      flightPath.current.setAttribute('d', routeBetween(points, current, index));
+      flightPath.current.setAttribute('d', pathBuilder(points, current, index));
       const length = flightPath.current.getTotalLength();
       const scale = stage.current.clientWidth / JOURNEY_WIDTH;
       const origin = points[current];
@@ -70,7 +70,7 @@ export default function SpaceJourney({ items, currentId, label = 'Adventure jour
       <div className="journey-key"><span>✦ Your next stop</span><span>✓ Explored</span><span>🔒 Up ahead</span></div>
       <div ref={stage} className="journey-stage" style={{ height }}>
         <svg className="journey-routes" viewBox={`0 0 ${JOURNEY_WIDTH} ${height}`} preserveAspectRatio="none" aria-hidden="true">
-          {points.slice(1).map((_, index) => <path key={items[index + 1].id} d={routeBetween(points, index, index + 1)} className={items[index + 1].locked ? 'journey-route-locked' : 'journey-route-open'} />)}
+          {points.slice(1).map((_, index) => <path key={items[index + 1].id} d={pathBuilder(points, index, index + 1)} className={items[index + 1].locked ? 'journey-route-locked' : 'journey-route-open'} />)}
           <path ref={flightPath} fill="none" stroke="none" />
         </svg>
         <ol className="journey-destinations">
@@ -78,9 +78,9 @@ export default function SpaceJourney({ items, currentId, label = 'Adventure jour
             <button type="button" disabled={item.locked || flying !== null} onClick={() => choose(item, index)} aria-current={index === current ? 'step' : undefined} aria-label={`${item.title}. ${showMissionStatus ? `${item.subtitle}. ` : ''}${item.locked ? 'Locked. Complete the previous mission.' : item.complete ? 'Completed. Explore again.' : index === current ? 'Current destination.' : 'Explore.'}`}>
               {item.group && <span className="journey-group">{item.group}</span>}
               <span className="journey-planet">{item.art || <img src={item.image} alt="" loading="lazy" draggable="false" />}{item.badge && <span className="journey-world-badge">{item.badge}</span>}</span>
-              <span className="journey-stamp">{item.locked ? '🔒' : item.complete ? '✓' : index === current ? '✦' : String(index + 1).padStart(2, '0')}</span>
-              <strong>{item.title}</strong><small>{item.locked && !showMissionStatus ? 'Finish the stop before me' : item.subtitle}</small>
-              {showMissionStatus && <span className="journey-mission-status">{item.locked ? 'Locked · complete the previous planet' : index === current ? (item.complete ? 'Completed · rocket here' : 'Current planet · ready to explore') : item.complete ? 'Completed · explore again' : 'Ready to explore'}</span>}
+              <span className="journey-stamp">{numberedStops ? index + 1 : item.locked ? '🔒' : item.complete ? '✓' : index === current ? '✦' : String(index + 1).padStart(2, '0')}</span>
+              {compactLabels ? <span className="journey-label-plate"><strong>{item.title}</strong><small>{item.subtitle}</small></span> : <><strong>{item.title}</strong><small>{item.locked && !showMissionStatus ? 'Finish the stop before me' : item.subtitle}</small></>}
+              {showMissionStatus && <span className="journey-mission-status">{compactLabels ? (item.free ? 'Free drawing' : item.locked ? 'Locked' : index === current ? 'You are here' : item.complete ? 'Completed' : 'Ready') : item.locked ? 'Locked · complete the previous planet' : index === current ? (item.complete ? 'Completed · rocket here' : 'Current planet · ready to explore') : item.complete ? 'Completed · explore again' : 'Ready to explore'}</span>}
             </button>
           </li>)}
         </ol>

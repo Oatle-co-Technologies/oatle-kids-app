@@ -2248,14 +2248,14 @@ function App() {
       />
     );
   } else if (screen === "writingMap") {
-    content = <BigKidsPlanetJourney title="Writing Planet Map" label="Writing planet journey"
+    content = <BigKidsPlanetJourney title="Writing Adventure" label="Writing planet journey"
       description="Complete each planet to unlock the next writing adventure."
       currentId={writingActivePlanet} onBack={() => setScreen("explore")}
-      extraActivity={{ title: "Scribbler", description: "Write, draw and explore freely.", onSelect: () => setScreen("scribbler") }}
-      items={writingPlanets.map(item => ({ id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
+      childName={childProfile.name} onProfile={() => setScreen("settings")}
+      items={[...writingPlanets.map(item => ({ id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
         locked: item.id > writingProgress.unlocked, complete: item.id < writingProgress.unlocked || Boolean(writingProgress.completedMissions?.[item.id]),
         onSelect: () => startWritingPlanet(item.id),
-      }))} />;
+      })), { id: "scribbler", title: "Scribbler", subtitle: "Write, draw and explore freely.", image: jupiterImage, color: "#D6B44C", free: true, onSelect: () => setScreen("scribbler") }]} />;
   } else if (
     screen === "writingPlanet"
   ) {
@@ -2513,12 +2513,15 @@ function App() {
           setScreen("explore")
         }
         soundOn={soundOn}
+        childName={childProfile.name}
+        onProfile={() => setScreen("settings")}
       />
     );
   } else if (screen === "map") {
-    content = <BigKidsPlanetJourney title="Reading Planet Map" label="Reading planet journey"
+    content = <BigKidsPlanetJourney title="Reading Adventure" label="Reading planet journey"
       description="Complete each planet to unlock the next destination."
-      currentId={progress.activePlanet} onBack={() => setScreen("explore")}
+      currentId={progress.activePlanet} onBack={() => setScreen("explore")} emblem="Aa"
+      childName={childProfile.name} onProfile={() => setScreen("settings")}
       items={planets.map(item => ({
         id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
         locked: item.id > progress.unlocked, complete: item.id < progress.unlocked || Boolean(progress.completedMissions?.[item.id]) || (item.id === 9 && Boolean(assessmentResults)),

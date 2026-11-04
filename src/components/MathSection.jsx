@@ -2583,6 +2583,8 @@ export default function MathSection({
   onHome,
   onBack,
   soundOn,
+  childName,
+  onProfile,
 }) {
   const [progress, setProgress] =
     useState(
@@ -3147,9 +3149,9 @@ export default function MathSection({
     };
 
   if (screen === "map") {
-    return <BigKidsPlanetJourney title="Maths Map" label="Maths mission journey"
+    return <BigKidsPlanetJourney title="Maths Adventure" label="Maths mission journey"
       description="Complete each mission to unlock the next destination."
-      currentId={progress.activeMission} onBack={onBack}
+      currentId={progress.activeMission} onBack={onBack} emblem="123" childName={childName} onProfile={onProfile}
       items={mathMissions.map(item => ({
         id: item.id, title: PLANET_NAMES[item.id - 1], subtitle: item.title, image: item.image, color: item.color,
         locked: item.id > progress.unlocked, complete: item.id < progress.unlocked || Boolean(progress.completedMissions?.[item.id]) || (item.assessment && Object.keys(progress.assessmentResults || {}).length > 0),

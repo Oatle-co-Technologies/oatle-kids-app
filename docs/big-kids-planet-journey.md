@@ -1,29 +1,29 @@
 # Big Kids planet journeys
 
-Reading, Writing and Maths now use the shared `BigKidsPlanetJourney` presentation. It reuses `/adventure-homes/galaxy.webp`, the original planet image URLs, and the existing O-shaped rocket. No images, backgrounds, decorations or other bitmap assets were generated or edited.
+The latest revision follows the supplied Writing Adventure reference's composition: a bevelled purple/gold title banner with a circular emblem, brand/back controls at the left, an optional profile control using the child's saved name, compact numbered planet/mission capsules, a bright continuous golden looping path, and a bottom progress dock with green completion orbs.
 
-## Navigation
+## Original content and artwork
 
-The `screen` field in the existing home configuration now routes Reading directly to `map`, Writing to `writingMap`, and Maths to `math` (whose initial view is its map). The shared rocket still completes its existing home-arrival transition before that callback runs. The old adventure launch screen, launch state and launch-only narration were removed. Arcade and Storybook retain their existing entry screens.
+The original planet images, O-shaped rocket, logo and `/adventure-homes/galaxy.webp` are unchanged. No bitmap art or decorative assets were generated or edited. Planet images are rendered larger within their existing transparent margins, preserving their proportions and image files.
 
-Map back controls return to Adventures. Existing per-planet mission introductions, start/resume controls, learning activities and their back controls remain intact. Writing's Scribbler stays available as an independent free-drawing control, and is no longer displayed as an additional Earth in the planet route or counted toward mission completion.
+Reading and Maths retain all nine original planet/mission assignments. Their wide board uses four planets above and five below, in original reading order. Writing keeps its four existing mission planets and now includes **Scribbler as its fifth, always-available planet destination**, using the existing Jupiter image. Scribbler opens the existing free-drawing activity and is not counted as an unfinished learning mission. The progress dock measures the four original Writing missions. No new curriculum or nine-mission Writing sequence was invented from the reference's illustrative text.
 
-## Presentation
+## Navigation and route geometry
 
-`planetJourneyLayout.js` supplies ordered, serpentine coordinates: three planets across on wider screens, two on phones. The same SVG curves are used by the golden route and the existing rocket flight sampler. The map supplies a zero rocket lift so its centre follows the displayed route, without changing the flight engine, image or proportions. Existing learning-map locking conditions and completion flags are passed through unchanged.
+Reading, Writing and Maths homes continue to enter their maps directly after the existing home rocket flight. The old adventure launch screen remains removed. Existing per-planet introductions, start/resume controls, learning activities and back controls are unchanged. Map back controls return to Adventures; saved-name profile controls open existing Settings.
 
-Planet image containers have fixed centres on the path; only their original image elements float by six pixels, with staggered durations. Labels and path endpoints stay fixed while they hover. Planets render at 164px on wider screens and 124px on phones. Locked images retain their original colours with reduced opacity; no grayscale filter is applied in this map variant. Native disabled buttons and separate status labels distinguish current, completed and locked states. Mission labels remain visible when locked.
+`planetJourneyLayout.js` provides a wide reference board, three-column tablet layout, and two-column phone layout. `planetJourneyRoute` supplies gently dipped connections and an outer-loop transition to the second row. Displayed gold paths and the existing rocket sampler call the same path builder. Reverse travel reverses cubic control points so it follows the same route backward. The rocket engine's locking, animation timing, reduced-motion fallback, timeout and cleanup are unchanged. Shared defaults keep the approved adventure homes and Little Explorers unaffected.
 
-Maths labels pair each original planet name with its existing mission title; the assignments and questions are unchanged. The progress bar counts the existing completed flags across actual mission planets. The current-planet label uses the same unlocked-current selection as the rocket. Later rows scroll into view when needed; first-row destinations leave the heading/logo visible.
-
-Reduced-motion and slow-update preferences stop hovering. Existing reduced-motion/low-power flight fallbacks are retained. All new styles are scoped to Big Kids maps. Little Explorers and the approved floating-home screen keep their previous presentation.
+Planet art floats gently, with staggered timing; labels and route anchors stay fixed. Number bubbles stay gold, with small completion/lock markers. The current planet has a soft halo. Locked planets remain disabled and retain their original colours. Accessible labels retain the full mission and state. Reduced-motion and slow-update preferences stop continuous floating. All new styles are scoped to Big Kids.
 
 ## Verification
 
-- Production build passes; the existing large JavaScript bundle warning remains.
-- All 27 Node tests pass. New checks cover direct home entry, phone/desktop route bounds, original ordering, unchanged progress inputs, and SHA-256 integrity of 22 pre-existing planet/logo/rocket/background files.
-- Focused ESLint passes for App and new/modified shared modules. MathSection retains the same four existing lint errors as its baseline; no new errors were introduced.
-- Native Chrome rendered the nine-planet preview with original artwork, golden connections, readable mission labels, progress, current/completed markers, and disabled locked destinations. In the real authenticated local game, selecting Writing displayed its existing home rocket-flight state, then Writing Planet Map directly with no launch screen, four original assignments, locked controls and the Scribbler. Reading Planet Map was also observed with all nine original assignments and locked labels.
-- Some native page actions did not reliably report a resulting state; final forward/reverse mission flights, back controls, actual phone touch/orientation and installed-PWA interaction remain manual verification items. Route order and both directions have automated geometry coverage. Temporary preview files were removed.
+- Production build and focused ESLint pass; the existing large JavaScript bundle warning remains.
+- All 30 Node tests pass, including direct entry, the four-above/five-below arrangement, route geometry in both directions for five- and nine-stop maps across all three layouts, Scribbler's free accessibility/progress semantics, and byte-for-byte integrity of 22 original artwork files.
+- MathSection retains its baseline lint errors; no unrelated learning logic was changed.
+- A fresh native Chrome preview rendered the revised nine-stop composition, large original planets, numbered capsules, golden loop and bottom progress dock with three green orbs. The preview callback log recorded successful planet arrivals.
+- The local PWA service worker was serving stale development modules at `127.0.0.1:5173`; the fresh `localhost:5173` origin was used to inspect the actual revision. Production assets retain Vite's hashed filenames. No service-worker or authentication changes were made.
+- Native Chrome did not reliably expose the refreshed Writing preview or every page-action result. The actual Scribbler interaction, phone/tablet touch/orientation and installed-PWA behavior still need manual checks. Source integration and all five-stop routes are covered by the tests.
+- Temporary isolated preview files were removed. The actual local game is available at `/app.html`. Local implementation only; not committed or deployed.
 
-No authentication, scoring, database, saved-progress format, original artwork or Little Explorers changes. Local implementation only; not committed or deployed.
+No authentication, scoring, saved-progress format, original artwork or Little Explorers changes.
