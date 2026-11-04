@@ -1,0 +1,54 @@
+.age-galaxy-home {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  padding: max(26px, env(safe-area-inset-top)) clamp(16px, 4vw, 56px) 38px;
+  color: #fff7e7;
+  text-align: center;
+  background: linear-gradient(180deg, #080b2277, #080b2200 40%, #0d123244), url('/adventure-homes/galaxy.webp') center bottom / cover no-repeat, #080b24;
+}
+.age-home-header { position: relative; max-width: 1300px; margin: 0 auto; }
+.age-home-brand { position: absolute; left: 0; top: 0; width: clamp(115px, 12vw, 165px); }
+.age-home-eyebrow { margin: 10px 0; color: #c5baff; font: 900 .75rem 'Nunito', sans-serif; letter-spacing: .18em; }
+.age-home-header h1 { margin: 12px auto; max-width: 800px; font-size: clamp(2rem, 4.4vw, 3.6rem); line-height: 1.2; color: #fff9e9; text-shadow: 0 4px 0 #372e60, 0 10px 30px #02051e; }
+.age-home-header h1 em { color: #ffcf71; font-style: normal; }
+.age-home-header > p:last-child { color: #ddd9f1; line-height: 1.5; margin: 14px auto 0; }
+.age-home-worlds { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: clamp(20px, 6vw, 100px); max-width: 980px; margin: 26px auto 20px; }
+.age-home-orbit { position: absolute; z-index: -1; pointer-events: none; left: -4%; top: 25%; width: 108%; height: 45%; border: 1px solid #f6cb7466; border-top-color: transparent; border-radius: 50%; transform: rotate(-8deg); box-shadow: 0 3px 14px #f7b86722; }
+.age-home-world { display: flex; flex-direction: column; align-items: center; width: 100%; min-width: 0; padding: 8px; border: 0; border-radius: 40px; background: none; color: inherit; cursor: pointer; font-family: 'Nunito', sans-serif; }
+.age-home-art { display: block; width: 100%; height: clamp(220px, 29vw, 370px); object-fit: contain; filter: drop-shadow(0 15px 16px #03051d88) drop-shadow(0 3px 9px #c45eff30); animation: age-world-float 6s ease-in-out infinite; }
+.age-home-big .age-home-art { animation-delay: -3s; }
+.age-home-label { position: relative; display: grid; gap: 5px; min-width: 190px; max-width: 100%; box-sizing: border-box; margin-top: -14px; padding: 12px 26px; border: 2px solid #f1c57d; border-radius: 50px; background: linear-gradient(160deg, #373251f5, #141833f5); box-shadow: inset 0 2px 7px #ffffff20, 0 5px 0 #0c102e88, 0 8px 22px #05051d66; }
+.age-home-label strong { color: #ffe2a6; font-size: clamp(1.4rem, 2.4vw, 2rem); line-height: 1.15; }
+.age-home-label > span { font-size: 1rem; font-weight: 900; }
+.age-home-description { margin-top: 16px; color: #e3ddf5; font-size: .95rem; line-height: 1.5; }
+.age-home-enter { margin-top: 12px; padding: 8px 18px; border-radius: 24px; color: #ffdf9b; font-weight: 900; }
+.age-home-enter > span { margin-left: 8px; }
+.age-home-world:hover .age-home-label { background: linear-gradient(160deg, #554173, #222247); box-shadow: 0 0 22px #f7c26c55; }
+.age-home-world:focus-visible { outline: 3px solid #fff0b5; outline-offset: 5px; }
+.age-home-world:active { transform: scale(.98); }
+.age-home-note { max-width: 530px; margin: 20px auto 0; color: #c8c4e5; font: 700 .85rem/1.6 'Nunito', sans-serif; }
+@keyframes age-world-float { 0%, 100% { transform: translateY(0) rotate(-.6deg); } 50% { transform: translateY(-8px) rotate(.6deg); } }
+@media (max-width: 1000px) {
+  .age-home-brand { position: static; display: block; width: 120px; margin: 0 auto 16px; }
+}
+@media (max-width: 600px) {
+  .age-galaxy-home { padding: max(20px, env(safe-area-inset-top)) 16px 30px; }
+  .age-home-header h1 { font-size: clamp(1.65rem, 6.5vw, 2.3rem); }
+  .age-home-header > p:last-child { font-size: .9rem; max-width: 260px; }
+  .age-home-worlds { grid-template-columns: minmax(0, 1fr); max-width: 360px; gap: 18px; margin-top: 18px; }
+  .age-home-art { height: 240px; }
+  .age-home-label { padding: 10px 24px; }
+  .age-home-description { margin-top: 12px; }
+  .age-home-enter { margin-top: 4px; }
+  .age-home-orbit { top: 12%; height: 72%; width: 90%; left: 5%; }
+}
+@media (max-height: 550px) and (min-width: 601px) {
+  .age-home-header h1 { font-size: 2rem; }
+  .age-home-brand { position: absolute; width: 100px; }
+  .age-home-art { height: 210px; }
+}
+@media (prefers-reduced-motion: reduce), (update: slow) {
+  .age-home-art { animation: none; }
+}

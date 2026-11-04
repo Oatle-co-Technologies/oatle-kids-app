@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
+import AgeSelection from "./components/AgeSelection";
 import WritingProfileReminder from "./components/WritingProfileReminder";
 import { missingWritingProfileFields } from "./utils/writingProfile";
 
@@ -537,53 +538,6 @@ function SettingsIcon() {
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
-    </svg>
-  );
-}
-
-function BookIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="M4 5.5c2.8-.8 5.5-.2 8 1.5v12c-2.5-1.7-5.2-2.3-8-1.5z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M20 5.5c-2.8-.8-5.5-.2-8 1.5v12c2.5-1.7 5.2-2.3 8-1.5z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-
-function LittleExplorerIcon() {
-  return (
-    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-      <path
-        d="M32 8c7 0 12.5 5.5 12.5 12.5 0 5.5-3.5 10.2-8.4 11.9L34 40h-4l-2.1-7.6A12.5 12.5 0 0 1 32 8Z"
-        fill="#ffd45c"
-        stroke="currentColor"
-        strokeWidth="3"
-      />
-      <path d="M25 43h14v10H25z" fill="#55c6ff" stroke="currentColor" strokeWidth="3" />
-      <path d="M20 55h24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-      <circle cx="27" cy="19" r="2.5" fill="currentColor" />
-      <circle cx="37" cy="19" r="2.5" fill="currentColor" />
-      <path d="M27 25c3 3 7 3 10 0" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="m10 15 1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9L6.4 26l.7-4-2.9-2.8 4-.6Z" fill="#ff6f91" />
-      <path d="m51 28 1.4 2.8 3.1.5-2.2 2.2.5 3.1-2.8-1.5-2.8 1.5.5-3.1-2.2-2.2 3.1-.5Z" fill="#a875e8" />
     </svg>
   );
 }
@@ -2138,52 +2092,7 @@ function App() {
       </main>
     );
   } else if (!ageGroup || screen === "ageSelect") {
-    content = (
-      <main className="age-choice-page">
-        <div className="age-choice-panel">
-          <img className="expedition-brand" src="/oatle-kids-wordmark.webp" alt="Oatle Kids" />
-          <p className="eyebrow">CHOOSE AN ADVENTURE</p>
-          <h1>How old is your little explorer?</h1>
-          <p className="age-choice-intro">
-            Pick the age group that fits the child playing today.
-          </p>
-
-          <div className="age-choice-grid" aria-label="Choose a child age group">
-            <button
-              className="age-choice-card age-choice-little"
-              style={{ "--age-world": `url(${earthImage})` }}
-              onClick={() => selectAgeGroup("little")}
-              type="button"
-            >
-              <span className="age-choice-icon">
-                <LittleExplorerIcon />
-              </span>
-              <strong>Ages 2–3</strong>
-              <span>Little Space Adventures</span>
-              <small>Big taps, happy boops and playful exploring</small>
-            </button>
-
-            <button
-              className="age-choice-card age-choice-big"
-              style={{ "--age-world": `url(${saturnImage})` }}
-              onClick={() => selectAgeGroup("big")}
-              type="button"
-            >
-              <span className="age-choice-icon">
-                <BookIcon />
-              </span>
-              <strong>Ages 4–7</strong>
-              <span>Space Learning Adventures</span>
-              <small>Reading, counting, writing and assessments</small>
-            </button>
-          </div>
-
-          <p className="age-choice-note">
-            We’ll remember your choice. You can change the age group in Settings.
-          </p>
-        </div>
-      </main>
-    );
+    content = <AgeSelection onSelect={selectAgeGroup} />;
   } else if (
     screen === "explore"
   ) {
