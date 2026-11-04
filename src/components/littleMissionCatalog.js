@@ -31,10 +31,10 @@ export const EXTRA_ADVENTURES = [
   },
   {
     id: 'music', title: 'Music & Movement',
-    description: 'Play instruments, copy little tunes and dance along.',
+    description: 'Play instruments, copy two sounds and dance along.',
     missions: [
-      { key: 'play', mode: 'play', missionTitle: 'My Little Band', description: 'We are going to make music with a drum, a bell and a piano. Play as long as you like, then tap I’m finished.' },
-      { key: 'copy', mode: 'copy', missionTitle: 'Copy My Music', description: 'We are going to listen and copy three little tunes.' },
+      { key: 'play', mode: 'play', missionTitle: 'My Little Band', description: 'We are going to play drums, bongos, a bell, a piano and a xylophone. Play as long as you like, then tap the tick.' },
+      { key: 'copy', mode: 'copy', missionTitle: 'Copy My Music', description: 'We are going to listen and copy two sounds, with one instrument at a time.' },
       { key: 'dance', mode: 'dance', missionTitle: 'Dance & Freeze', description: 'We are going to dance when the music plays and freeze when it stops. Let’s play three rounds!' },
     ],
   },

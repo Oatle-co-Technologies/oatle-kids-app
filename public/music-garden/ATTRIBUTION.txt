@@ -1,0 +1,17 @@
+"Carefree", "Life of Riley", "Monkeys Spinning Monkeys", "Fluffing a Duck"
+Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0
+https://creativecommons.org/licenses/by/4.0/
+
+Official licence and attribution generator:
+https://incompetech.com/music/royalty-free/licenses/
+Official catalogue: https://incompetech.com/music/royalty-free/pieces.json
+
+Carefree: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037
+Life of Riley: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400054
+Monkeys Spinning Monkeys: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400011
+Fluffing a Duck: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100768
+
+Changes: first 45 seconds excerpted; MP3 re-encoded at 128 kbps with a one-second
+fade at the end. Playback volume is adjusted and paused/resumed for Dance & Freeze.
+No endorsement by the composer is implied.
