@@ -4,7 +4,7 @@
 .storybook-library > header p:last-child { color: #e0d6f2; }
 .storybook-shelf { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 28px; padding: 24px; border-radius: 24px; background: #25213c; border-bottom: 16px solid #b88058; box-shadow: 0 14px 0 #684938, 0 22px 40px #0004; }
 .storybook-cover { min-width: 0; padding: 14px; border: 2px solid #746389; border-radius: 12px; color: #fff6e4; background: #352c4c; text-align: left; box-shadow: 0 8px 0 #b88058; cursor: pointer; }
-.storybook-cover img { width: 100%; height: 215px; object-fit: contain; display: block; background: #201b30; border-radius: 4px; }
+.storybook-cover img { width: 100%; height: auto; object-fit: contain; display: block; background: #201b30; border-radius: 4px; }
 .storybook-cover strong, .storybook-cover small, .storybook-cover span { display: block; margin-top: 10px; }
 .storybook-cover strong { font-size: 1.2rem; }
 .storybook-cover small { color: #e3d7ec; }
@@ -14,18 +14,18 @@
 .storybook-library button:focus-visible, .storybook-reader button:focus-visible, .storybook-reader input:focus-visible { outline: 3px solid #ffbf58; outline-offset: 4px; }
 .storybook-reader { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; color: #fff6e4; background: #171322; overflow: auto; }
 .storybook-reader::backdrop { background: #171322; }
-.storybook-reader-inner { min-height: 100%; display: flex; flex-direction: column; padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); box-sizing: border-box; }
-.storybook-reader-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: min(1200px, 100%); margin: 0 auto 12px; }
+.storybook-reader-inner { height: 100dvh; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); box-sizing: border-box; }
+.storybook-reader-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: min(1200px, 100%); margin: 0 auto; flex-shrink: 0; }
 .storybook-reader h2 { font-size: clamp(1rem, 3vw, 1.4rem); margin: 0; }
 .storybook-reader button { border: 1px solid #81728d; border-radius: 12px; background: #3a2e50; color: #fff6e4; padding: 10px 14px; min-height: 44px; cursor: pointer; font: inherit; }
 .storybook-reader button:disabled { opacity: .45; cursor: default; }
-.storybook-stage { display: grid; place-items: center; flex: 1; min-height: 0; width: min(1200px, 100%); margin: auto; perspective: 1800px; touch-action: pan-y pinch-zoom; }
-.storybook-leaf { width: 100%; transform-origin: left center; background: #fffdf4; box-shadow: -5px 0 0 #ded4c5, -9px 0 0 #b4a891, 0 12px 36px #0006; border-radius: 2px 8px 8px 2px; backface-visibility: hidden; }
-.storybook-leaf img { display: block; width: 100%; height: min(66dvh, 780px); object-fit: contain; user-select: none; }
-.storybook-zoom { display: block; overflow: auto; max-height: 65dvh; touch-action: pan-x pan-y pinch-zoom; }
+.storybook-stage { position: relative; display: grid; place-items: center; flex: 1; min-height: 0; height: 0; width: 100%; overflow: hidden; margin: auto; perspective: 1800px; touch-action: pan-y pinch-zoom; }
+.storybook-leaf { width: min(100%, calc(var(--stage-height, 60dvh) * var(--page-ratio, 1.5))); transform-origin: left center; background: #fffdf4; box-shadow: -5px 0 0 #ded4c5, -9px 0 0 #b4a891, 0 12px 36px #0006; border-radius: 2px 8px 8px 2px; backface-visibility: hidden; }
+.storybook-leaf img { display: block; width: 100%; height: auto; object-fit: contain; user-select: none; }
+.storybook-zoom { display: block; overflow: auto; touch-action: pan-x pan-y pinch-zoom; }
 .storybook-zoom .storybook-leaf { width: max(100%, 1400px); }
 .storybook-zoom .storybook-leaf img { height: auto; max-height: none; }
-.storybook-reader-footer { width: min(900px, 100%); margin: 16px auto 0; text-align: center; }
+.storybook-reader-footer { width: min(900px, 100%); margin: 0 auto; text-align: center; flex-shrink: 0; position: relative; }
 .storybook-navigation { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .storybook-navigation > span { font-size: .95rem; }
 .storybook-reading-options { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 12px; font-size: .9rem; }
@@ -36,7 +36,7 @@
   .storybook-library { padding-inline: 12px; }
   .storybook-shelf { gap: 26px 12px; padding: 12px; }
   .storybook-cover { padding: 8px; }
-  .storybook-cover img { height: 145px; }
+
   .storybook-cover strong { font-size: 1rem; }
   .storybook-cover small { font-size: .75rem; }
   .storybook-navigation button { padding: 10px; font-size: .85rem; }
@@ -45,6 +45,36 @@
 @media (prefers-reduced-motion: reduce) { .storybook-leaf { transform: none !important; } }
 
 .storybook-stage > .storybook-leaf, .storybook-stage > .storybook-underlay { grid-area: 1 / 1; }
-.storybook-underlay { width: 100%; height: min(66dvh, 780px); object-fit: contain; background: #fffdf4; }
+.storybook-underlay { width: min(100%, calc(var(--stage-height, 60dvh) * var(--page-ratio, 1.5))); height: auto; max-height: 100%; object-fit: contain; }
 .storybook-leaf { position: relative; }
 .storybook-leaf::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, #513c2928, transparent 4%); }
+
+/* Original cover artwork welcomes children before they enter the bookshelf. */
+.storybook-adventure-entry { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 12px; grid-column: 1 / -1; width: 100%; margin: 24px auto; padding: clamp(14px, 3vw, 24px); border: 1px solid #a990c0; border-radius: 24px; background: linear-gradient(135deg, #302346, #17264b); color: #fff6e4; text-align: left; font: inherit; cursor: pointer; box-shadow: 0 12px 30px #0003; }
+.storybook-entry-covers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(6px, 2vw, 18px); align-items: end; }
+.storybook-entry-covers img { display: block; width: 100%; height: auto; border-radius: 5px; box-shadow: 0 5px 10px #0005; }
+.storybook-adventure-entry strong { font-size: clamp(1.3rem, 3vw, 1.8rem); }
+.storybook-adventure-entry small { color: #e3d7ec; line-height: 1.5; }
+.storybook-entry-link { color: #ffdf96; font-weight: 800; }
+.storybook-adventure-entry:focus-visible { outline: 3px solid #ffbf58; outline-offset: 4px; }
+.storybook-rotate-prompt { display: none; }
+.storybook-options { position: relative; margin: 0 auto; }
+.storybook-options summary { display: flex; align-items: center; justify-content: center; min-height: 44px; cursor: pointer; color: #ffdf96; padding: 0 12px; border-radius: 10px; }
+.storybook-options summary:focus-visible { outline: 3px solid #ffbf58; }
+.storybook-options[open] .storybook-reading-options { position: absolute; z-index: 10; bottom: 100%; right: 0; width: max-content; max-width: calc(100vw - 48px); margin: 0 0 8px; padding: 14px; border: 1px solid #81728d; border-radius: 12px; background: #251e35; box-shadow: 0 8px 24px #0008; }
+@media (orientation: portrait) and (max-width: 900px) {
+  .storybook-rotate-prompt { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; background: #171322f5; }
+  .storybook-rotate-prompt > span { font-size: 3rem; color: #ffdf96; }
+  .storybook-rotate-prompt h3, .storybook-rotate-prompt p { margin: 0; }
+}
+@media (orientation: landscape) and (min-width: 600px) {
+  .storybook-reader-footer { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 20px; }
+  .storybook-reader-footer > p { grid-column: 1 / -1; }
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  .storybook-reader-inner { gap: 6px; padding-block: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-bottom)); }
+  .storybook-reader-footer > p { display: none; }
+  .storybook-reader-header h2 { font-size: 1rem; }
+}
+
+.hero-panel > .storybook-adventure-entry { max-width: 900px; margin-top: 32px; flex-shrink: 0; }

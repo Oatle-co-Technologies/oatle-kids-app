@@ -9,6 +9,8 @@ function BookReader({ book, onClose }) {
   const [turn, setTurn] = useState(null);
   const [simple, setSimple] = useState(false);
   const [zoom, setZoom] = useState(false);
+  const stage = useRef(null);
+  const [portraitReading, setPortraitReading] = useState(false);
   const [retry, setRetry] = useState(0);
   const [loaded, setLoaded] = useState({});
   const [failed, setFailed] = useState({});
@@ -26,12 +28,21 @@ function BookReader({ book, onClose }) {
     return () => { document.body.style.overflow = overflow; modal.close(); };
   }, []);
 
+  useEffect(() => {
+    const frame = stage.current;
+    const observer = new ResizeObserver(([entry]) => {
+      frame.style.setProperty('--stage-height', `${entry.contentRect.height}px`);
+    });
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
+
   // Keep only the current and neighbouring original images decoded in the reader.
   useEffect(() => {
     let active = true;
     for (const src of pages.slice(Math.max(0, page - 1), page + 2)) {
       const img = new Image();
-      img.onload = () => { if (active) { setLoaded(old => ({ ...old, [src]: true })); setFailed(old => ({ ...old, [src]: false })); } };
+      img.onload = () => { if (active) { setLoaded(old => ({ ...old, [src]: { ratio: img.naturalWidth / img.naturalHeight } })); setFailed(old => ({ ...old, [src]: false })); } };
       img.onerror = () => { if (active) setFailed(old => ({ ...old, [src]: true })); };
       img.src = src;
     }
@@ -62,6 +73,7 @@ function BookReader({ book, onClose }) {
       animation.finished.then(() => {
         if (!active) return;
         // At the spine, exchange the leaf and unfold the next authored page.
+        element.style.setProperty('--page-ratio', loaded[pages[turn.to]]?.ratio || 1.5);
         element.querySelector('img').src = pages[turn.to];
         animation = element.animate([
           { transform: `rotateY(${-direction * 90}deg)`, filter: 'brightness(.65)' },
@@ -100,7 +112,7 @@ function BookReader({ book, onClose }) {
           <h2 id="storybook-title">{book.title}</h2>
           <button type="button" onClick={onClose} autoFocus>Close book ×</button>
         </header>
-        <div className={`storybook-stage ${zoom ? 'storybook-zoom' : ''}`} aria-busy={busy}
+        <div ref={stage} className={`storybook-stage ${zoom ? 'storybook-zoom' : ''}`} style={{ '--page-ratio': loaded[current]?.ratio || 1.5 }} aria-busy={busy}
           onTouchStart={(event) => { touch.current = event.touches.length === 1 && !zoom ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null; }}
           onTouchMove={(event) => { if (event.touches.length > 1) touch.current = null; }}
           onTouchCancel={() => { touch.current = null; }}
@@ -111,10 +123,16 @@ function BookReader({ book, onClose }) {
             const dy = event.changedTouches[0].clientY - start.y;
             if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) navigate(dx < 0 ? 1 : -1);
           }}>
+          {!portraitReading && <div className="storybook-rotate-prompt">
+            <span aria-hidden="true">↻ ▭</span>
+            <h3>Turn your phone sideways</h3>
+            <p>These picture books are best read in landscape.</p>
+            <button type="button" onClick={() => setPortraitReading(true)}>Read here for now</button>
+          </div>}
           {turn && <img className="storybook-underlay" src={pages[turn.to]} alt="" aria-hidden="true" />}
           <div ref={leaf} className="storybook-leaf" key={page}>
             <img src={current} alt={`${book.title} — ${page === 0 ? 'original cover' : `illustrated page ${page}`}`} draggable="false"
-              onLoad={() => setLoaded(old => ({ ...old, [current]: true }))}
+              onLoad={event => { const image = event.currentTarget; const src = new URL(image.src).pathname; const ratio = image.naturalWidth / image.naturalHeight; setLoaded(old => ({ ...old, [src]: { ratio } })); }}
               onError={() => setFailed(old => ({ ...old, [current]: true }))} />
           </div>
         </div>
@@ -126,10 +144,10 @@ function BookReader({ book, onClose }) {
             <span role="status" aria-live="polite">{page === 0 ? 'Cover' : `Page ${page} of ${book.pages.length}`}</span>
             {last ? <button type="button" onClick={onClose}>Bookshelf →</button> : <button type="button" onClick={() => navigate(1)} disabled={busy || !loaded[pages[page + 1]] || failed[pages[page + 1]]}>{page === 0 ? 'Open book' : 'Next'} →</button>}
           </div>
-          <div className="storybook-reading-options">
+          <details className="storybook-options"><summary>Reading options</summary><div className="storybook-reading-options">
             <button type="button" disabled={busy} aria-pressed={zoom} onClick={() => setZoom(value => !value)}>{zoom ? 'Fit page' : 'Enlarge page'}</button>
             <label><input type="checkbox" checked={simple} onChange={event => setSimple(event.target.checked)} /> Simple page turns</label>
-          </div>
+          </div></details>
           <p>{zoom ? 'Scroll to explore the enlarged illustration. Use the buttons to turn pages.' : last ? 'The end. Read again, or choose another book.' : 'Swipe or use the arrows to turn the page. Enlarge for smaller text.'}</p>
         </footer>
       </div>

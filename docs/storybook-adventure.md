@@ -13,7 +13,7 @@ Available from both age groups' adventure menus. Neptune's existing reading miss
 
 All four covers credit Ntombizodwa Moekwa. All 37 numbered pages were visually inspected in numeric order; no sequence gaps or missing illustrations were found. Refilwe's cover is square; its interior pages and the other books are landscape. The reader uses contain sizing, so none are cropped or stretched. Single-page viewing is intentional on desktop as well: two landscape illustrations side by side would reduce readable text size.
 
-At phone portrait widths, embedded text is small, especially **A Rocket to the Moon pages 3–11**, **When Refilwe Grows Up pages 1–12**, and **Dumelang! pages 2, 4, 6–8**. Family pages 1–6 also benefit from enlargement. Original illustrations are unchanged. Enlarge page provides a scrollable 1400px view, with Fit page to return. Landscape phone orientation is helpful.
+At phone portrait widths, embedded text is small, especially **A Rocket to the Moon pages 3–11**, **When Refilwe Grows Up pages 1–12**, and **Dumelang! pages 2, 4, 6–8**. Family pages 1–6 also benefit from enlargement. Original illustrations are unchanged. Phone portrait mode now prompts readers to turn their device sideways, with an optional Read here for now control. The landscape reader fits each page to its natural proportions and available height, removing the previous fixed-height white margins. Both adventure menus and the older children’s home screen display all four original covers before entering the shelf. Reading options collapse into a menu to leave more room for illustrations in landscape. Enlarge page provides a scrollable 1400px view, with Fit page to return. Landscape phone orientation is helpful.
 
 ## Page turning
 

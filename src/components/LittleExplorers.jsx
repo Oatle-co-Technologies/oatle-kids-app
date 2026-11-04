@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import StorybookEntry from "./StorybookEntry";
 import StorybookAdventure from "./StorybookAdventure";
 import LocalBackButton from "./LocalBackButton";
 import BuildingAdventure, { BuildingIcon } from "./BuildingAdventure";
@@ -1793,7 +1794,7 @@ export default function LittleExplorers({
         </header>
 
         <section className="little-adventure-grid" aria-label="Little Space Adventures">
-          <button type="button" className="little-adventure-card" onClick={() => { stopSpeech(); setScreen("storybooks"); }}><span aria-hidden="true">📚</span><strong>Storybook Adventure</strong><small>Choose a book and turn the pages</small></button>
+        <StorybookEntry onClick={() => { stopSpeech(); setScreen("storybooks"); }} />
           {LITTLE_ADVENTURES.map((adventure) => {
             const completedPlanets = adventure.planets.filter((planet) =>
               isPlanetComplete(planet, adventure)

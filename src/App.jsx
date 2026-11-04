@@ -35,6 +35,7 @@ import SentenceWritingMission from "./components/SentenceWritingMission";
 import LocalBackButton from "./components/LocalBackButton";
 import LittleExplorers from "./components/LittleExplorers";
 import CosmicPuzzles, { CosmicPuzzleEntry } from "./components/CosmicPuzzles";
+import StorybookEntry from "./components/StorybookEntry";
 import StorybookAdventure from "./components/StorybookAdventure";
 import SpaceBuilder, { SpaceBuilderEntry } from "./components/SpaceBuilder";
 
@@ -2389,7 +2390,7 @@ function App() {
           </button>
 
         </div>
-        <button type="button" className="adventure-card" onClick={() => { stopSpeech(); setScreen("storybooks"); }}><span className="adventure-card-icon" aria-hidden="true">📚</span><strong>Storybook Adventure</strong><small>Open a book and turn the pages</small></button>
+        <StorybookEntry onClick={() => { stopSpeech(); setScreen("storybooks"); }} />
         <CosmicPuzzleEntry onClick={() => { stopSpeech(); setScreen("cosmicPuzzles"); }} />
         <SpaceBuilderEntry onClick={() => { stopSpeech(); setScreen("spaceBuilder"); }} />
       </main>
@@ -2806,6 +2807,8 @@ function App() {
               "secondary-button"
             )}
         </div>
+
+        <StorybookEntry onClick={() => { stopSpeech(); setScreen("storybooks"); }} />
       </main>
     );
   } else if (
