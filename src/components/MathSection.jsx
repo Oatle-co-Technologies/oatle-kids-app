@@ -1,3 +1,4 @@
+import { prepareMathQuestion, mathsQuestionNarration } from "../utils/mathsLanguage";
 import { selectAssessment, restoreAssessmentQuestions, assessmentResults as summarizeAssessment } from "../utils/assessmentSelection";
 import { withCompletedDestination } from "./spaceJourneyLogic";
 import BigKidsPlanetJourney from "./BigKidsPlanetJourney";
@@ -53,7 +54,7 @@ const readAssessmentAttempt = () => {
       localStorage.getItem(MATH_ASSESSMENT_ATTEMPT_KEY)
     );
 
-    const questions = restoreAssessmentQuestions(saved?.questionIds, mathAssessmentQuestions);
+    const questions = restoreAssessmentQuestions(saved?.questionIds, mathAssessmentQuestions).map(prepareMathQuestion);
     const valid = questions.length === assessmentSkills.length * 2;
     return {
       active: Boolean(saved?.active) && valid,
@@ -68,7 +69,7 @@ const readAssessmentAttempt = () => {
 };
 
 function getMissionQuestions(mission) {
-  return mission.questionBanks.flat();
+  return mission.questionBanks.flat().map(prepareMathQuestion);
 }
 
 const readProgress = () => {
@@ -435,40 +436,6 @@ function TwoPropertyVisual({
           color={target.color}
         />
       </div>
-    </div>
-  );
-}
-
-function OperationIntroductionVisual({
-  question,
-}) {
-  return (
-    <div
-      className="math-operation-introduction"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "18px",
-        minHeight: "180px",
-      }}
-    >
-      <div
-        style={{
-          fontSize: "5rem",
-          fontWeight: 900,
-          lineHeight: 1,
-        }}
-      >
-        {question.operation}
-      </div>
-
-      {question.teachingText ? (
-        <p className="math-teaching-text">
-          {question.teachingText}
-        </p>
-      ) : null}
     </div>
   );
 }
@@ -1608,290 +1575,29 @@ function SortingVisual({
   );
 }
 
-function ArithmeticVisual({
-  question,
-}) {
-  const [
-    first,
-    second,
-  ] = question.values || [];
-
-  if (
-    first == null ||
-    second == null
-  ) {
-    return (
-      <OperationIntroductionVisual
-        question={question}
-      />
-    );
-  }
-
-  const isSubtraction =
-    question.operation ===
-    "-";
-
-  const objectShape =
-    question.object &&
-    Object.values(shapes).includes(
-      question.object
-    )
-      ? question.object
-      : "circle";
-
-  const objectColor =
-    question.color ||
-    colors.blue;
-
-  if (isSubtraction) {
-    return (
-      <div
-        className="math-arithmetic-display"
-        aria-label={`Take ${second} shapes away from ${first} shapes`}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "10px",
-          width: "100%",
-          margin: "20px auto",
-        }}
-      >
-        <div
-          className="math-arithmetic-group"
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(5, 62px)",
-            justifyContent:
-              "center",
-            gap: "6px",
-            width: "100%",
-            maxWidth: "360px",
-          }}
-        >
-          {Array.from(
-            {
-              length: first,
-            },
-            (_, index) => (
-              <span
-                key={index}
-                className="math-object"
-                style={{
-                  width: "62px",
-                  height: "62px",
-                  display: "inline-flex",
-                  alignItems:
-                    "center",
-                  justifyContent:
-                    "center",
-                }}
-              >
-                <Shape
-                  name={
-                    objectShape
-                  }
-                  color={
-                    objectColor
-                  }
-                />
-              </span>
-            )
-          )}
-        </div>
-
-        <strong
-          className="math-operation-symbol"
-          style={{
-            fontSize: "2.4rem",
-            lineHeight: 1,
-            margin: "2px 0",
-          }}
-        >
-          −
-        </strong>
-
-        <div
-          className="math-arithmetic-group"
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(5, 62px)",
-            justifyContent:
-              "center",
-            gap: "6px",
-            width: "100%",
-            maxWidth: "360px",
-          }}
-        >
-          {Array.from(
-            {
-              length: second,
-            },
-            (_, index) => (
-              <span
-                key={index}
-                className="math-object"
-                style={{
-                  width: "62px",
-                  height: "62px",
-                  display: "inline-flex",
-                  alignItems:
-                    "center",
-                  justifyContent:
-                    "center",
-                }}
-              >
-                <Shape
-                  name={
-                    objectShape
-                  }
-                  color={
-                    objectColor
-                  }
-                />
-              </span>
-            )
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="math-arithmetic-display"
-      aria-label={`${first} ${question.operation} ${second}`}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "14px",
-        flexWrap: "wrap",
-        width: "100%",
-        margin: "20px auto",
-      }}
-    >
-      <div
-        className="math-arithmetic-group"
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(5, 62px)",
-          justifyContent:
-            "center",
-          gap: "6px",
-          maxWidth: "360px",
-        }}
-      >
-        {Array.from(
-          {
-            length: first,
-          },
-          (_, index) => (
-            <span
-              key={index}
-              className="math-object"
-              style={{
-                width: "62px",
-                height: "62px",
-                display: "inline-flex",
-                alignItems:
-                  "center",
-                justifyContent:
-                  "center",
-              }}
-            >
-              <Shape
-                name={objectShape}
-                color={objectColor}
-              />
-            </span>
-          )
-        )}
-      </div>
-
-      <strong
-        className="math-operation-symbol"
-        style={{
-          fontSize: "2.4rem",
-          lineHeight: 1,
-        }}
-      >
-        +
-      </strong>
-
-      <div
-        className="math-arithmetic-group"
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(5, 62px)",
-          justifyContent:
-            "center",
-          gap: "6px",
-          maxWidth: "360px",
-        }}
-      >
-        {Array.from(
-          {
-            length: second,
-          },
-          (_, index) => (
-            <span
-              key={index}
-              className="math-object"
-              style={{
-                width: "62px",
-                height: "62px",
-                display: "inline-flex",
-                alignItems:
-                  "center",
-                justifyContent:
-                  "center",
-              }}
-            >
-              <Shape
-                name={objectShape}
-                color={objectColor}
-              />
-            </span>
-          )
-        )}
-      </div>
-    </div>
-  );
+function ArithmeticVisual({ question }) {
+  const [first, second] = question.values;
+  const subtracting = question.operation === "-";
+  const object = question.object || "circle";
+  const counter = (index, removed = false) => <span key={index} className={`foundation-counter ${removed ? "is-taken-away" : ""}`}><Shape name={object} color={question.color || colors.blue} /></span>;
+  return <div className="foundation-arithmetic" aria-label={subtracting ? `${first} shapes, with ${second} taken away` : `${first} shapes and ${second} more`}>
+    {subtracting ? <>
+      <div className="foundation-counter-tray">{Array.from({ length: first }, (_, i) => counter(i, i >= first - second))}</div>
+      <p>Crossed-out shapes are taken away. Count the shapes left.</p>
+    </> : <div className="foundation-add-groups">
+      <div className="foundation-counter-tray">{Array.from({ length: first }, (_, i) => counter(i))}</div>
+      <span className="foundation-more">and {second} more</span>
+      <div className="foundation-counter-tray">{Array.from({ length: second }, (_, i) => counter(i))}</div>
+    </div>}
+    {question.type.endsWith("introduction") && <p className="foundation-sign-note" aria-hidden="true"><b>{subtracting ? "−" : "+"}</b> means {subtracting ? "take away" : "add"}</p>}
+    {question.teaching && <p className="math-teaching-text">{question.teachingText}</p>}
+  </div>;
 }
 
-function NumberEquationVisual({
-  question,
-}) {
-  const first =
-    question.values?.[0] ??
-    question.dividend;
-
-  const second =
-    question.values?.[1] ??
-    question.divisor;
-
-  const operation =
-    question.operation ||
-    (question.type ===
-    "division-numbers"
-      ? "÷"
-      : question.type ===
-          "multiplication-numbers"
-        ? "×"
-        : "");
-
-  return (
-    <div className="math-number-equation">
-      {first} {operation}{" "}
-      {second} = ?
-    </div>
-  );
+function NumberEquationVisual({ question }) {
+  if (question.type.startsWith("addition") || question.type.startsWith("subtraction")) return <ArithmeticVisual question={question} />;
+  if (question.type.startsWith("division")) return <SharingVisual question={question} />;
+  return <GroupingVisual question={question} />;
 }
 
 function GroupingVisual({
@@ -1912,19 +1618,10 @@ function GroupingVisual({
     question.color ||
     colors.blue;
 
-  const isMultiplication =
-    question.multiplication ||
-    question.operation ===
-      "×";
-
   return (
     <div
       className="math-equal-groups"
-      aria-label={
-        isMultiplication
-          ? `${question.groupsCount} groups of ${groups[0]}`
-          : "Equal groups"
-      }
+      aria-label={`${question.groupsCount} groups of ${groups[0]}`}
       style={{
         display: "flex",
         alignItems:
@@ -2000,32 +1697,7 @@ function GroupingVisual({
         )
       )}
 
-      {isMultiplication ? (
-        <>
-          <strong
-            className="math-operation-symbol"
-            style={{
-              fontSize:
-                "2rem",
-            }}
-          >
-            ×
-          </strong>
 
-          <span
-            style={{
-              fontSize:
-                "1.1rem",
-              fontWeight:
-                800,
-              color:
-                "#c7d2f6",
-            }}
-          >
-            {question.groupsCount} groups
-          </span>
-        </>
-      ) : null}
     </div>
   );
 }
@@ -2167,7 +1839,7 @@ const visualRenderers = {
     SortingVisual,
 
   "addition-introduction":
-    OperationIntroductionVisual,
+    ArithmeticVisual,
 
   "addition-objects":
     ArithmeticVisual,
@@ -2176,7 +1848,7 @@ const visualRenderers = {
     NumberEquationVisual,
 
   "subtraction-introduction":
-    OperationIntroductionVisual,
+    ArithmeticVisual,
 
   "subtraction-objects":
     ArithmeticVisual,
@@ -2185,7 +1857,7 @@ const visualRenderers = {
     NumberEquationVisual,
 
   "multiplication-introduction":
-    OperationIntroductionVisual,
+    GroupingVisual,
 
   "multiplication-numbers":
     NumberEquationVisual,
@@ -2197,7 +1869,7 @@ const visualRenderers = {
     SharingVisual,
 
   "division-introduction":
-    OperationIntroductionVisual,
+    SharingVisual,
 
   "division-numbers":
     NumberEquationVisual,
@@ -2475,7 +2147,7 @@ function shuffleOptions(
 }
 
 function getAssessmentQuestions(previousIds = []) {
-  return selectAssessment(mathAssessmentQuestions, assessmentSkills, 2, previousIds);
+  return selectAssessment(mathAssessmentQuestions, assessmentSkills, 2, previousIds).map(prepareMathQuestion);
 }
 
 export default function MathSection({
@@ -2576,7 +2248,7 @@ export default function MathSection({
     questionNarrationDelayRef.current = 250;
 
     const timer = window.setTimeout(() => {
-      speak(question.prompt);
+      speak(mathsQuestionNarration(question));
     }, narrationDelay);
 
     return () => {
@@ -2598,10 +2270,10 @@ export default function MathSection({
 
     const prompts = {
       map: "Choose a planet for your next maths mission.",
-      planet: `Welcome to ${mission.title}. ${mission.description}.`,
+      planet: `Welcome to ${mission.title}. ${mission.description}`,
       complete: `Mission accomplished! You completed your maths mission on ${mission.title}.`,
       "assessment-results":
-        "Mission accomplished! You completed your final maths assessment.",
+        "Mission accomplished! You finished your maths check-in.",
     };
 
     const prompt = prompts[screen];
@@ -3186,7 +2858,7 @@ export default function MathSection({
         </h1>
 
         <p className="celebration-message">
-          You completed your final maths assessment.
+          You finished your maths check-in.
         </p>
 
         <div className="math-assessment-score">
@@ -3297,9 +2969,9 @@ export default function MathSection({
           : mission.title.toUpperCase()}
       </p>
 
-      <h1>
-        {question.prompt}
-      </h1>
+      {question.extension && !isAssessment && <p className="math-extra-label">Extra activity — try it when you are ready</p>}
+      <h1>{question.prompt}</h1>
+      <button type="button" className="math-listen-question" aria-label="Hear the question again" disabled={!soundOn} onClick={() => speak(mathsQuestionNarration(question))}><span aria-hidden="true">🔊 </span>Hear the question again</button>
 
       <QuestionVisual
         question={question}
@@ -3310,6 +2982,9 @@ export default function MathSection({
           handleInteractiveWrong
         }
       />
+
+      {question.teaching && ["equal-groups", "multiplication-introduction", "multiplication-numbers", "sharing", "division-introduction", "division-numbers"].includes(question.type) && <p className="math-teaching-text">{question.teachingText}</p>}
+      {question.extension && !isAssessment && <button type="button" className="math-extra-skip" onClick={() => advanceQuestion()} disabled={isProcessing}>Skip this extra activity</button>}
 
       {/* Counting Helper
           Only available where it is useful:
