@@ -1046,7 +1046,7 @@ function App() {
 
     if (isWordOrder) {
       const timer = setTimeout(() => {
-        speak(`Listen to the word ${question.word}. Put its letters in the right order.`);
+        speak("Listen to the word and put it in the right order.");
       }, 250);
 
       return () => {
