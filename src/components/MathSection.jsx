@@ -390,77 +390,26 @@ function ColourVisual({
   );
 }
 
-function ColourMixingVisual({
-  question,
-}) {
-  const isTeaching =
-    question.teaching;
-
+function ColourMixingVisual({ question }) {
   return (
-    <div
-      className={`math-mix-display ${
-        isTeaching
-          ? "is-teaching"
-          : ""
-      }`}
-      aria-label="Two colours to mix"
-    >
-      <div className="math-mix-colours">
-        {question.mix.map(
-          (color, index) => (
-            <span
-              key={`${color}-${index}`}
-              className="math-mix-swatch"
-              style={{
-                backgroundColor:
-                  color,
-                width: "82px",
-                height: "82px",
-                display: "block",
-                flex: "0 0 82px",
-                border:
-                  "4px solid #fff",
-                borderRadius: "50%",
-                boxShadow:
-                  "0 0 18px #ffffff55",
-              }}
-            />
-          )
-        )}
-
-        {isTeaching &&
-        question.resultColor ? (
-          <>
-            <span className="math-mix-arrow">
-              →
-            </span>
-
-            <span
-              className="math-mix-swatch math-mix-result"
-              style={{
-                backgroundColor:
-                  question.resultColor,
-                width: "82px",
-                height: "82px",
-                display: "block",
-                flex: "0 0 82px",
-                border:
-                  "4px solid #fff",
-                borderRadius: "50%",
-                boxShadow:
-                  "0 0 18px #ffffff55",
-              }}
-            />
-          </>
-        ) : null}
+    <div className={`math-mix-display colour-mix-scene ${question.teaching ? "is-teaching" : ""}`}>
+      <div className="colour-mix-pair" aria-label="Colours to mix">
+        {question.mix.map((colour, index) => (
+          <div className="colour-mix-ingredient" key={`${colour}-${index}`}>
+            {index > 0 && <span className="colour-mix-and" aria-hidden="true">and</span>}
+            <figure className="colour-mix-paint">
+              <span className="colour-mix-spot" style={{ backgroundColor: colour }} aria-hidden="true" />
+              <figcaption>{question.mixNames[index]}</figcaption>
+            </figure>
+          </div>
+        ))}
       </div>
-
-      {isTeaching &&
-      question.teachingText ? (
-        <p className="math-teaching-text">
-          {question.teachingText}
-        </p>
-      ) : null}
+      {question.teaching && question.resultColor && (
+        <figure className="colour-mix-paint colour-mix-made">
+          <span className="colour-mix-spot" style={{ backgroundColor: question.resultColor }} aria-hidden="true" />
+          <figcaption>We made {question.answer}!</figcaption>
+        </figure>
+      )}
     </div>
   );
 }
