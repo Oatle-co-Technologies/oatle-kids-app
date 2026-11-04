@@ -228,6 +228,7 @@ export default function SentenceWritingMission({
 }) {
   const isWordMission = mode === "words";
   const activities = isWordMission ? WORD_ACTIVITIES : SENTENCES;
+  const orientationTipSpokenRef = useRef(false);
   const canvasRef = useRef(null);
   const targetCanvasRef = useRef(null);
   const guideDisplayRef = useRef(null);
@@ -299,7 +300,10 @@ export default function SentenceWritingMission({
     }
 
     const timer = window.setTimeout(() => {
-      speak(isWordMission ? `Write the word ${sentence}. Trace the letters, then try writing it on the lines.` : "Trace the sentence");
+      const instruction = isWordMission ? `Write the word ${sentence}. Trace the letters, then try writing it on the lines.` : "Trace the sentence";
+      const suggestion = orientationTipSpokenRef.current ? "" : "For more writing space, you can turn your device sideways. You can also keep it upright. ";
+      orientationTipSpokenRef.current = true;
+      speak(suggestion + instruction);
     }, 250);
 
     return () => {
@@ -698,8 +702,8 @@ export default function SentenceWritingMission({
   return (
     <main className="scribbler-page sentence-writing-page">
       <div className="sentence-portrait-message" aria-live="polite">
-        <strong>Landscape gives you more writing space</strong>
-        <span>You can continue here, or turn your device for the best experience.</span>
+        <strong>Landscape recommended for more writing space</strong>
+        <span>Portrait works too. You can keep writing this way.</span>
       </div>
 
       <header className="sentence-writing-header">
@@ -708,6 +712,7 @@ export default function SentenceWritingMission({
         <div>
           <span>Writing Mission {isWordMission ? 4 : 5}</span>
           <h1>{isWordMission ? "Write Words" : "Write Sentences"}</h1>
+          <p className="sentence-landscape-tip">Landscape recommended. Portrait works too.</p>
         </div>
 
         <div className="sentence-writing-progress">

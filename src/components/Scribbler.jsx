@@ -1162,7 +1162,11 @@ export default function Scribbler({ onBack }) {
   };
 
   return (
-    <main className="scribbler-page">
+    <main className="scribbler-page scribbler-with-landscape-tip">
+      <div className="scribbler-landscape-tip" role="note">
+        <strong>Landscape recommended</strong>
+        <span>Portrait works too.</span>
+      </div>
       <button
         className="scribbler-back"
         type="button"

@@ -1119,7 +1119,7 @@ function App() {
       writingPlanet: `Welcome to planet ${selectedWritingPlanet.name}. ${selectedWritingPlanet.description}.`,
       writingCelebration: `Mission accomplished! You completed your writing mission on ${completedWritingPlanet.name}.`,
       scribbler:
-        "Welcome to the Scribbler. Draw, write, erase, and add stickers to your picture.",
+        "Welcome to the Scribbler. You can turn your device sideways for more space. You can also keep it upright. Draw, write, erase, and add stickers to your picture.",
     };
 
     const prompt = prompts[screen];
