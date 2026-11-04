@@ -22,7 +22,7 @@ test('arithmetic gives the child the starting amount and action, never just symb
 });
 test('teaching explanations are spoken, but answer explanations never leak into practice narration', () => {
   const q = prepareMathQuestion({type:'subtraction-introduction',teaching:true});
-  assert.match(mathsQuestionNarration(q),/crossed-out counters/);
+  assert.match(mathsQuestionNarration(q),/crossed-out circles/);
   assert.match(mathsQuestionNarration(q),/There are two left/);
   assert(!mathsQuestionNarration({...q,teaching:false}).includes('There are two left'));
 });
@@ -42,4 +42,13 @@ test('sorting speech describes the actual drag interaction', () => {
   const q=prepareMathQuestion({type:'sorting',items:[{}],zones:[{targetShape:'circle'}]});
   assert.match(q.prompt,/Drag the circles into the box/);
   assert(!q.prompt.includes('Tap'));
+});
+
+test('the main question always names the pictured shapes, not the helper counters', () => {
+  for (const type of ['addition-introduction','addition-numbers','subtraction-introduction','subtraction-numbers','multiplication-introduction','multiplication-numbers','division-introduction','division-numbers']) {
+    const q=prepareMathQuestion({type,teaching:true,values:[4,2],dividend:4,divisor:2});
+    assert.match(q.prompt,/circles/);
+    assert(!/counter/i.test(mathsQuestionNarration(q)));
+  }
+  assert.match(prepareMathQuestion({type:'addition-objects',values:[2,3],object:'square'}).prompt,/squares/);
 });

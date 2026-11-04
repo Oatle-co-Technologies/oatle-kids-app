@@ -2,7 +2,7 @@ const BASIC_SHAPES = new Set(['circle', 'square', 'triangle', 'rectangle']);
 const BASIC_COLOURS = new Set(['red', 'yellow', 'blue', 'green', 'orange', 'purple', 'pink', 'brown', 'black', 'white']);
 const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
 const familiarUnit = shape => ['circle', 'square', 'triangle', 'rectangle', 'star', 'heart'].includes(shape) ? shape : 'shape';
-const plural = word => word === 'counter' ? 'counters' : `${word}s`;
+const plural = word => `${word}s`;
 
 export function isCoreMathQuestion(question) {
   if (question.type.startsWith('shape-')) return BASIC_SHAPES.has(question.shape);
@@ -23,7 +23,7 @@ export function prepareMathQuestion(source) {
     q.values = [first, second]; q.operation = adding ? '+' : '-';
     // Number practice gets the same concrete picture support as object practice.
     q.object = q.object || 'circle';
-    const unit = type.endsWith('numbers') || type.endsWith('introduction') ? 'counter' : familiarUnit(q.object);
+    const unit = familiarUnit(q.object);
     const units = plural(unit);
     q.prompt = adding
       ? `Start with ${first} ${units}. Add ${second} more. How many are there now?`
@@ -37,7 +37,7 @@ export function prepareMathQuestion(source) {
     const size = q.groups?.[0] ?? q.values?.[1] ?? 2;
     q.groupsCount = count; q.groups = Array(count).fill(size); q.total = count * size;
     q.object = q.object || 'circle';
-    const units = type === 'equal-groups' ? plural(familiarUnit(q.object)) : 'counters';
+    const units = plural(familiarUnit(q.object));
     const each = !q.multiplication && !type.startsWith('multiplication');
     q.prompt = each
       ? `Look at the groups of ${units}. How many are in one group?`
@@ -47,7 +47,7 @@ export function prepareMathQuestion(source) {
     const total = q.total ?? q.dividend ?? 4;
     const count = q.groupsCount ?? q.friends ?? q.divisor ?? 2;
     q.total = total; q.groupsCount = count; q.groups = Array(count).fill(total / count); q.object = q.object || 'circle';
-    const units = type === 'sharing' ? plural(familiarUnit(q.object)) : 'counters';
+    const units = plural(familiarUnit(q.object));
     q.prompt = `Share ${total} ${units} equally into ${count} ${count === 1 ? 'group' : 'groups'}. How many go in one group?`;
     if (q.teaching) q.teachingText = `Give each group the same number. Each group gets ${total / count} ${units}.`;
   } else if (type === 'number') {
