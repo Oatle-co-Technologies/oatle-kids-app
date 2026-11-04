@@ -24,9 +24,9 @@ export const EXTRA_ADVENTURES = [
     id: 'puzzles', title: 'Puzzle Adventure',
     description: 'Put together big, simple picture puzzles.',
     missions: [
-      { key: 'lion', scene: 0, missionTitle: 'Lion Puzzle', description: 'We are going to put ten pieces together to make a lion picture.' },
-      { key: 'cow', scene: 1, missionTitle: 'Cow Puzzle', description: 'We are going to put ten pieces together to make a cow picture.' },
-      { key: 'turtle', scene: 2, missionTitle: 'Turtle Puzzle', description: 'We are going to put ten pieces together to make a turtle picture.' },
+      { key: 'lion', scene: 0, missionTitle: 'Lion Puzzle', description: 'We are going to put five pieces together to make a lion picture.' },
+      { key: 'cow', scene: 1, missionTitle: 'Cow Puzzle', description: 'We are going to put five pieces together to make a cow picture.' },
+      { key: 'turtle', scene: 2, missionTitle: 'Turtle Puzzle', description: 'We are going to put five pieces together to make a turtle picture.' },
     ],
   },
   {

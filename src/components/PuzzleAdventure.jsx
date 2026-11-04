@@ -7,7 +7,7 @@ import { shuffleTiles, swapTiles, isSolved } from './puzzleLogic';
 import './PuzzleAdventure.css';
 const PICTURES = ['Lion', 'Cow', 'Turtle'];
 function Picture({ scene, tile = null }) {
-  const box = tile === null ? '0 0 1000 1000' : `${tile % 5 * 200} ${Math.floor(tile / 5) * 500} 200 500`;
+  const box = tile === null ? '0 0 1000 1000' : `0 ${tile * 200} 1000 200`;
   return <svg viewBox={box} aria-hidden="true" focusable="false" className="picture-art"><image href={artwork} x={-scene * 1000} y="0" width="3000" height="1000" preserveAspectRatio="none" /></svg>;
 }
 export function PuzzleIcon() {
@@ -66,7 +66,7 @@ export default function PuzzleAdventure({ onBack, soundOn, mission, onComplete }
     if (drag.moved) {
       suppressClick.current = true;
       const x = (event.clientX - rect.left) / rect.width, y = (event.clientY - rect.top) / rect.height;
-      if (x >= 0 && x < 1 && y >= 0 && y < 1) swap(drag.index, Math.floor(y * 2) * 5 + Math.floor(x * 5));
+      if (x >= 0 && x < 1 && y >= 0 && y < 1) swap(drag.index, Math.floor(y * 5));
       else setMessage('Move a piece onto another piece inside the picture.');
     }
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
@@ -76,13 +76,13 @@ export default function PuzzleAdventure({ onBack, soundOn, mission, onComplete }
       <LocalBackButton label={mission ? 'Puzzle Adventure map' : scene === null ? 'Adventures' : 'Pictures'} onClick={() => { clearDrag(); setSelected(null); mission || scene === null ? onBack() : setScene(null); }} />
       <p className="eyebrow">{mission ? `PLANET ${mission.name.toUpperCase()} / PUZZLES` : 'LITTLE EXPLORERS / PUZZLES'}</p>
       <h1>{scene === null ? 'Puzzle Adventure' : `${PICTURES[scene]} Puzzle`}</h1>
-      <p>{scene === null ? 'Choose a picture. Put its ten pieces back together.' : 'Drag one piece onto another to swap them.'}</p>
+      <p>{scene === null ? 'Choose a picture. Put its five pieces back together.' : 'Drag one piece onto another to swap them.'}</p>
     </header>
     {scene === null ? <section className="picture-choices" aria-label="Choose a picture puzzle">
-      {PICTURES.map((name, index) => <button type="button" key={name} onClick={() => start(index)}><Picture scene={index} /><strong>{name}</strong><span>10 pieces · Let’s play</span></button>)}
+      {PICTURES.map((name, index) => <button type="button" key={name} onClick={() => start(index)}><Picture scene={index} /><strong>{name}</strong><span>5 pieces · Let’s play</span></button>)}
     </section> : <section className="picture-workshop" aria-label={`${PICTURES[scene]} puzzle`}>
       <figure className="picture-reference"><Picture scene={scene} /><figcaption>Let’s make this picture</figcaption></figure>
-      <div className={`picture-board ${solved ? 'is-solved' : ''}`} ref={boardRef} aria-label="Ten picture pieces">
+      <div className={`picture-board ${solved ? 'is-solved' : ''}`} ref={boardRef} aria-label="Five picture pieces">
         {tiles.map((tile, position) => <button type="button" key={position} data-piece={tile} className={`picture-tile ${selected === position ? 'is-selected' : ''} ${ghost?.index === position ? 'is-moving' : ''}`} aria-label={`Piece ${tile + 1}, position ${position + 1}`} aria-pressed={selected === position} disabled={solved} onClick={() => tap(position)} onPointerDown={event => down(event, position)} onPointerMove={move} onPointerUp={up} onPointerCancel={clearDrag} onLostPointerCapture={clearDrag}><Picture scene={scene} tile={tile} /></button>)}
       </div>
       {ghost && <div className="picture-ghost" style={{ left: ghost.x, top: ghost.y, width: ghost.width, height: ghost.height }}><Picture scene={scene} tile={ghost.tile} /></div>}
