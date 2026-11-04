@@ -3320,7 +3320,7 @@ export default function MathSection({
             onClick={onHome}
             type="button"
           >
-            Back to home
+            Back to adventures
           </button>
         </div>
       </main>
@@ -3397,7 +3397,7 @@ export default function MathSection({
             onClick={onHome}
             type="button"
           >
-            Back to home
+            Back to adventures
           </button>
         </div>
       </main>

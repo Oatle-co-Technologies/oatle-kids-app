@@ -76,5 +76,3 @@
   .storybook-reader-footer > p { display: none; }
   .storybook-reader-header h2 { font-size: 1rem; }
 }
-
-.hero-panel > .storybook-adventure-entry { max-width: 900px; margin-top: 32px; flex-shrink: 0; }

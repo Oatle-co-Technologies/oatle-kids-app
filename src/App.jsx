@@ -52,7 +52,6 @@ import plutoImage from "./assets/images/planets/pluto.webp";
 import correctSound from "./sounds/correct.mp3";
 import wrongSound from "./sounds/wrong.mp3";
 import victorySound from "./sounds/victory.mp3";
-import welcomeSound from "./sounds/welcome-sound.mp3";
 
 import neptunePage1 from "./assets/images/story/neptune-page1.webp";
 import neptunePage2 from "./assets/images/story/neptune-page2.webp";
@@ -485,33 +484,6 @@ function getSpeechText(planetId, question) {
   }
 }
 
-function HomeIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="M3 10.5 12 3l9 7.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M5.5 9.5V21h13V9.5M9 21v-6h6v6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function PlanetIcon() {
   return (
     <svg
@@ -670,11 +642,11 @@ function AppNav({
     {
       label: "Home",
       action: onHome,
-      icon: <HomeIcon />,
-      active: activeScreen === "home" || activeScreen === "storybooks",
+      icon: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-7h6v7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
+      active: activeScreen === "ageSelect",
     },
     {
-      label: "Explore",
+      label: "Adventures",
       action: onExplore,
       icon: <PlanetIcon />,
       active:
@@ -686,6 +658,7 @@ function AppNav({
         activeScreen === "math" ||
         activeScreen === "cosmicPuzzles" ||
         activeScreen === "spaceBuilder" ||
+        activeScreen === "storybooks" ||
         activeScreen === "writing" ||
         activeScreen === "writingMap" ||
         activeScreen === "writingPlanet" ||
@@ -785,9 +758,11 @@ function App() {
   const [writingCelebrationMission, setWritingCelebrationMission] =
     useState(null);
 
-  const [screen, setScreen] = useState(() =>
-    savedAgeGroup() === "little" ? "littleExplorers" : "home"
-  );
+  // Ask once, then open the saved age group's adventures on later visits.
+  const [screen, setScreen] = useState(() => {
+    const group = savedAgeGroup();
+    return group === "little" ? "littleExplorers" : group === "big" ? "explore" : "ageSelect";
+  });
   const [ageGroup, setAgeGroup] = useState(savedAgeGroup);
   const [launchAdventure, setLaunchAdventure] =
     useState("reading");
@@ -825,7 +800,6 @@ function App() {
 
   const advanceTimer = useRef(null);
   const readingBreakTimer = useRef(null);
-  const welcomeAudioRef = useRef(null);
   const victoryAudioRef = useRef(null);
   const effectAudioRef = useRef(null);
 
@@ -863,7 +837,7 @@ function App() {
           localStorage.removeItem("oatle-child-profile");
           setChildProfile({ ...EMPTY_CHILD_PROFILE });
           setAgeGroup(null);
-          setScreen("home");
+          setScreen("explore");
         }
 
         setAuthLoading(false);
@@ -1187,7 +1161,7 @@ function App() {
 
     const prompts = {
       explore:
-        "Choose a learning adventure. Reading, counting, or writing.",
+        "Choose an adventure. Reading, counting, writing, arcade challenges, or storybooks.",
       launch: launchPrompts[launchAdventure],
       map: "Choose a planet for your next reading mission.",
       planet: `Welcome to planet ${planet.name}. ${planet.description}.`,
@@ -1227,43 +1201,6 @@ function App() {
     soundOn,
     writingActivePlanet,
     writingCelebrationMission,
-  ]);
-
-  useEffect(() => {
-    const bigKidsHomeVisible = Boolean(
-      user?.id &&
-      !authLoading &&
-      !accessLoading &&
-      hasAccess &&
-      ageGroup === "big" &&
-      screen === "home"
-    );
-
-    if (!soundOn || !bigKidsHomeVisible) {
-      stopAudioRef(welcomeAudioRef);
-      return undefined;
-    }
-
-    const effect = new Audio(welcomeSound);
-    effect.volume = 1;
-    welcomeAudioRef.current = effect;
-    effect.play().catch(() => {
-      if (welcomeAudioRef.current === effect) {
-        welcomeAudioRef.current = null;
-      }
-    });
-
-    return () => {
-      stopAudioRef(welcomeAudioRef);
-    };
-  }, [
-    accessLoading,
-    ageGroup,
-    authLoading,
-    hasAccess,
-    screen,
-    soundOn,
-    user?.id,
   ]);
 
   useEffect(() => {
@@ -1313,7 +1250,6 @@ function App() {
 
   useEffect(() => {
     return () => {
-      stopAudioRef(welcomeAudioRef);
       stopAudioRef(victoryAudioRef);
       stopAudioRef(effectAudioRef);
       if (readingBreakTimer.current) {
@@ -1978,13 +1914,13 @@ function App() {
     localStorage.removeItem("oatle-little-explorers-started");
     localStorage.removeItem("oatle-balloon-learning-session");
 
-    setScreen(ageGroup === "little" ? "littleExplorers" : "home");
+    setScreen(ageGroup === "little" ? "littleExplorers" : "explore");
   };
 
   const selectAgeGroup = (group) => {
     localStorage.setItem("oatle-age-group", group);
     setAgeGroup(group);
-    setScreen(group === "little" ? "littleExplorers" : "home");
+    setScreen(group === "little" ? "littleExplorers" : "explore");
   };
 
   // Checkout remains paused until live payments are ready.
@@ -2265,7 +2201,7 @@ function App() {
         </div>
       </main>
     );
-  } else if (!ageGroup) {
+  } else if (!ageGroup || screen === "ageSelect") {
     content = (
       <main className="age-choice-page">
         <div className="age-choice-panel">
@@ -2304,7 +2240,7 @@ function App() {
           </div>
 
           <p className="age-choice-note">
-            You can change age groups later in Settings.
+            We’ll remember your choice. You can change the age group in Settings.
           </p>
         </div>
       </main>
@@ -2391,10 +2327,11 @@ function App() {
         </div>
         <CosmicPuzzleEntry onClick={() => { stopSpeech(); setScreen("cosmicPuzzles"); }} />
         <SpaceBuilderEntry onClick={() => { stopSpeech(); setScreen("spaceBuilder"); }} />
+        <StorybookEntry onClick={() => { stopSpeech(); setScreen("storybooks"); }} />
       </main>
     );
   } else if (screen === "storybooks") {
-    content = <StorybookAdventure onBack={() => setScreen("home")} />;
+    content = <StorybookAdventure onBack={() => setScreen("explore")} />;
   } else if (screen === "cosmicPuzzles") {
     content = <CosmicPuzzles onBack={() => setScreen("explore")} soundOn={soundOn} />;
   } else if (screen === "spaceBuilder") {
@@ -2760,62 +2697,12 @@ function App() {
       />
     );
   } else if (
-    screen === "home"
-  ) {
-    content = (
-      <main className="hero-panel">
-        <img
-          src="/oatle-kids-wordmark.webp"
-          alt="Oatle Kids"
-          className="hero-logo"
-        />
-
-        <p className="eyebrow">
-          WELCOME, CAPTAIN
-        </p>
-
-        <h1>
-          Ready for a stellar
-          adventure?
-        </h1>
-
-        <p>
-          Explore learning
-          adventures across
-          letters, reading,
-          maths, and the
-          planets.
-        </p>
-
-        <div className="button-row">
-          {action(
-            "Explore",
-            () => {
-              setScreen("explore");
-            }
-          )}
-
-          {assessmentResults &&
-            action(
-              "Parent Results",
-              () =>
-                setScreen(
-                  "results"
-                ),
-              "secondary-button"
-            )}
-        </div>
-
-        <StorybookEntry onClick={() => { stopSpeech(); setScreen("storybooks"); }} />
-      </main>
-    );
-  } else if (
     screen === "math"
   ) {
     content = (
       <MathSection
         onHome={() =>
-          setScreen("home")
+          setScreen("explore")
         }
         onBack={() =>
           setScreen("explore")
@@ -3825,9 +3712,9 @@ function App() {
         </div>
 
         {action(
-          "Return home",
+          "Back to adventures",
           () =>
-            setScreen("home"),
+            setScreen("explore"),
           "secondary-button"
         )}
       </main>
@@ -3842,6 +3729,8 @@ function App() {
         <h1>
           Settings
         </h1>
+
+        {assessmentResults && action("Parent Results", () => setScreen("results"), "secondary-button")}
 
         <section
           className="child-profile-settings"
@@ -3982,6 +3871,8 @@ function App() {
           Reset game progress
         </button>
 
+        <p className="page-intro">Adventure age group: {ageGroup === "little" ? "Ages 2–3" : "Ages 4–7"}</p>
+
         <button
           className="secondary-button"
           onClick={() => {
@@ -4002,7 +3893,7 @@ function App() {
             setAccessGrant(null);
             localStorage.removeItem("oatle-age-group");
             setAgeGroup(null);
-            setScreen("home");
+            setScreen("explore");
           }}
           type="button"
         >
@@ -4021,9 +3912,7 @@ function App() {
 
       {showBottomNav && (
           <AppNav
-            onHome={() =>
-              setScreen(ageGroup === "little" ? "littleExplorers" : "home")
-            }
+            onHome={() => { stopSpeech(); setScreen("ageSelect"); }}
             onExplore={() =>
               setScreen(ageGroup === "little" ? "littleExplorers" : "explore")
             }
