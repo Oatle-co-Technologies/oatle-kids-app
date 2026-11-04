@@ -671,7 +671,7 @@ function AppNav({
       label: "Home",
       action: onHome,
       icon: <HomeIcon />,
-      active: activeScreen === "home",
+      active: activeScreen === "home" || activeScreen === "storybooks",
     },
     {
       label: "Explore",
@@ -686,7 +686,6 @@ function AppNav({
         activeScreen === "math" ||
         activeScreen === "cosmicPuzzles" ||
         activeScreen === "spaceBuilder" ||
-        activeScreen === "storybooks" ||
         activeScreen === "writing" ||
         activeScreen === "writingMap" ||
         activeScreen === "writingPlanet" ||
@@ -2390,13 +2389,12 @@ function App() {
           </button>
 
         </div>
-        <StorybookEntry onClick={() => { stopSpeech(); setScreen("storybooks"); }} />
         <CosmicPuzzleEntry onClick={() => { stopSpeech(); setScreen("cosmicPuzzles"); }} />
         <SpaceBuilderEntry onClick={() => { stopSpeech(); setScreen("spaceBuilder"); }} />
       </main>
     );
   } else if (screen === "storybooks") {
-    content = <StorybookAdventure onBack={() => setScreen("explore")} />;
+    content = <StorybookAdventure onBack={() => setScreen("home")} />;
   } else if (screen === "cosmicPuzzles") {
     content = <CosmicPuzzles onBack={() => setScreen("explore")} soundOn={soundOn} />;
   } else if (screen === "spaceBuilder") {
