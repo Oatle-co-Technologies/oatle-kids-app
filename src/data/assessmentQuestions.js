@@ -1,6 +1,5 @@
 import { questions } from "./questions";
 import { lowercaseQuestions } from "./lowercaseQuestions";
-import { matchingQuestions } from "./matchingQuestions";
 import { wordOrderQuestions } from "./wordOrderQuestions";
 import { readingQuestions } from "./readingQuestions";
 import { missingLettersQuestions } from "./missingLettersQuestions";
@@ -16,12 +15,21 @@ export const assessmentSkills = [
   { id: "sentences", name: "Building simple sentences" },
 ];
 
+// Use the current game banks, not a fixed four-question preview of each game.
+const bank = (questions, skill, type) => questions.map(question => ({
+  ...question, skill, type,
+  assessmentId: `${skill}:${JSON.stringify([question.target, question.answer, question.word, question.words])}`,
+}));
+
 export const assessmentQuestions = [
-  ...questions.slice(0, 4).map((question, index) => ({ ...question, assessmentId: `capital-${index}`, skill: "capital", type: "letters" })),
-  ...lowercaseQuestions.slice(0, 4).map((question, index) => ({ ...question, assessmentId: `lowercase-${index}`, skill: "lowercase", type: "letters" })),
-  ...matchingQuestions.slice(0, 4).map((question, index) => ({ ...question, assessmentId: `matching-${index}`, skill: "matching", type: "letters" })),
-  ...wordOrderQuestions.slice(0, 4).map((question, index) => ({ ...question, assessmentId: `word-order-${index}`, skill: "word-order", type: "word-order" })),
-  ...readingQuestions.slice(0, 4).map((question, index) => ({ ...question, assessmentId: `reading-${index}`, skill: "reading", type: "reading" })),
-  ...missingLettersQuestions.slice(0, 4).map((question, index) => ({ ...question, assessmentId: `missing-${index}`, skill: "missing", type: "missing" })),
-  ...sentenceQuestions.slice(0, 4).map((question, index) => ({ ...question, assessmentId: `sentences-${index}`, skill: "sentences", type: "sentences" })),
+  ...bank(questions, "capital", "letters"),
+  ...bank(lowercaseQuestions, "lowercase", "letters"),
+  ...bank(questions.flatMap(({ target }) => [
+    { target, answer: target.toLowerCase() },
+    { target: target.toLowerCase(), answer: target },
+  ]), "matching", "matching"),
+  ...bank(wordOrderQuestions.filter(q => q.word.length <= 3), "word-order", "word-order"),
+  ...bank(readingQuestions.filter(q => q.answer.length <= 3), "reading", "reading"),
+  ...bank(missingLettersQuestions.filter(q => q.word.length <= 3), "missing", "missing"),
+  ...bank(sentenceQuestions, "sentences", "sentences"),
 ];

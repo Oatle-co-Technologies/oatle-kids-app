@@ -51,6 +51,7 @@ export default function ReadingBalloonBreak({ onComplete, onPop }) {
           '--compact-column': balloon.slot % 4, '--compact-row': Math.floor(balloon.slot / 4),
           '--arrival-x': edges[balloon.edge], '--arrival-y': verticalEdges[balloon.edge],
           '--arrival-delay': `${balloon.delay}s`,
+          '--travel-duration': `${9 + balloon.id * .8}s`,
           '--balloon-colour': balloon.colour,
         }}>
           <button ref={element => { buttons.current[balloon.id] = element; }} type="button"

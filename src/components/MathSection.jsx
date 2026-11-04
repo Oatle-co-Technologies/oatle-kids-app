@@ -1,3 +1,4 @@
+import { selectAssessment, restoreAssessmentQuestions, assessmentResults as summarizeAssessment } from "../utils/assessmentSelection";
 import { withCompletedDestination } from "./spaceJourneyLogic";
 import BigKidsPlanetJourney from "./BigKidsPlanetJourney";
 import { PLANET_NAMES } from "./planetJourneyLayout";
@@ -52,19 +53,12 @@ const readAssessmentAttempt = () => {
       localStorage.getItem(MATH_ASSESSMENT_ATTEMPT_KEY)
     );
 
-    const questionMap = new Map(
-      mathAssessmentQuestions.map((question) => [
-        question.assessmentId,
-        question,
-      ])
-    );
-
+    const questions = restoreAssessmentQuestions(saved?.questionIds, mathAssessmentQuestions);
+    const valid = questions.length === assessmentSkills.length * 2;
     return {
-      active: Boolean(saved?.active),
-      questions: (saved?.questionIds || [])
-        .map((id) => questionMap.get(id))
-        .filter(Boolean),
-      answers: Array.isArray(saved?.answers)
+      active: Boolean(saved?.active) && valid,
+      questions,
+      answers: valid && Array.isArray(saved?.answers)
         ? saved.answers
         : [],
     };
@@ -2531,52 +2525,8 @@ function shuffleOptions(
   return shuffled;
 }
 
-function shuffleArray(array) {
-  const shuffled = [...array];
-
-  for (
-    let index = shuffled.length - 1;
-    index > 0;
-    index -= 1
-  ) {
-    const randomIndex = Math.floor(
-      Math.random() * (index + 1)
-    );
-
-    [
-      shuffled[index],
-      shuffled[randomIndex],
-    ] = [
-      shuffled[randomIndex],
-      shuffled[index],
-    ];
-  }
-
-  return shuffled;
-}
-
-function getAssessmentQuestions() {
-  const selected = [];
-
-  assessmentSkills.forEach((skill) => {
-    const seen = new Set();
-    const skillPool = shuffleArray(
-      mathAssessmentQuestions.filter(
-        (question) =>
-          question.skill === skill.id
-      ).filter((question) => {
-        if (seen.has(question.assessmentId)) return false;
-        seen.add(question.assessmentId);
-        return true;
-      })
-    );
-
-    selected.push(
-      ...skillPool.slice(0, 2)
-    );
-  });
-
-  return shuffleArray(selected);
+function getAssessmentQuestions(previousIds = []) {
+  return selectAssessment(mathAssessmentQuestions, assessmentSkills, 2, previousIds);
 }
 
 export default function MathSection({
@@ -2607,6 +2557,8 @@ export default function MathSection({
   const [isProcessing, setIsProcessing] =
     useState(false);
 
+  const advanceTimerRef = useRef(null);
+  useEffect(() => () => window.clearTimeout(advanceTimerRef.current), [screen]);
   const questionNarrationDelayRef = useRef(250);
   const victoryAudioRef = useRef(null);
 
@@ -2911,16 +2863,28 @@ export default function MathSection({
         (item) => item.id === id
       );
 
-    let assessmentQuestionSet = [];
+    let assessmentQuestionSet;
     let assessmentAnswerSet = [];
     let assessmentQuestionIndex = 0;
 
     if (selectedMission?.assessment) {
       const savedAttempt = readAssessmentAttempt();
+      if (savedAttempt.active && savedAttempt.questions.length && savedAttempt.answers.length === savedAttempt.questions.length) {
+        setAssessmentQuestions(savedAttempt.questions);
+        setAssessmentAnswers(savedAttempt.answers);
+        setAssessmentActive(false);
+        setProgress(current => ({
+          ...withCompletedDestination(current, id), activeMission: id,
+          assessmentResults: summarizeAssessment(assessmentSkills, savedAttempt.answers),
+        }));
+        setScreen("assessment-results");
+        return;
+      }
 
       if (
         savedAttempt.active &&
-        savedAttempt.questions.length > 0
+        savedAttempt.questions.length > 0 &&
+        savedAttempt.answers.length < savedAttempt.questions.length
       ) {
         assessmentQuestionSet = savedAttempt.questions;
         assessmentAnswerSet = savedAttempt.answers;
@@ -2929,14 +2893,12 @@ export default function MathSection({
           savedAttempt.questions.length - 1
         );
       } else {
-        assessmentQuestionSet = getAssessmentQuestions();
+        assessmentQuestionSet = getAssessmentQuestions(savedAttempt.questions.map(q => q.assessmentId));
         setAssessmentActive(true);
       }
 
       setAssessmentQuestions(assessmentQuestionSet);
       setAssessmentAnswers(assessmentAnswerSet);
-    } else {
-      setAssessmentQuestions([]);
     }
 
     setProgress(
@@ -2962,9 +2924,6 @@ export default function MathSection({
 
     setFeedback("");
     setIsProcessing(false);
-    if (!selectedMission?.assessment) {
-      setAssessmentAnswers([]);
-    }
     setScreen("planet");
   };
 
@@ -2984,8 +2943,12 @@ export default function MathSection({
   };
 
   const finishMission =
-    () => {
+    (answers = assessmentAnswers) => {
       if (isAssessment) {
+        setProgress(current => ({
+          ...withCompletedDestination(current, current.activeMission),
+          assessmentResults: summarizeAssessment(assessmentSkills, answers),
+        }));
         setAssessmentActive(false);
         setScreen(
           "assessment-results"
@@ -3014,7 +2977,7 @@ export default function MathSection({
     };
 
   const advanceQuestion =
-    () => {
+    (answers = assessmentAnswers) => {
       if (
         progress.question <
         questions.length - 1
@@ -3033,7 +2996,7 @@ export default function MathSection({
           false
         );
       } else {
-        finishMission();
+        finishMission(answers);
         setIsProcessing(
           false
         );
@@ -3096,8 +3059,8 @@ export default function MathSection({
         true
       );
 
-      window.setTimeout(
-        advanceQuestion,
+      advanceTimerRef.current = window.setTimeout(
+        () => advanceQuestion(nextAssessmentAnswers),
         isAssessment && !correct ? 2400 : 1100
       );
     };
@@ -3188,7 +3151,7 @@ export default function MathSection({
 
         <button className="primary-button" onClick={beginMission} type="button">
           {mission.assessment
-            ? missionStarted
+            ? assessmentActive && assessmentAnswers.length > 0
               ? "Return to assessment"
               : "Start assessment"
             : missionStarted
@@ -3457,6 +3420,7 @@ export default function MathSection({
                     optionKey
                   }
                   className="word-button math-answer-button"
+                  aria-label={String(question.teaching ? "Continue" : selectedAnswer)}
                   onClick={() =>
                     answerQuestion(
                       question.teaching
