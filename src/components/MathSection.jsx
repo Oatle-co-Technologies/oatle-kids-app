@@ -2962,7 +2962,7 @@ export default function MathSection({
               left: `${journeyPercent}%`,
             }}
           >
-            🚀
+            <img src="/rocket/oatle-rocket.png" alt="" aria-hidden="true" draggable="false" />
           </span>
         </div>
       </div>
