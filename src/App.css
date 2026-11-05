@@ -2706,3 +2706,11 @@ button:focus-visible,
 .writing-profile-reminder button, .writing-profile-return button {
   scroll-margin-block: 130px;
 }
+
+/* Mission progress uses the same branded rocket as planet travel. */
+.journey-rocket > img, .math-journey-rocket > img {
+  display: block;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
