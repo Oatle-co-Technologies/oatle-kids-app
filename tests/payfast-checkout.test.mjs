@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { makeCheckout, encodeValue, PRICE_CENTS } from '../supabase/functions/payfast-checkout/checkout.mjs';
+import { makeCheckout, encodeValue, PRICE_CENTS } from '../supabase/functions/quick-service/checkout.mjs';
 import { validatePayfastCheckout } from '../src/lib/payfastCheckout.js';
 const options = {merchantId:'example',merchantKey:'public-form-key',passphrase:'test-only-secret',appUrl:'https://www.oatlekids.co.za',supabaseUrl:'https://example.supabase.co',userId:'user-1',email:'parent@example.com',paymentId:'payment-1'};
 test('live checkout uses R120 initially and monthly, returning to the app', () => {
