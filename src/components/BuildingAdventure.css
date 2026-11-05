@@ -134,3 +134,21 @@
 @media (prefers-reduced-motion: reduce) {
   .building-page *, .building-page *::before, .building-page *::after { animation: none !important; transition: none !important; }
 }
+
+/* Real toy silhouettes: thick upper and side faces extend beyond the front. */
+.building-board { overflow: visible; }
+.building-toy-art { overflow: visible; }
+.building-palette > button { width: 94px; min-height: 112px; padding: 20px 16px 9px 9px; }
+.building-palette > button > svg { width: 54px; height: 58px; overflow: visible; }
+.building-palette { gap: 14px; padding-top: 8px; }
+.building-piece > svg { filter: drop-shadow(2px 5px 2px #06132966); }
+.building-mode-art > svg { overflow: visible; }
+@media (max-width: 620px) {
+  .building-palette { gap: 8px; }
+  .building-palette > button { width: 64px; min-height: 90px; padding: 15px 11px 8px 5px; }
+  .building-palette > button > svg { width: 39px; height: 47px; }
+}
+@media (max-width: 370px) {
+  .building-palette { gap: 7px; }
+  .building-palette > button { width: 58px; }
+}
