@@ -1,3 +1,4 @@
+import ResponsivePlanetJourney from './ResponsivePlanetJourney';
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
 import { speak, stopSpeech } from '../utils/speech';
@@ -148,12 +149,11 @@ export default function CosmicPuzzles({ onBack, soundOn = true }) {
         <p>{screen === 'missions' ? 'A scrambled transmission. A sharp-eyed explorer. Your next mission awaits.' : screen === 'complete' ? mission.success : mission.location}</p>
       </header>
 
-      {screen === 'missions' && <section className="cosmic-missions" aria-label="Choose a puzzle mission">
-        {MISSIONS.map((item, index) => <button type="button" key={item.id} className="cosmic-mission-card" onClick={() => choose(index)}>
-          <div className="cosmic-card-picture"><img src={item.image} alt="" /><b>MISSION 0{index + 1}</b></div>
-          <span className="cosmic-card-copy"><small>{item.location}</small><strong>{item.title}</strong><span>10, 12, 16 or 20 pieces</span><span className="cosmic-completed">{Object.entries(PUZZLE_LEVELS).filter(([id]) => completed.includes(`${item.id}-${id}`)).map(([, value]) => `${value.pieces} pieces ✓`).join(' · ') || 'Ready to explore'}</span><b>Open briefing →</b></span>
-        </button>)}
-      </section>}
+      {screen === 'missions' && <ResponsivePlanetJourney label="Choose a puzzle mission" items={MISSIONS.map((item, index) => ({
+        id: item.id, title: item.title, subtitle: item.location, image: item.planet,
+        complete: Object.keys(PUZZLE_LEVELS).every(level => completed.includes(`${item.id}-${level}`)),
+        onSelect: () => choose(index),
+      }))} />}
 
       {screen === 'briefing' && <section className="cosmic-briefing" aria-label="Mission briefing">
         <figure><img src={mission.image} alt={`Complete picture of ${mission.subject}`} /><figcaption>Your transmission to restore</figcaption></figure>
