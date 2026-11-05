@@ -1171,7 +1171,6 @@
 .foundation-counter.is-taken-away>.math-shape{opacity:.25}
 .foundation-counter.is-taken-away::after{content:'';position:absolute;left:0;top:48%;width:100%;height:4px;background:#ffbd9e;transform:rotate(-40deg);border-radius:4px}
 .foundation-arithmetic>p{font-size:.95rem;line-height:1.5}.foundation-more{font-weight:800;color:#ffdd83}
-.math-extra-label{font-size:.8rem;color:#ffdd83}.math-extra-skip{min-height:44px;margin:10px auto;padding:10px 16px;background:transparent;color:#dfebff;border:1px solid #839bc1;border-radius:10px;cursor:pointer}
 
 .math-listen-question{min-height:44px;padding:10px 16px;margin:0 auto 12px;background:#23355c;color:#eaf4ff;border:1px solid #91b1d2;border-radius:12px;font:inherit;cursor:pointer}.math-listen-question:disabled{opacity:.5;cursor:default}
 
