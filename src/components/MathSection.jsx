@@ -2973,7 +2973,6 @@ export default function MathSection({
           : mission.title.toUpperCase()}
       </p>
 
-      {question.extension && !isAssessment && <p className="math-extra-label">Extra activity — try it when you are ready</p>}
       <h1>{question.prompt}</h1>
       <button type="button" className="math-listen-question" aria-label="Hear the question again" disabled={!soundOn} onClick={() => speak(mathsQuestionNarration(question))}><span aria-hidden="true">🔊 </span>Hear the question again</button>
 
@@ -2988,7 +2987,6 @@ export default function MathSection({
       />
 
       {question.teaching && ["equal-groups", "multiplication-introduction", "multiplication-numbers", "sharing", "division-introduction", "division-numbers"].includes(question.type) && <p className="math-teaching-text">{question.teachingText}</p>}
-      {question.extension && !isAssessment && <button type="button" className="math-extra-skip" onClick={() => advanceQuestion()} disabled={isProcessing}>Skip this extra activity</button>}
 
       {/* Counting Helper
           Only available where it is useful:
