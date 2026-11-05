@@ -1,3 +1,4 @@
+import MissionBalloonBreak from './MissionBalloonBreak';
 import WritingBackButton from "./WritingBackButton";
 import { useEffect, useRef, useState } from "react";
 
@@ -353,6 +354,7 @@ export default function NumberTracingMission({
 
   return (
     <div className="alphabet-tracing-mission number-tracing-mission">
+      <MissionBalloonBreak step={numberIndex} total={NUMBERS.length} soundOn={soundOn} resumePrompt={`Trace the number ${currentNumber}`} />
 
       <div className="alphabet-portrait-message">
         <div className="alphabet-portrait-title">

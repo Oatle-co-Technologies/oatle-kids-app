@@ -1,0 +1,50 @@
+/* Shared navigation clearance. Use additive spacing below the hardware safe area,
+   including standalone iOS/iPadOS where the status bar overlays the viewport. */
+:root {
+  --app-safe-area-top: env(safe-area-inset-top, 0px);
+  --app-safe-area-left: env(safe-area-inset-left, 0px);
+  --app-back-button-top: calc(var(--app-safe-area-top) + 12px);
+  --app-back-button-left: calc(var(--app-safe-area-left) + 12px);
+}
+
+/* Positioned controls keep their existing position type and navigation behavior. */
+:is(.page-back-button, .writing-activity-back, .scribbler-back,
+    .garden-back, .animal-scene-back) {
+  top: var(--app-back-button-top) !important;
+  left: var(--app-back-button-left) !important;
+}
+.storybook-reader .storybook-reader-header {
+  top: var(--app-back-button-top) !important;
+  left: var(--app-back-button-left) !important;
+}
+
+/* Flow-based back buttons inherit clearance from their page, rather than adding
+   a second safe-area inset to the button itself. This also protects future pages. */
+main:has(.local-back-button):not(.animal-immersive), .storybook-library {
+  padding-top: max(var(--app-back-button-top), var(--page-navigation-top-space, 24px));
+}
+/* These more specific page rules otherwise override the shared page clearance. */
+main:is(.building-page, .animal-page:not(.animal-immersive), .puzzle-page, .little-map-page,
+         .little-activity-page, .big-kids-planet-map, .cosmic-page, .storybook-library) {
+  padding-top: max(var(--app-back-button-top), var(--page-navigation-top-space, 24px)) !important;
+}
+/* Drawing's fixed back button and guidance need a full reserved navigation row. */
+.scribbler-page.scribbler-with-landscape-tip {
+  padding-top: calc(var(--app-back-button-top) + 60px) !important;
+}
+.scribbler-landscape-tip { top: var(--app-back-button-top) !important; }
+/* Home toolbars contain their own back buttons and may be absolutely positioned. */
+@media (min-width: 1001px) {
+  .little-home-toolbar { top: max(24px, var(--app-back-button-top)) !important; }
+}
+
+/* Map and overview back buttons stay viewport anchored, including pages that
+   previously changed them to relative positioning at a breakpoint. */
+.page-back-button { position: fixed !important; }
+main:has(> .page-back-button) {
+  --page-navigation-top-space: calc(var(--app-back-button-top) + 64px);
+}
+main.little-activity-page { --page-navigation-top-space: calc(var(--app-back-button-top) + 60px); }
+main.adventure-hub.expedition-hub {
+  padding-top: max(32px, var(--app-back-button-top)) !important;
+}

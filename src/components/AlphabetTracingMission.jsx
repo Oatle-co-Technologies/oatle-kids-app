@@ -1,3 +1,4 @@
+import MissionBalloonBreak from './MissionBalloonBreak';
 import WritingBackButton from "./WritingBackButton";
 import { useEffect, useRef, useState } from "react";
 import "./AlphabetTracingMission.css";
@@ -432,6 +433,7 @@ export default function AlphabetTracingMission({
 
   return (
     <div className="alphabet-tracing-mission">
+      <MissionBalloonBreak step={letterIndex} total={LETTERS.length} soundOn={soundOn} resumePrompt={`Trace the uppercase and lowercase ${letter}`} />
 
       {/* =========================
           HEADER

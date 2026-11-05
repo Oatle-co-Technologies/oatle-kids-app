@@ -1,3 +1,4 @@
+import MissionBalloonBreak from './MissionBalloonBreak';
 import WritingBackButton from "./WritingBackButton";
 import { WRITING_WORDS } from "../data/wordWriting";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -701,6 +702,7 @@ export default function SentenceWritingMission({
 
   return (
     <main className="scribbler-page sentence-writing-page">
+      <MissionBalloonBreak step={sentenceIndex} total={activities.length} soundOn={soundOn} resumePrompt={`Keep writing. ${sentence}`} />
       <div className="sentence-portrait-message" aria-live="polite">
         <strong>Landscape recommended for more writing space</strong>
         <span>Portrait works too. You can keep writing this way.</span>
