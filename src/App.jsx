@@ -1,3 +1,4 @@
+import { submitPayfastCheckout } from './lib/payfastCheckout';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import AgeSelection from "./components/AgeSelection";
@@ -654,6 +655,12 @@ function App() {
   const hasAccess = hasActiveEntitlement(accessGrant, user?.id);
 
   const [authEntry, setAuthEntry] = useState(() => ['login', 'signup'].includes(new URLSearchParams(window.location.search).get('auth')));
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutMessage, setCheckoutMessage] = useState(() => {
+    const payment = new URLSearchParams(window.location.search).get('payment');
+    return payment === 'success' ? 'Payment submitted. Access will update after payment confirmation.' : payment === 'cancelled' ? 'Checkout was cancelled. You have not started a subscription through this checkout.' : '';
+  });
+  const checkoutFunction = import.meta.env.VITE_PAYFAST_CHECKOUT_FUNCTION || 'quick-service';
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoMessage, setPromoMessage] = useState("");
@@ -1814,7 +1821,23 @@ function App() {
     setScreen(group === "little" ? "littleExplorers" : "explore");
   };
 
-  // Checkout remains paused until live payments are ready.
+  const startSubscription = async () => {
+    if (!checkoutFunction || checkoutLoading) return;
+    setCheckoutLoading(true); setCheckoutMessage('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Please log in again to subscribe.');
+      const { data, error } = await supabase.functions.invoke(checkoutFunction, {
+        body: {}, headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error) throw new Error('Checkout could not start. Please try again shortly.');
+      if (data?.error) throw new Error(data.error);
+      submitPayfastCheckout(data);
+    } catch (error) {
+      setCheckoutMessage(error?.message || 'Checkout could not start. Please try again.');
+    } finally { setCheckoutLoading(false); }
+  };
+
   const redeemPromoCode = async () => {
     const code =
       promoCode.trim();
@@ -2007,12 +2030,14 @@ function App() {
 
           <button
             className="primary-button"
-            disabled
+            disabled={!checkoutFunction || checkoutLoading}
+            onClick={startSubscription}
             type="button"
           >
-            Subscribe — R120/month
+            {checkoutLoading ? 'Opening secure checkout…' : 'Subscribe — R120/month'}
           </button>
 
+          {checkoutMessage && <p className="login-intro" role="status">{checkoutMessage}</p>}
           <p
             className="login-intro"
             style={{
