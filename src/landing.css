@@ -54,9 +54,9 @@ body.marketing::before { content: ""; position: fixed; inset: 0; pointer-events:
 .oatle-kids-guide { width:76px; height:84px; overflow:visible; }
 .ai-launcher .guide-body { transform-origin:40px 80px; animation:guide-float 3s ease-in-out infinite; }
 .ai-launcher .guide-arm-wave { transform-origin:64px 39px; animation:guide-wave 2.6s ease-in-out infinite; }
-.guide-arm-rest { transform:translate(80px) scale(-1,1) rotate(140deg); transform-origin:64px 39px; }
+.guide-arm-rest { transform: none; }
 @keyframes guide-float { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-5px) rotate(1deg)} }
-@keyframes guide-wave { 0%,18%,78%,100%{transform:rotate(140deg)} 30%,66%{transform:rotate(0deg)} 42%,58%{transform:rotate(-12deg)} 50%{transform:rotate(10deg)} }
+@keyframes guide-wave { 0%,18%,78%,100%{transform:rotate(0deg)} 30%,66%{transform:rotate(0deg)} 42%,58%{transform:rotate(-12deg)} 50%{transform:rotate(10deg)} }
 .ai-panel { position: fixed; inset: auto 22px 22px auto; margin: 0; width: min(410px, calc(100vw - 28px)); max-height: min(720px, calc(100dvh - 32px)); overflow-y: auto; padding: 0; border: 1px solid #8fe7ff66; border-radius: 24px; color: #f8fbff; background: #0e1737; box-shadow: 0 20px 80px #0008; font-family: Nunito, Arial, sans-serif; }
 .ai-panel::backdrop { background: #050a20aa; }
 .ai-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #8fe7ff33; background: #18264d; }
@@ -78,3 +78,39 @@ body.marketing::before { content: ""; position: fixed; inset: 0; pointer-events:
 #ai-error { margin: 0 18px 12px; color: #ffd8a3; font-size: 13px; }
 @media(max-width:500px) { .ai-panel { right: 14px; bottom: 14px; } .ai-launcher { right: 12px; bottom: 10px; } .ai-launcher-copy{font-size:13px;padding:10px 12px}.oatle-kids-guide{width:64px;height:71px}.ai-conversation { max-height: 28dvh; } }
 @media(prefers-reduced-motion:reduce){.ai-launcher .guide-body,.ai-launcher .guide-arm-wave{animation:none}}
+
+/* The marketing experience shares the game's Cosmic home artwork and palette. */
+body.marketing { background: linear-gradient(180deg,#080b2244,#0d1232cc 70%),url('/adventure-homes/galaxy.webp') center top/100% auto repeat-y,#080b24; }
+body.marketing::before { display: none; }
+.marketing h1,.marketing h2 { color: #fff5df; text-shadow: 0 4px 0 #372e60; }
+.marketing h3 { font-family: Nunito,Arial,sans-serif; font-weight: 900; }
+.marketing .button { border: 1px solid #ffe1a0; border-radius: 50px; background: #ffdb86; color: #172442; box-shadow: inset 0 2px 3px #fff4,0 5px 0 #815c3e66; }
+.marketing .button:hover { background: #ffe6a9; }
+.marketing .nav { min-height: 112px; }
+.marketing .nav .login-link { white-space: nowrap; display: inline-flex; font-size:14px; }
+.marketing .hero { gap: 10px; padding-block: 54px 64px; }
+.marketing .cosmic-hero { height: 510px; border: 0; border-radius: 0; background: none; box-shadow: none; overflow: visible; }
+.cosmic-hero img { position: absolute; object-fit: contain; filter: drop-shadow(0 18px 20px #02051e88); }
+.hero-reading-home { width: 72%; left: 13%; top: 0; }
+.hero-writing-home { width: 44%; left: -2%; bottom: 24px; }
+.hero-maths-home { width: 45%; right: -2%; bottom: 40px; }
+.marketing .cosmic-hero .orbit { inset: 18% 2% 15%; border-color: #f6cb7455; transform: rotate(-12deg); }
+.marketing .cosmic-hero .orbit-two { inset: 30% 3% 12%; border: 0; border-bottom: 1px dashed #ffd77c66; transform: rotate(12deg); }
+.marketing .cosmic-hero .planet-label { bottom: -10px; left: 0; right: 0; margin: auto; width: max-content; max-width: 100%; color: #ffdf98; background: #121a3ae8; border-color: #e5bd74; text-align:center; }
+.marketing .feature { border-color: #f1c57d55; background: linear-gradient(155deg,#202d50eb,#111a38ed); }
+.marketing .art { height: 210px; }
+.marketing .art img { width:100%;height:210px;filter:drop-shadow(0 12px 12px #0004); }
+.marketing .feature .eyebrow { color:#ffdf98; }
+.marketing .price-card { border-color:#e2bd7a; }
+.marketing .skills-strip { color:#ffe1a0; border-color:#e2bd7a33; }
+.ai-launcher-copy { border-color:#e2bd7a; }.ai-launcher-copy::after { border-color:#e2bd7a; }
+@media(max-width:800px) {
+ .marketing .nav { min-height:88px;gap:12px; }.marketing .nav nav { gap:10px; }
+ .marketing .nav .login-link { padding:10px 18px; }
+ .marketing .hero { padding-block:30px 45px; }
+ .marketing .cosmic-hero { height:410px;max-width:440px; }
+ .marketing .hero-reading-home { width:70%;left:15%; }
+ .marketing .hero-writing-home,.marketing .hero-maths-home { width:45%;bottom:10px; }
+ .marketing .cosmic-hero .planet-label { bottom:-18px;font-size:9px; }
+}
+@media(max-width:380px) { .marketing .cosmic-hero { height:340px; }.marketing .nav .login-link {padding:10px 14px;} }
