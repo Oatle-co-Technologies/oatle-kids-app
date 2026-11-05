@@ -12,7 +12,7 @@
 .garden-loose-instrument { display: block; width: 100%; max-width: 320px; margin: auto; padding: 0; border: 0; background: none; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .garden-loose-instrument > :is(svg,img) { display: block; width: 100%; max-height: 30dvh; object-fit: contain; filter: drop-shadow(0 7px 3px #52673533); pointer-events: none; }
 .garden-loose-instrument:disabled { cursor: default; opacity: 1; }
-.garden-loose-instrument.is-struck > svg { animation: garden-hit .22s ease-out; filter: drop-shadow(0 0 10px #fff6a0); }
+.garden-loose-instrument.is-struck > :is(svg,img) { animation: garden-hit .22s ease-out; filter: drop-shadow(0 0 10px #fff6a0); }
 .garden-key-instrument { position: relative; width: 100%; max-width: 510px; margin: auto; box-sizing: border-box; padding: 28px 14px 20px; background: #cb6550; border-radius: 45% 45% 10% 10% / 16% 16% 10% 10%; box-shadow: 0 12px 0 #ad4a3c, 0 20px 12px #46622b33; }
 .garden-instrument-body { height: 28px; color: #ffe8a1; font-size: 2rem; line-height: 1; margin-bottom: 14px; }
 .garden-keyboard { position: relative; display: flex; height: clamp(95px,16dvh,160px); gap: 2px; }
@@ -25,10 +25,6 @@
 .garden-xylophone .garden-keyboard { align-items: center; gap: 5px; }
 .garden-xylophone .garden-note { height: calc(100% - var(--bar-order)*7%); background: var(--bar-colour); box-shadow: inset 0 -6px #0002; border-radius: 7px; }
 .garden-xylophone .garden-note::before { content: ''; position: absolute; top: 10%; left: calc(50% - 3px); width: 6px; height: 6px; background: #ffefc1; border-radius: 50%; }
-.garden-mallets { position: absolute; bottom: -38px; left: 22%; display: flex; gap: 24px; pointer-events: none; }
-.garden-mallets i { width: 8px; height: 65px; background: #b47d42; transform: rotate(25deg); border-radius: 5px; }
-.garden-mallets i::before { content: ''; display: block; width: 22px; height: 22px; margin-left: -7px; border-radius: 50%; background: #e36d5b; box-shadow: inset -4px -4px #0002; }
-.garden-mallets i:last-child { transform: rotate(-30deg); }
 .garden-copy-instrument { position: absolute; width: min(75vw,520px); left: 50%; top: 58%; transform: translate(-50%,-50%); }
 .garden-copy-instrument .garden-loose-instrument { max-width: 440px; }
 .garden-copy-instrument .garden-loose-instrument > :is(svg,img) { max-height: 48dvh; }
@@ -60,8 +56,6 @@
  .garden-instrument-body { height: 15px; font-size: 1.3rem; margin-bottom: 9px; }
  .garden-keyboard { height: clamp(64px,12dvh,115px); }
  .garden-xylophone .garden-keyboard { height: clamp(66px,10dvh,95px); }
- .garden-mallets { bottom: -25px; left: 30%; }
- .garden-mallets i { height: 45px; }
  .garden-loose-instrument > :is(svg,img) { max-height: 20dvh; }
  .garden-song-flowers { top: 13%; width: 88%; }
  .garden-dancers { top: 32%; height: 49%; width: 100%; }
@@ -72,8 +66,6 @@
  .garden-instrument-body { height: 0; margin-bottom: 9px; font-size: 1rem; }
  .garden-keyboard { height: 20dvh; }
  .garden-loose-instrument > :is(svg,img) { max-height: 27dvh; }
- .garden-mallets { bottom: -12px; }
- .garden-mallets i { height: 35px; }
  .garden-copy-instrument { top: 56%; left: 60%; width: min(55vw,440px); }
  .garden-listen-flower { top: calc(50% - 50px); left: 10%; width: 100px; }
  .garden-song-flowers { left: 15%; top: 25%; width: 18%; transform: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -103,3 +95,14 @@
  .garden-selected-instrument .garden-loose-instrument > :is(svg,img) { max-height: 60dvh; }
  .garden-selected-instrument .garden-keyboard,.garden-selected-instrument .garden-xylophone .garden-keyboard { height: 35dvh; }
 }
+.garden-bell > img { transform-origin: 50% 20%; }
+.has-strike-cursor,.has-strike-cursor button { cursor: none; }
+.music-tool-layer { position: fixed; inset: 0; z-index: 12000; overflow: hidden; pointer-events: none; }
+.music-strike-tool { position: absolute; z-index: 12000; width: 94px; height: 102px; transform: translate(-14px,-14px); pointer-events: none; }
+.music-strike-tool svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 3px 2px #5c482d44); }
+.music-strike-tool .strike-stick-one { transform-origin: 18px 18px; }
+.music-strike-tool .strike-stick-two { transform-origin: 45px 10px; }
+.music-strike-tool .is-hitting .strike-stick-one { animation: music-tool-strike .25s ease-out; }
+.music-strike-tool .is-hitting .strike-stick-two { animation: music-tool-strike .25s .08s ease-out; }
+@keyframes music-tool-strike { 0% { transform: translateY(-17px) rotate(-20deg); } 45% { transform: translateY(4px) rotate(4deg); } 100% { transform: none; } }
+@media (prefers-reduced-motion:reduce) { .music-strike-tool * { animation: none!important; } .has-strike-cursor,.has-strike-cursor button { cursor: pointer; } }
