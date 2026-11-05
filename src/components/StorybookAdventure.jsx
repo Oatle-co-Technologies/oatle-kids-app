@@ -3,12 +3,13 @@ import { storybooks } from '../data/storybooks';
 import LocalBackButton from './LocalBackButton';
 import './StorybookAdventure.css';
 
-function BookReader({ book, onClose }) {
+function BookReader({ book, onClose, onToggleFullscreen }) {
   const pages = [book.cover, ...book.pages];
   const [page, setPage] = useState(0);
   const [turn, setTurn] = useState(null);
   const [simple, setSimple] = useState(false);
   const [zoom, setZoom] = useState(false);
+  const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
   const stage = useRef(null);
   const [portraitReading, setPortraitReading] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -25,7 +26,9 @@ function BookReader({ book, onClose }) {
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     modal.showModal();
-    return () => { document.body.style.overflow = overflow; modal.close(); };
+    const updateFullscreen = () => setFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', updateFullscreen);
+    return () => { document.removeEventListener('fullscreenchange', updateFullscreen); document.body.style.overflow = overflow; modal.close(); };
   }, []);
 
   useEffect(() => {
@@ -110,7 +113,10 @@ function BookReader({ book, onClose }) {
       <div className="storybook-reader-inner">
         <header className="storybook-reader-header">
           <h2 id="storybook-title">{book.title}</h2>
-          <button type="button" onClick={onClose} autoFocus>Close book ×</button>
+          <div className="storybook-window-controls">
+            {document.documentElement.requestFullscreen && <button type="button" onClick={onToggleFullscreen}>{fullscreen ? 'Exit full screen' : 'Full screen ⛶'}</button>}
+            <button type="button" onClick={onClose} autoFocus>Close book ×</button>
+          </div>
         </header>
         <div ref={stage} className={`storybook-stage ${zoom ? 'storybook-zoom' : ''}`} style={{ '--page-ratio': loaded[current]?.ratio || 1.5 }} aria-busy={busy}
           onTouchStart={(event) => { touch.current = event.touches.length === 1 && !zoom ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null; }}
@@ -159,9 +165,33 @@ export default function StorybookAdventure({ onBack }) {
   const [selected, setSelected] = useState(null);
   const [lastBook, setLastBook] = useState(null);
   const bookButtons = useRef({});
+  const readerFullscreen = useRef(false);
+  useEffect(() => () => {
+    if (readerFullscreen.current && document.fullscreenElement) document.exitFullscreen()?.catch(() => {});
+  }, []);
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen()?.catch(() => {});
+      readerFullscreen.current = false;
+    } else if (document.documentElement.requestFullscreen) {
+      readerFullscreen.current = true;
+      document.documentElement.requestFullscreen().catch(() => { readerFullscreen.current = false; });
+    }
+  };
+  const openBook = (book) => {
+    setLastBook(book.id);
+    setSelected(book);
+    // Request during the tap, while browser user activation is available.
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      readerFullscreen.current = true;
+      document.documentElement.requestFullscreen().catch(() => { readerFullscreen.current = false; });
+    }
+  };
   const closeBook = () => {
     const id = selected.id;
     setSelected(null);
+    if (readerFullscreen.current && document.fullscreenElement) document.exitFullscreen()?.catch(() => {});
+    readerFullscreen.current = false;
     requestAnimationFrame(() => bookButtons.current[id]?.focus());
   };
   return (
@@ -170,12 +200,12 @@ export default function StorybookAdventure({ onBack }) {
       <header><p className="eyebrow">OATLE KIDS · STORYBOOK ADVENTURE</p><h1>A little shelf of wonder</h1><p>Choose a book. A new adventure is waiting inside.</p></header>
       <section className="storybook-shelf" aria-label="Storybook bookshelf">
         {storybooks.map(book => <button type="button" key={book.id} ref={element => { bookButtons.current[book.id] = element; }} className={`storybook-cover ${lastBook === book.id ? 'storybook-selected' : ''}`}
-          aria-label={`Read ${book.title}`} onClick={() => { setLastBook(book.id); setSelected(book); }}>
+          aria-label={`Read ${book.title}`} onClick={() => openBook(book)}>
           <img src={book.cover} alt={`${book.title} original cover`} loading="lazy" />
           <strong>{book.title}</strong><small>By {book.author}</small><span>{lastBook === book.id ? 'Read again' : 'Open book'} →</span>
         </button>)}
       </section>
-      {selected && <BookReader key={selected.id} book={selected} onClose={closeBook} />}
+      {selected && <BookReader key={selected.id} book={selected} onClose={closeBook} onToggleFullscreen={toggleFullscreen} />}
     </main>
   );
 }
