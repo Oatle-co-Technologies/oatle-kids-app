@@ -653,6 +653,7 @@ function App() {
   const [accessGrant, setAccessGrant] = useState(null);
   const hasAccess = hasActiveEntitlement(accessGrant, user?.id);
 
+  const [authEntry, setAuthEntry] = useState(() => ['login', 'signup'].includes(new URLSearchParams(window.location.search).get('auth')));
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoMessage, setPromoMessage] = useState("");
@@ -1949,10 +1950,14 @@ function App() {
       window.history.replaceState(null, "", url.pathname + url.search);
       setPasswordRecovery(false);
     }} />;
-  } else if (!user) {
+  } else if (!user || authEntry) {
     content = (
       <LoginPage
         onLogin={(loggedInUser) => {
+          setAuthEntry(false);
+          const url = new URL(window.location.href);
+          url.searchParams.delete('auth');
+          window.history.replaceState(null, '', url.pathname + url.search + url.hash);
           setAccessGrant(null);
           setAccessLoading(true);
           setUser(loggedInUser);
@@ -1989,15 +1994,15 @@ function App() {
           </p>
 
           <h1>
-            Access required
+            Choose your access
           </h1>
 
           <p className="login-intro">
-            Oatle Kids is in private testing. This account has not been given active access.
+            Your parent account is ready. Choose a monthly subscription or enter your promo code to start exploring.
           </p>
 
           <p className="login-intro">
-            Only approved testers can enter. If Oatle Kids has sent you an invitation code, you can redeem it below. Public subscriptions are closed.
+            R120 per month for Little Explorers and Big Kids adventures. Have a promo code? Redeem it below.
           </p>
 
           <button
@@ -2005,7 +2010,7 @@ function App() {
             disabled
             type="button"
           >
-            Subscriptions opening soon
+            Subscribe — R120/month
           </button>
 
           <p

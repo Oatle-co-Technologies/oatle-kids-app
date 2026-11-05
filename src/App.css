@@ -2714,3 +2714,6 @@ button:focus-visible,
   height: 42px;
   object-fit: contain;
 }
+
+.login-form .signup-terms { display: flex; flex-direction: row; align-items: flex-start; gap: 10px; font-size: .85rem; line-height: 1.5; }
+.login-form .signup-terms input { width: 20px; height: 20px; margin-top: 2px; flex: none; }

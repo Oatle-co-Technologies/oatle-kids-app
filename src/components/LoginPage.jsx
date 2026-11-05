@@ -2,7 +2,7 @@ import { useState } from "react";
 import PasswordField from "./PasswordField";
 import { supabase } from "../lib/supabase";
 function LoginPage({ onLogin }) {
-  const isSignUp = false;
+  const [isSignUp, setIsSignUp] = useState(() => new URLSearchParams(window.location.search).get('auth') === 'signup');
   const [isResetRequest, setIsResetRequest] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,20 +31,25 @@ function LoginPage({ onLogin }) {
       return;
     }
 
-    const { data, error: loginError } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-    setLoading(false);
-
-    if (loginError) {
-      setError(loginError.message);
-      return;
+    try {
+      if (isSignUp) {
+        const { data, error: signupError } = await supabase.auth.signUp({
+          email: email.trim(), password,
+          options: { emailRedirectTo: `${window.location.origin}/app.html` },
+        });
+        if (signupError) { setError(signupError.message); return; }
+        if (data.session) onLogin(data.user);
+        else setMessage('Check your email to confirm your account, then log in to choose a subscription or enter your promo code.');
+      } else {
+        const { data, error: loginError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (loginError) { setError(loginError.message); return; }
+        onLogin(data.user);
+      }
+    } catch {
+      setError("We couldn't connect. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-
-    onLogin(data.user);
   };
 
   return (
@@ -59,17 +64,17 @@ function LoginPage({ onLogin }) {
   />
 </div>
         <p className="eyebrow">
-          {isResetRequest ? "ACCOUNT RECOVERY" : isSignUp ? "JOIN THE ADVENTURE" : "PRIVATE TESTING"}
+          {isResetRequest ? "ACCOUNT RECOVERY" : isSignUp ? "JOIN THE ADVENTURE" : "WELCOME BACK"}
         </p>
 
-        <h1>{isResetRequest ? "Forgot your password?" : isSignUp ? "Create your account!" : "Invited testers only"}</h1>
+        <h1>{isResetRequest ? "Forgot your password?" : isSignUp ? "Create your account!" : "Log in to Oatle Kids"}</h1>
 
         <p className="login-intro">
           {isResetRequest
             ? "Enter your account email and we’ll send you a password reset link."
             : isSignUp
-            ? "Create an account to start your space learning adventure."
-            : "Oatle Kids is in private testing. Log in with the account you have been given access to."}
+            ? "Create your parent account, then choose the R120 monthly subscription or use a promo code."
+            : "Sign in to continue your adventures. New here? Create a parent account below."}
         </p>
 
 
@@ -100,6 +105,9 @@ function LoginPage({ onLogin }) {
             />
           )}
 
+          {isSignUp && !isResetRequest && <label className="signup-terms"><input type="checkbox" required />
+            <span>I agree to the <a href="/terms.html" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</span>
+          </label>}
           {error && <p className="login-error" role="alert">{error}</p>}
 
           {message && <p className="login-message" role="status">{message}</p>}
@@ -140,7 +148,11 @@ function LoginPage({ onLogin }) {
             setError("");
             setMessage("");
           }}>Back to log in</button>
-        ) : <p className="login-signup">Public registration is closed. Only approved testers can enter.</p>}
+        ) : <p className="login-signup">{isSignUp ? 'Already have an account?' : 'New to Oatle Kids?'}{' '}
+          <button className="text-button" type="button" disabled={loading} onClick={() => {
+            setIsSignUp(value => !value); setError(''); setMessage(''); setPassword('');
+          }}>{isSignUp ? 'Log in' : 'Create an account'}</button>
+        </p>}
       </div>
     </main>
   );
