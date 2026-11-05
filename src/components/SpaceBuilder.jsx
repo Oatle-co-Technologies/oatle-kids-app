@@ -1,3 +1,4 @@
+import ResponsivePlanetJourney from './ResponsivePlanetJourney';
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
 import { speak, stopSpeech } from '../utils/speech';
@@ -103,7 +104,10 @@ export default function SpaceBuilder({ onBack, soundOn = true }) {
   }
   return <main className={`cosmic-page sb-page sb-screen-${screen}`}><div className="cosmic-shell">
     <header className="cosmic-header"><LocalBackButton label={screen === 'missions' ? 'Explore' : 'Missions'} onClick={() => screen === 'missions' ? onBack() : go('missions')} /><p className="eyebrow">SPACE CHALLENGE ARCADE / CONSTRUCTION CREW</p><h1>{screen === 'missions' ? 'Space Builder' : screen === 'complete' ? 'Mission accomplished!' : build.title}</h1><p>{screen === 'missions' ? 'From launch pad to lunar outpost. Your next build starts here.' : screen === 'complete' ? build.success : build.location}</p></header>
-    {screen === 'missions' && <section className="cosmic-missions" aria-label="Construction missions">{SPACE_BUILDS.map((item, i) => <button className="cosmic-mission-card" type="button" key={item.id} onClick={() => chooseMission(i)}><div className="sb-card-art"><img src={PLANETS[i]} alt="" /><Blueprint build={item} /></div><span className="cosmic-card-copy"><small>MISSION 0{i + 1} · {item.location}</small><strong>{item.title}</strong><span>{item.parts.length} parts · {['Start building', 'Build further', 'Expert construction'][i]}</span><span className="cosmic-completed">{completed.includes(item.id) ? 'Mission completed ✓' : 'Ready for construction'}</span><b>Open briefing →</b></span></button>)}</section>}
+    {screen === 'missions' && <ResponsivePlanetJourney label="Construction missions" items={SPACE_BUILDS.map((item, i) => ({
+      id: item.id, title: item.title, subtitle: item.location, image: PLANETS[i],
+      complete: completed.includes(item.id), onSelect: () => chooseMission(i),
+    }))} />}
     {screen === 'briefing' && <section className="cosmic-briefing"><Blueprint build={build} /><div className="cosmic-brief-copy"><img className="cosmic-planet" src={PLANETS[index]} alt="" /><p className="eyebrow">MISSION 0{index + 1} / BRIEFING</p><h2>Build it. Power the expedition.</h2><p>{build.brief}</p><p>{build.parts.length} parts. Match the shape, position and direction.</p><p className="cosmic-note">Tap a part, then a square. Or drag it into place. Rotate triangles and panels before placing them. The blueprint stays beside you, and a guide is available.</p><button className="cosmic-primary" type="button" onClick={launch}>Start construction →</button></div></section>}
     {screen === 'play' && <section aria-label="Construction workshop">
       <div className="cosmic-status"><span><b>{placed.length}/{build.parts.length}</b> parts secured</span><span>MISSION 0{index + 1}</span><span>Take your time</span></div><div className="cosmic-progress" role="progressbar" aria-label="Construction complete" aria-valuemin={0} aria-valuemax={build.parts.length} aria-valuenow={placed.length}><span style={{ width: `${placed.length / build.parts.length * 100}%` }} /></div>
