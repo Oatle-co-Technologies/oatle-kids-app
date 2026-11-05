@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import StarTrailTrace from "./StarTrailTrace";
 import LittleAdventureHomes from "./LittleAdventureHomes";
 import ResponsivePlanetJourney from "./ResponsivePlanetJourney";
 import StorybookAdventure from "./StorybookAdventure";
@@ -226,7 +227,7 @@ const TRAIL_PATTERNS = {
     title: "Straight Line",
     cardText: "Across the sky",
     icon: "➖",
-    prompt: "Follow the stars in a straight line.",
+    prompt: "Start at the glowing star. Slide your finger along the dotted line.",
     progressId: "trail-straight",
     path: "M10 52 L90 52",
     stars: [
@@ -238,7 +239,7 @@ const TRAIL_PATTERNS = {
     title: "Zigzag",
     cardText: "Up, down, up",
     icon: "⚡",
-    prompt: "Follow the zigzag stars.",
+    prompt: "Start at the glowing star. Trace the zigzag line with your finger.",
     progressId: "trail-zigzag",
     path: "M9 72 L25 30 L41 72 L57 30 L73 72 L91 30",
     stars: [
@@ -250,7 +251,7 @@ const TRAIL_PATTERNS = {
     title: "Big Curve",
     cardText: "Around the moon",
     icon: "〰",
-    prompt: "Follow the stars around the big curve.",
+    prompt: "Start at the glowing star. Trace the curved line with your finger.",
     progressId: "trail-curve",
     path: "M9 74 C22 22 72 12 91 70",
     stars: [
@@ -262,7 +263,7 @@ const TRAIL_PATTERNS = {
     title: "Circle Orbit",
     cardText: "Round and round",
     icon: "⭕",
-    prompt: "Follow the stars around the circle.",
+    prompt: "Start at the glowing star. Trace all the way around the circle.",
     progressId: "trail-circle",
     path: "M50 14 C75 14 88 32 88 51 C88 72 72 87 50 87 C28 87 12 72 12 51 C12 31 28 14 50 14 Z",
     stars: [
@@ -274,7 +275,7 @@ const TRAIL_PATTERNS = {
     title: "Space Spiral",
     cardText: "Curl into the middle",
     icon: "🌀",
-    prompt: "Follow the spiral stars into the middle.",
+    prompt: "Start at the glowing star. Trace the spiral line into the middle.",
     progressId: "trail-spiral",
     path: "M10 77 C12 24 84 12 90 55 C94 90 38 94 29 61 C22 34 65 25 73 51 C79 70 49 78 43 59 C40 48 52 43 58 51",
     stars: [
@@ -548,7 +549,6 @@ export default function LittleExplorers({
   const [shapePopped, setShapePopped] = useState([]);
   const [wrongShape, setWrongShape] = useState(null);
   const [trailPattern, setTrailPattern] = useState(null);
-  const [trailStep, setTrailStep] = useState(0);
   const [discoveryRound, setDiscoveryRound] = useState(0);
   const [wrongDiscoveryChoice, setWrongDiscoveryChoice] = useState(null);
   const [correctDiscoveryChoice, setCorrectDiscoveryChoice] = useState(null);
@@ -832,7 +832,6 @@ export default function LittleExplorers({
     }
     if (planet.activity === "trail") {
       setTrailPattern(planet.pattern);
-      setTrailStep(0);
     }
     if (planet.activity === "shapes") {
       setShapeRound(planet.shapeRound);
@@ -1059,31 +1058,14 @@ export default function LittleExplorers({
     }, 800);
   };
 
-  const showTrailMenu = () => {
-    stopSpeech();
-    setTrailPattern(null);
-    setTrailStep(0);
-  };
-
   const startTrailPattern = (pattern) => {
     setTrailPattern(pattern);
-    setTrailStep(0);
   };
 
-  const tapTrailStar = (index) => {
-    if (!trailPattern) return;
-    if (index !== trailStep) return;
-
-    const pattern = TRAIL_PATTERNS[trailPattern];
-    const next = trailStep + 1;
-    setTrailStep(next);
-    playBoop(soundOn, next + 1);
-
-    if (next === pattern.stars.length) {
-      completePlanet();
-      playVictorySong();
-      celebratePlanet(650, false);
-    }
+  const finishTrail = () => {
+    completePlanet();
+    playVictorySong();
+    celebratePlanet(650, false);
   };
 
   const getCanvasPoint = (event) => {
@@ -1624,59 +1606,18 @@ export default function LittleExplorers({
     }
 
     const pattern = TRAIL_PATTERNS[trailPattern];
-    const finished = trailStep === pattern.stars.length;
-    const rocketPoint = pattern.stars[Math.min(trailStep, pattern.stars.length - 1)];
 
     return (
       <main className="little-explorers-page little-activity-page">
         <ActivityHeader
           title={pattern.title}
-          instruction="Tap the glowing stars in order and help the rocket fly."
+          instruction="Slide your finger along the dotted line."
           backLabel={`${activeAdventure.title} map`}
           onBack={showMap}
         />
 
-        <section className="star-trail-space" aria-label={`${pattern.title} star trail`}>
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            <path d={pattern.path} />
-          </svg>
-
-          <span
-            className={`trail-rocket ${finished ? "finished" : ""}`}
-            style={{ "--star-x": `${rocketPoint.x}%`, "--star-y": `${rocketPoint.y}%` }}
-            aria-hidden="true"
-          >
-            🚀
-          </span>
-
-          {pattern.stars.map((star, index) => (
-            <button
-              key={`${star.x}-${star.y}`}
-              type="button"
-              className={`trail-star ${index < trailStep ? "visited" : ""} ${index === trailStep ? "current" : ""}`}
-              style={{ "--star-x": `${star.x}%`, "--star-y": `${star.y}%` }}
-              onClick={() => tapTrailStar(index)}
-              aria-label={index === trailStep ? "Tap the glowing star" : `Star ${index + 1}`}
-            >
-              ★
-            </button>
-          ))}
-
-          {finished && (
-            <div className="little-success-card" role="status">
-              <span aria-hidden="true">🌟🚀</span>
-              <strong>Star trail complete!</strong>
-              <div>
-                <button type="button" onClick={() => setTrailStep(0)}>
-                  ↻ Again
-                </button>
-                <button type="button" onClick={showTrailMenu}>
-                  ⭐ Trails
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
+        <StarTrailTrace key={trailPattern} pattern={pattern} onComplete={finishTrail}
+          onReach={index => playBoop(soundOn, index + 1)} />
       </main>
     );
   }
