@@ -15,4 +15,4 @@ Supabase configuration (values belong in the dashboard, not Git):
 
 Optional frontend override: `VITE_PAYFAST_CHECKOUT_FUNCTION`; default `quick-service`.
 
-Deployment record: the live database routine and edge function source were updated through the user's open Supabase dashboard. Merchant-secret readiness and activation flags still require verification. No charge or purchase has been performed.
+Deployment record: the live database routine and edge function source were updated through the user's open Supabase dashboard. The user entered the live merchant credentials directly in Supabase; both activation flags were saved as true on 5 November 2026. No charge or purchase has been performed, so a real checkout and resulting access grant remain unverified end to end.
