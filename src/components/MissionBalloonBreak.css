@@ -1,0 +1,9 @@
+.mission-break-paused > :not(.local-back-button):not(.writing-back-space) { visibility: hidden; }
+.mission-break-touch-shield { position: fixed; inset: calc(var(--app-back-button-top, 12px) + 60px) 0 0; z-index: 20000; }
+.reading-mini-break.mission-balloon-break { z-index: 20001; }
+.mission-balloon-break .reading-mini-break-prompt { top: calc(var(--app-back-button-top, 12px) + 62px); }
+.mission-balloon-break .reading-mini-break-field { top: calc(var(--app-back-button-top, 12px) + 155px); }
+@media (orientation: landscape) and (max-height: 500px) {
+  .mission-balloon-break .reading-mini-break-prompt { top: calc(var(--app-back-button-top, 12px) + 42px); }
+  .mission-balloon-break .reading-mini-break-field { top: calc(var(--app-back-button-top, 12px) + 105px); }
+}

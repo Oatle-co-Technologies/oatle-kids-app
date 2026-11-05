@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { makeReadingBreakBalloons } from './readingBreakLogic';
 import './ReadingBalloonBreak.css';
 
-export default function ReadingBalloonBreak({ onComplete, onPop }) {
+export default function ReadingBalloonBreak({ onComplete, onPop, className = '', label = 'Reading mini break', resumeLabel = 'Lovely! Let’s keep reading.' }) {
   const [balloons] = useState(makeReadingBreakBalloons);
   const [popped, setPopped] = useState([]);
   const poppedIds = useRef(new Set());
@@ -35,9 +35,9 @@ export default function ReadingBalloonBreak({ onComplete, onPop }) {
     }
   }
 
-  return createPortal(<section className="reading-mini-break" aria-label="Reading mini break">
+  return createPortal(<section className={`reading-mini-break ${className}`} aria-label={label}>
     <div className="reading-mini-break-prompt" role="status">
-      <h2>{finished ? 'Lovely! Let’s keep reading.' : 'Pop the balloons for a mini break!'}</h2>
+      <h2>{finished ? resumeLabel : 'Pop the balloons for a mini break!'}</h2>
       <p>{finished ? 'Back to your activity…' : 'A little fun, then back to your activity.'}</p>
     </div>
     <div className="reading-mini-break-field">

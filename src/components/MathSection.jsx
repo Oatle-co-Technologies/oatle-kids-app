@@ -1,3 +1,4 @@
+import MissionBalloonBreak from './MissionBalloonBreak';
 import { prepareMathQuestion, mathsQuestionNarration } from "../utils/mathsLanguage";
 import { selectAssessment, restoreAssessmentQuestions, assessmentResults as summarizeAssessment } from "../utils/assessmentSelection";
 import { beginMissionRun, finishMissionRun } from "../utils/missionReplay";
@@ -2919,6 +2920,7 @@ export default function MathSection({
 
   return (
     <main className="math-page math-mission-page">
+      <MissionBalloonBreak key={mission.id} step={progress.question} total={questions.length} soundOn={soundOn} resumePrompt={mathsQuestionNarration(question)} />
       <LocalBackButton
         className="page-back-button"
         label="Planet"

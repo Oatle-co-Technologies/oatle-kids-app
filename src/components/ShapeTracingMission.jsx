@@ -1,3 +1,4 @@
+import MissionBalloonBreak from './MissionBalloonBreak';
 import WritingBackButton from "./WritingBackButton";
 import { useEffect, useRef, useState } from "react";
 
@@ -362,6 +363,7 @@ export default function ShapeTracingMission({
 
   return (
     <div className="alphabet-tracing-mission shape-tracing-mission">
+      <MissionBalloonBreak step={shapeIndex} total={SHAPES.length} soundOn={soundOn} resumePrompt={`Trace the ${currentShape.name.toLowerCase()}`} />
 
       <div className="alphabet-portrait-message">
         <div className="alphabet-portrait-title">
