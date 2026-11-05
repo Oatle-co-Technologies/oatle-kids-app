@@ -76,3 +76,7 @@
   .storybook-reader-footer > p { display: none; }
   .storybook-reader-header h2 { font-size: 1rem; }
 }
+
+.storybook-window-controls { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.storybook-reader:fullscreen { width: 100vw; height: 100dvh; max-width: none; max-height: none; }
+@media (max-width: 600px) { .storybook-window-controls { gap: 5px; } .storybook-window-controls button { padding: 8px; font-size: .8rem; } }
