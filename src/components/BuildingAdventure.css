@@ -28,14 +28,14 @@
 .building-drag-hint { flex-basis: 100%; color: #a9bbd9; font-size: .78rem; text-align: center; font-weight: 600; margin-top: 4px; }
 .building-play-layout { display: flex; align-items: flex-start; justify-content: center; gap: 20px; }
 .building-board-wrap { width: min(100%,520px); min-width: 0; }
-.building-board { position: relative; width: 100%; aspect-ratio: 6 / 5; border: 2px solid #8299b7; border-radius: 18px; box-sizing: border-box; background-color: #f1f2e8; background-image: radial-gradient(circle,#b5c3ca 1.5px,transparent 2px); background-size: calc(100% / 6) calc(100% / 5); background-position: center; isolation: isolate; touch-action: none; overflow: hidden; box-shadow: 0 15px 35px #0003; }
-.building-board::after { content: ''; position: absolute; inset: auto 0 0; height: 5px; background: #849b9f; pointer-events: none; z-index: 0; }
+.building-board { position: relative; width: 100%; aspect-ratio: 6 / 5; border: 2px solid #8299b7; border-radius: 18px; box-sizing: border-box; background: radial-gradient(ellipse at 50% 90%, #29476a 0%, #182e50 60%, #142644 100%); isolation: isolate; touch-action: none; overflow: hidden; box-shadow: 0 15px 35px #0003; }
+.building-board::after { content: ''; position: absolute; inset: auto 0 0; height: 5px; background: #ffffff12; pointer-events: none; z-index: 0; }
 .building-space { position: absolute; width: calc(100% / 6); height: 20%; border: 0; padding: 0; background: transparent; cursor: pointer; border-radius: 8px; z-index: 0; }
 .building-space:hover { background: #80b6ce20; }
 .building-piece,.building-target { position: absolute; border: 0; background: transparent; margin: 0; padding: 0; border-radius: 8px; min-width: 0; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; z-index: 2; }
 .building-piece > svg,.building-target > svg { display: block; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .building-piece:active { cursor: grabbing; }
-.building-piece.is-selected { outline: 3px solid #233a68; outline-offset: -2px; }
+.building-piece.is-selected { outline: 3px solid #fff1a1; outline-offset: -2px; }
 .building-filled { pointer-events: none; z-index: 1; }
 .building-target { z-index: 2; cursor: pointer; }
 .building-ghost { opacity: .65; pointer-events: none; z-index: 4; filter: drop-shadow(0 5px 3px #14234544); }
@@ -54,7 +54,7 @@
 .building-tools > button:disabled { opacity: .38; cursor: default; }
 .building-tools > button.building-next { background: #ffdc70; border-color: #ffdc70; color: #15264b; }
 .building-page button:focus-visible { outline: 3px solid #ffdc70; outline-offset: 3px; }
-.building-board button:focus-visible { outline-color: #213d68; outline-offset: -3px; }
+.building-board button:focus-visible { outline-color: #fff1a1; outline-offset: -3px; }
 .little-adventure-building { border-color: #efb976; }
 .little-adventure-building > span > svg { width: 66px; height: 66px; }
 @media (max-width: 620px) {
@@ -99,4 +99,38 @@
   .building-palette > button { width: 47px; min-height: 72px; }
   .building-palette > button > svg { width: 39px; height: 43px; }
   .building-tools > button { padding: 10px 12px; }
+}
+
+/* Quiet space, with a handful of fixed stars and no moving decoration. */
+.little-explorers-page.building-page {
+  background:
+    radial-gradient(circle at 8% 13%, #dcecff80 0 1px, transparent 1.5px),
+    radial-gradient(circle at 29% 6%, #dcecff55 0 1px, transparent 1.5px),
+    radial-gradient(circle at 76% 18%, #dcecff70 0 1px, transparent 1.5px),
+    radial-gradient(circle at 93% 38%, #dcecff60 0 1px, transparent 1.5px),
+    radial-gradient(circle at 6% 65%, #dcecff55 0 1px, transparent 1.5px),
+    radial-gradient(circle at 83% 76%, #dcecff55 0 1px, transparent 1.5px),
+    radial-gradient(circle at 40% 92%, #dcecff60 0 1px, transparent 1.5px),
+    linear-gradient(165deg, #182f55, #0e1d39);
+}
+.building-header h1, .building-mode-card > strong, .building-choice-grid strong {
+  font-family: "Nunito", sans-serif;
+  font-weight: 900;
+}
+.building-board { border-color: #718cab; box-shadow: inset 0 2px 12px #08162b55, 0 12px 28px #0003; }
+.building-piece > svg, .building-picture { filter: drop-shadow(0 3px 2px #06132955); }
+.building-target > svg { filter: none; }
+.building-palette > button { min-height: 96px; border-radius: 18px; }
+.building-palette > button > svg { width: 64px; height: 64px; }
+.building-mode-art { background: radial-gradient(ellipse at center, #ffffff0c, transparent 72%); }
+.building-page button { -webkit-tap-highlight-color: transparent; }
+@media (max-width: 620px) {
+  .building-palette > button { min-height: 82px; }
+  .building-palette > button > svg { width: 46px; height: 50px; }
+}
+@media (max-width: 370px) {
+  .building-palette > button > svg { width: 36px; height: 43px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .building-page *, .building-page *::before, .building-page *::after { animation: none !important; transition: none !important; }
 }

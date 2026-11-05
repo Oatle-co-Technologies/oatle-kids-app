@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
 import useLittleMissionCompletion from './useLittleMissionCompletion';
 import { speak, stopSpeech } from '../utils/speech';
@@ -6,19 +6,36 @@ import { BLOCKS, SHAPES, BUILDS, BOARD, CELL, MAX_BLOCKS, containsPoint, freePla
 import './BuildingAdventure.css';
 
 function PieceArt({ piece, brick = false, outline = false }) {
+  const id = useId().replace(/:/g, '');
   const { width: w, height: h, colour, shape } = piece;
-  const fill = outline ? 'transparent' : colour;
-  const common = { fill, stroke: outline ? colour : 'rgba(20,30,60,.18)', strokeWidth: outline ? 4 : 2, strokeDasharray: outline ? '8 6' : undefined };
+  // Depth stays inside the original piece bounds, preserving placement geometry.
+  const depth = 8;
+  const right = w - depth - 3;
+  const bottom = h - depth - 3;
+  const face = shape === 'triangle'
+    ? `M${w / 2 - 3} 4 Q${w / 2} 1 ${w / 2 + 3} 6 L${right} ${bottom - 4} Q${right + 2} ${bottom} ${right - 3} ${bottom} H7 Q3 ${bottom} 5 ${bottom - 5} Z`
+    : undefined;
+  const silhouette = (props) => shape === 'triangle' ? <path d={face} {...props} />
+    : shape === 'circle' ? <ellipse cx={(right + 3) / 2} cy={(bottom + 3) / 2} rx={(right - 3) / 2} ry={(bottom - 3) / 2} {...props} />
+      : <rect x="3" y="3" width={right - 3} height={bottom - 3} rx="9" {...props} />;
   return <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} aria-hidden="true" focusable="false">
-    {shape === 'triangle' ? <path d={`M${w / 2} 4 L${w - 4} ${h - 4} H4 Z`} {...common} />
-      : shape === 'circle' ? <circle cx={w / 2} cy={h / 2} r={w / 2 - 4} {...common} />
-        : <rect x="3" y="3" width={w - 6} height={h - 6} rx={brick ? 9 : 5} {...common} />}
-    {brick && !outline && <>
-      <path d={`M10 ${h - 12} H${w - 10}`} stroke="rgba(30,30,60,.16)" strokeWidth="5" strokeLinecap="round" />
-      {Array.from({ length: w / CELL }, (_, i) => <g key={i}>
-        <ellipse cx={30 + i * CELL} cy="20" rx="14" ry="8" fill="rgba(255,255,255,.33)" />
-        <path d={`M${17 + i * CELL} 20 Q${30 + i * CELL} 32 ${43 + i * CELL} 20`} fill="none" stroke="rgba(20,30,60,.12)" strokeWidth="2" />
-      </g>)}
+    <defs>
+      <linearGradient id={`${id}-face`} x1="0" y1="0" x2=".8" y2="1" gradientUnits="objectBoundingBox">
+        <stop stopColor="#fff" stopOpacity=".48" /><stop offset=".35" stopColor={colour} /><stop offset="1" stopColor={colour} />
+      </linearGradient>
+      <linearGradient id={`${id}-edge`} x2="0" y2="1">
+        <stop stopColor={colour} /><stop offset="1" stopColor="#142345" stopOpacity=".65" />
+      </linearGradient>
+    </defs>
+    {outline ? silhouette({ fill: `${colour}18`, stroke: colour, strokeWidth: 3, strokeDasharray: '7 5', transform: 'translate(4 4)' }) : <>
+      {silhouette({ transform: `translate(${depth} ${depth})`, fill: `url(#${id}-edge)`, stroke: '#10213c', strokeOpacity: .22, strokeWidth: 2 })}
+      {shape !== 'circle' && <path d={shape === 'triangle'
+        ? `M${right} ${bottom} l${depth} ${depth} H${7 + depth} L7 ${bottom} Z`
+        : `M12 ${bottom} H${right - 7} Q${right} ${bottom} ${right} ${bottom - 8} V12 l${depth} ${depth} V${bottom} Q${right + depth} ${bottom + depth} ${right} ${bottom + depth} H${12 + depth} Z`}
+        fill={colour} />}
+      {silhouette({ fill: `url(#${id}-face)`, stroke: '#fff', strokeOpacity: .4, strokeWidth: 1.5 })}
+      {shape !== 'triangle' && shape !== 'circle' && <rect x="9" y="9" width={right - 15} height={bottom - 15} rx="6" fill="none" stroke="#fff" strokeOpacity=".25" strokeWidth="2" />}
+      {brick && <path d={`M14 13 H${right - 12}`} stroke="#fff" strokeOpacity=".55" strokeWidth="3" strokeLinecap="round" />}
     </>}
   </svg>;
 }
@@ -36,13 +53,10 @@ function BuildPicture({ build, className = '' }) {
 }
 
 export function BuildingIcon() {
-  return <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-    <rect x="8" y="57" width="43" height="34" rx="6" fill="#ffdc70" />
-    <rect x="55" y="57" width="36" height="34" rx="6" fill="#66caff" />
-    <rect x="31" y="18" width="43" height="35" rx="6" fill="#ff758a" />
-    <ellipse cx="29" cy="66" rx="10" ry="5" fill="#fff" opacity=".35" />
-    <ellipse cx="73" cy="66" rx="10" ry="5" fill="#fff" opacity=".35" />
-    <ellipse cx="52" cy="27" rx="10" ry="5" fill="#fff" opacity=".35" />
+  return <svg viewBox="0 0 140 140" aria-hidden="true" focusable="false">
+    <g transform="translate(8 74)"><PieceArt piece={BLOCKS.yellow} brick /></g>
+    <g transform="translate(8 18)"><PieceArt piece={BLOCKS.red} brick /></g>
+    <g transform="translate(68 18)"><PieceArt piece={BLOCKS.blue} brick /></g>
   </svg>;
 }
 
