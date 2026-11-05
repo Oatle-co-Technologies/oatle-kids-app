@@ -8,42 +8,65 @@ import './BuildingAdventure.css';
 function PieceArt({ piece, brick = false, outline = false }) {
   const id = useId().replace(/:/g, '');
   const { width: w, height: h, colour, shape } = piece;
-  // Depth stays inside the original piece bounds, preserving placement geometry.
-  const depth = 8;
-  const right = w - depth - 3;
-  const bottom = h - depth - 3;
-  const face = shape === 'triangle'
-    ? `M${w / 2 - 3} 4 Q${w / 2} 1 ${w / 2 + 3} 6 L${right} ${bottom - 4} Q${right + 2} ${bottom} ${right - 3} ${bottom} H7 Q3 ${bottom} 5 ${bottom - 5} Z`
-    : undefined;
-  const silhouette = (props) => shape === 'triangle' ? <path d={face} {...props} />
-    : shape === 'circle' ? <ellipse cx={(right + 3) / 2} cy={(bottom + 3) / 2} rx={(right - 3) / 2} ry={(bottom - 3) / 2} {...props} />
-      : <rect x="3" y="3" width={right - 3} height={bottom - 3} rx="9" {...props} />;
-  return <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} aria-hidden="true" focusable="false">
+  // Keep the full front face in the placement cell. The solid toy extends
+  // upwards and to the right, like a wooden block viewed from above.
+  const d = Math.min(w, h) * .27;
+  const face = shape === 'triangle' ? `M${w / 2} 3 L${w - 3} ${h - 3} H3 Z`
+    : shape === 'circle' ? null : `M8 2 H${w - 8} Q${w - 2} 2 ${w - 2} 8 V${h - 8} Q${w - 2} ${h - 2} ${w - 8} ${h - 2} H8 Q2 ${h - 2} 2 ${h - 8} V8 Q2 2 8 2 Z`;
+  const surface = props => shape === 'circle'
+    ? <ellipse cx={w / 2} cy={h / 2} rx={w / 2 - 3} ry={h / 2 - 3} {...props} />
+    : <path d={face} strokeLinejoin="round" {...props} />;
+  const letter = piece === BLOCKS.red ? 'A' : piece === BLOCKS.blue ? 'B' : null;
+  return <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} aria-hidden="true" focusable="false" className="building-toy-art">
     <defs>
-      <linearGradient id={`${id}-face`} x1="0" y1="0" x2=".8" y2="1" gradientUnits="objectBoundingBox">
-        <stop stopColor="#fff" stopOpacity=".48" /><stop offset=".35" stopColor={colour} /><stop offset="1" stopColor={colour} />
+      <linearGradient id={`${id}-paint`} x1="0" y1="0" x2="1" y2="1">
+        <stop stopColor="#fff" stopOpacity=".28" /><stop offset=".42" stopColor="#fff" stopOpacity="0" /><stop offset="1" stopColor="#000" stopOpacity=".13" />
       </linearGradient>
-      <linearGradient id={`${id}-edge`} x2="0" y2="1">
-        <stop stopColor={colour} /><stop offset="1" stopColor="#142345" stopOpacity=".65" />
+      <linearGradient id={`${id}-wood`} x1="0" y1="0" x2="0" y2="1">
+        <stop stopColor="#ffe2a8" /><stop offset=".55" stopColor="#eec184" /><stop offset="1" stopColor="#d49b58" />
+      </linearGradient>
+      <linearGradient id={`${id}-side`} x1="0" y1="0" x2="1" y2="1">
+        <stop stopColor="#000" stopOpacity=".12" /><stop offset="1" stopColor="#000" stopOpacity=".38" />
       </linearGradient>
     </defs>
-    {outline ? silhouette({ fill: `${colour}18`, stroke: colour, strokeWidth: 3, strokeDasharray: '7 5', transform: 'translate(4 4)' }) : <>
-      {silhouette({ transform: `translate(${depth} ${depth})`, fill: `url(#${id}-edge)`, stroke: '#10213c', strokeOpacity: .22, strokeWidth: 2 })}
-      {shape !== 'circle' && <path d={shape === 'triangle'
-        ? `M${right} ${bottom} l${depth} ${depth} H${7 + depth} L7 ${bottom} Z`
-        : `M12 ${bottom} H${right - 7} Q${right} ${bottom} ${right} ${bottom - 8} V12 l${depth} ${depth} V${bottom} Q${right + depth} ${bottom + depth} ${right} ${bottom + depth} H${12 + depth} Z`}
-        fill={colour} />}
-      {silhouette({ fill: `url(#${id}-face)`, stroke: '#fff', strokeOpacity: .4, strokeWidth: 1.5 })}
-      {shape !== 'triangle' && shape !== 'circle' && <rect x="9" y="9" width={right - 15} height={bottom - 15} rx="6" fill="none" stroke="#fff" strokeOpacity=".25" strokeWidth="2" />}
-      {brick && <path d={`M14 13 H${right - 12}`} stroke="#fff" strokeOpacity=".55" strokeWidth="3" strokeLinecap="round" />}
+    {outline ? surface({ fill: `${colour}16`, stroke: colour, strokeWidth: 3, strokeDasharray: '7 5' }) : <>
+      {/* Separate solid faces, not an offset outline or a duplicate silhouette. */}
+      {shape === 'circle' ? <>
+        {surface({ transform: `translate(${d} ${-d})`, fill: colour })}
+        <path d={`M${w / 2} 3 L${w / 2 + d} ${3 - d} A${w / 2 - 3} ${h / 2 - 3} 0 0 1 ${w / 2 + d} ${h - 3 - d} L${w / 2} ${h - 3} Z`} fill={colour} />
+        <path d={`M${w / 2} 3 L${w / 2 + d} ${3 - d} A${w / 2 - 3} ${h / 2 - 3} 0 0 1 ${w / 2 + d} ${h - 3 - d} L${w / 2} ${h - 3} Z`} fill={`url(#${id}-side)`} />
+      </> : shape === 'triangle' ? <>
+        <path d={`M${w / 2} 3 l${d} ${-d} L${w - 3 + d} ${h - 3 - d} L${w - 3} ${h - 3} Z`} fill={colour} stroke={colour} strokeWidth="3" strokeLinejoin="round" />
+        <path d={`M${w / 2} 3 l${d} ${-d} L${w - 3 + d} ${h - 3 - d} L${w - 3} ${h - 3} Z`} fill={`url(#${id}-side)`} />
+        <path d={`M3 ${h - 3} L${w / 2} 3 l${d} ${-d} L${3 + d} ${h - 3 - d} Z`} fill={colour} />
+      </> : <>
+        <path d={`M5 4 L${5 + d} ${4 - d} H${w - 5 + d} L${w - 5} 4 Z`} fill={colour} stroke={colour} strokeWidth="5" strokeLinejoin="round" />
+        <path d={`M5 4 L${5 + d} ${4 - d} H${w - 5 + d} L${w - 5} 4 Z`} fill="#fff" opacity=".32" />
+        <path d={`M${w - 3} 5 l${d} ${-d} V${h - 7 - d} q0 5 -5 8 L${w - 8} ${h - 2} Z`} fill={colour} stroke={colour} strokeWidth="3" strokeLinejoin="round" />
+        <path d={`M${w - 3} 5 l${d} ${-d} V${h - 7 - d} q0 5 -5 8 L${w - 8} ${h - 2} Z`} fill={`url(#${id}-side)`} />
+        <path d={`M${d + 10} ${1 - d / 2} H${w - 10 + d / 2}`} fill="none" stroke="#fff" strokeOpacity=".28" strokeWidth="1.5" />
+      </>}
+      {surface({ fill: letter ? `url(#${id}-wood)` : colour, stroke: '#000', strokeOpacity: .12, strokeWidth: 1 })}
+      {surface({ fill: `url(#${id}-paint)` })}
+      {letter ? <>
+        <rect x="9" y="9" width={w - 18} height={h - 18} rx="3" fill={colour} stroke="#a46732" strokeOpacity=".3" strokeWidth="1.5" />
+        <path d={`M11 ${h - 10} V12 H${w - 11}`} fill="none" stroke="#fff" strokeOpacity=".45" strokeWidth="1.5" />
+        <text x={w / 2} y={h / 2 + 1} dominantBaseline="central" textAnchor="middle" fill="#fff1cf" stroke="#000" strokeOpacity=".08" strokeWidth=".5" fontFamily="Nunito, sans-serif" fontWeight="900" fontSize={h * .52}>{letter}</text>
+      </> : shape !== 'triangle' && shape !== 'circle' && <>
+        <path d={`M8 ${h - 10} V10 Q8 7 12 7 H${w - 10}`} stroke="#fff" strokeOpacity=".48" strokeWidth="2" fill="none" strokeLinecap="round" />
+        <path d={`M12 ${h - 7} H${w - 11}`} stroke="#000" strokeOpacity=".1" strokeWidth="2" fill="none" strokeLinecap="round" />
+      </>}
+      {shape === 'triangle' && <path d={`M10 ${h - 10} L${w / 2} 9`} fill="none" stroke="#fff" strokeOpacity=".4" strokeWidth="2.5" strokeLinecap="round" />}
+      {shape === 'circle' && <ellipse cx={w / 2} cy={h / 2} rx={w / 2 - 8} ry={h / 2 - 8} fill="none" stroke="#fff" strokeOpacity=".3" strokeWidth="2" />}
+      {brick && !letter && <path d={`M12 ${h - 13} Q${w / 2} ${h - 15} ${w - 12} ${h - 12}`} fill="none" stroke="#75451e" strokeOpacity=".1" strokeWidth="1" />}
     </>}
   </svg>;
 }
 
 function BuildPicture({ build, className = '' }) {
   const left = Math.min(...build.targets.map(t => t.x)) - 18;
-  const top = Math.min(...build.targets.map(t => t.y)) - 18;
-  const width = Math.max(...build.targets.map(t => t.x + SHAPES[t.kind].width)) - left + 18;
+  const top = Math.min(...build.targets.map(t => t.y)) - 35;
+  const width = Math.max(...build.targets.map(t => t.x + SHAPES[t.kind].width)) - left + 35;
   const height = Math.max(...build.targets.map(t => t.y + SHAPES[t.kind].height)) - top + 18;
   return <svg className={`building-picture ${className}`} viewBox={`${left} ${top} ${width} ${height}`} aria-label={build.title} role="img">
     {build.targets.map(target => <g key={target.id} transform={`translate(${target.x},${target.y})`}>
@@ -53,7 +76,7 @@ function BuildPicture({ build, className = '' }) {
 }
 
 export function BuildingIcon() {
-  return <svg viewBox="0 0 140 140" aria-hidden="true" focusable="false">
+  return <svg viewBox="0 -10 155 160" aria-hidden="true" focusable="false">
     <g transform="translate(8 74)"><PieceArt piece={BLOCKS.yellow} brick /></g>
     <g transform="translate(8 18)"><PieceArt piece={BLOCKS.red} brick /></g>
     <g transform="translate(68 18)"><PieceArt piece={BLOCKS.blue} brick /></g>
@@ -80,7 +103,7 @@ export default function BuildingAdventure({ onBack, soundOn, mission, onComplete
   const build = BUILDS[buildIndex];
   const isCopy = mode === 'copy';
   // Keep the picture's layers consistent even when a child builds in any order.
-  const pieces = isCopy ? build.targets.map(target => filled.find(piece => piece.targetId === target.id)).filter(Boolean) : freePieces;
+  const pieces = isCopy ? build.targets.map(target => filled.find(piece => piece.targetId === target.id)).filter(Boolean) : [...freePieces].sort((a, b) => b.y - a.y || a.x - b.x);
   const definitions = isCopy ? SHAPES : BLOCKS;
   const complete = isCopy && filled.length === build.targets.length;
   useLittleMissionCompletion(complete, onComplete);
