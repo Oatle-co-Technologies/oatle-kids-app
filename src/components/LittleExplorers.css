@@ -1003,6 +1003,24 @@
   text-transform: uppercase;
 }
 
+.balloon-listen-again {
+  grid-column: 2;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #8fe7ff;
+  border-radius: 50%;
+  background: #253e70;
+  color: #fff;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.balloon-listen-again svg { width: 28px; height: 28px; }
+.balloon-listen-again:focus-visible { outline: 3px solid #ffd45c; outline-offset: 3px; }
+.balloon-listen-again:disabled { opacity: .45; cursor: default; }
+
 .balloon-learning-prompt > strong {
   grid-column: 1;
   font: 900 clamp(1rem, 2.6vw, 1.35rem)/1.05 "Nunito", Arial, sans-serif;

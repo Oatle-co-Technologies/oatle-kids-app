@@ -520,7 +520,7 @@ function ActivityHeader({ title, instruction, onBack, backLabel = "Little Explor
       <div>
         <p className="eyebrow">LITTLE EXPLORERS</p>
         <h1>{title}</h1>
-        <p>{instruction}</p>
+        {instruction && <p>{instruction}</p>}
       </div>
     </header>
   );
@@ -1358,8 +1358,8 @@ export default function LittleExplorers({
     return (
       <main className="little-explorers-page little-activity-page">
         <ActivityHeader
-          title={lesson.title}
-          instruction={balloonBreak ? "Celebration bubble break!" : round.prompt}
+          title="Balloon Adventure"
+          instruction={balloonBreak ? "Celebration bubble break!" : undefined}
           backLabel={`${activeAdventure.title} map`}
           onBack={showMap}
         />
@@ -1404,18 +1404,20 @@ export default function LittleExplorers({
             </>
           ) : (
             <>
-              <div className="balloon-learning-prompt" aria-live="polite">
+              <div className="balloon-learning-prompt">
                 <span>Round {balloonRound + 1} of {lesson.rounds.length}</span>
-                <strong>{round.prompt}</strong>
-                {lesson.kind === "colours" ? (
-                  <i
-                    className="balloon-target-colour"
-                    style={{ "--target-colour": BALLOON_COLOURS[round.target] }}
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <b aria-hidden="true">{round.target}</b>
-                )}
+                <button
+                  type="button"
+                  className="balloon-listen-again"
+                  aria-label="Listen again"
+                  disabled={!soundOn || balloonFinished}
+                  onClick={() => speak(round.prompt)}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M4 9h4l5-4v14l-5-4H4Z" fill="currentColor" />
+                    <path d="M16 8q4 4 0 8m3-11q7 7 0 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                </button>
               </div>
 
               {round.choices.map((choice, index) => {
