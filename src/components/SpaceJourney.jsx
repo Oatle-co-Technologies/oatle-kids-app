@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { currentDestination, journeyPoints, JOURNEY_WIDTH, JOURNEY_STEP, routeBetween } from './spaceJourneyLogic';
 import './SpaceJourney.css';
 
-export default function SpaceJourney({ items, currentId, label = 'Adventure journey', storageKey, playful = false, positions, stageHeight, className = '', autoScrollCurrent = true, showMissionStatus = false, rocketLift = 55, pathBuilder = routeBetween, compactLabels = false, numberedStops = false, centerContent, closingPath, renderPlanet }) {
+export default function SpaceJourney({ items, currentId, label = 'Adventure journey', storageKey, playful = false, positions, stageHeight, className = '', autoScrollCurrent = true, showMissionStatus = false, conciseStatus = false, rocketLift = 55, pathBuilder = routeBetween, compactLabels = false, numberedStops = false, centerContent, closingPath, renderPlanet }) {
   const [remembered] = useState(() => {
     try { return storageKey ? sessionStorage.getItem(storageKey) : null; } catch { return null; }
   });
@@ -82,7 +82,7 @@ export default function SpaceJourney({ items, currentId, label = 'Adventure jour
               <span className="journey-planet">{renderPlanet ? renderPlanet(item, index) : item.art || <img src={item.image} alt="" loading="lazy" draggable="false" />}{item.badge && <span className="journey-world-badge">{item.badge}</span>}</span>
               <span className="journey-stamp">{numberedStops ? index + 1 : item.locked ? '🔒' : item.complete ? '✓' : index === current ? '✦' : String(index + 1).padStart(2, '0')}</span>
               {compactLabels ? <span className="journey-label-plate"><strong>{item.title}</strong><small>{item.subtitle}</small></span> : <><strong>{item.title}</strong><small>{item.locked && !showMissionStatus ? 'Finish the stop before me' : item.subtitle}</small></>}
-              {showMissionStatus && <span className="journey-mission-status">{compactLabels ? (item.free ? 'Free drawing' : item.locked ? 'Locked' : index === current ? 'You are here' : item.complete ? 'Completed' : 'Ready') : item.locked ? 'Locked · complete the previous planet' : index === current ? (item.complete ? 'Completed · rocket here' : 'Current planet · ready to explore') : item.complete ? 'Completed · explore again' : 'Ready to explore'}</span>}
+              {showMissionStatus && <span className="journey-mission-status">{conciseStatus ? (item.locked ? '🔒 Up ahead' : item.complete ? '✓ Explored · Play again' : index === current ? 'Your next adventure' : 'Ready to explore') : compactLabels ? (item.free ? 'Free drawing' : item.locked ? 'Locked' : index === current ? 'You are here' : item.complete ? 'Completed' : 'Ready') : item.locked ? 'Locked · complete the previous planet' : index === current ? (item.complete ? 'Completed · rocket here' : 'Current planet · ready to explore') : item.complete ? 'Completed · explore again' : 'Ready to explore'}</span>}
             </button>
           </li>)}
         </ol>

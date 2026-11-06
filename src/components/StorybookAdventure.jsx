@@ -108,9 +108,10 @@ function BookReader({ book, onClose }) {
         }
       }}>
       <div className="storybook-reader-inner">
+        <img className="storybook-art-backdrop" src={current} alt="" aria-hidden="true" />
         <header className="storybook-reader-header">
           <h2 id="storybook-title">{book.title}</h2>
-          <button type="button" onClick={onClose} autoFocus>Close book ×</button>
+          <button type="button" onClick={onClose} autoFocus aria-label="Back to bookshelf">← Books</button>
         </header>
         <div ref={stage} className={`storybook-stage ${zoom ? 'storybook-zoom' : ''}`} style={{ '--page-ratio': loaded[current]?.ratio || 1.5 }} aria-busy={busy}
           onTouchStart={(event) => { touch.current = event.touches.length === 1 && !zoom ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null; }}
@@ -159,6 +160,10 @@ export default function StorybookAdventure({ onBack }) {
   const [selected, setSelected] = useState(null);
   const [lastBook, setLastBook] = useState(null);
   const bookButtons = useRef({});
+  const openBook = (book) => {
+    setLastBook(book.id);
+    setSelected(book);
+  };
   const closeBook = () => {
     const id = selected.id;
     setSelected(null);
@@ -170,7 +175,7 @@ export default function StorybookAdventure({ onBack }) {
       <header><p className="eyebrow">OATLE KIDS · STORYBOOK ADVENTURE</p><h1>A little shelf of wonder</h1><p>Choose a book. A new adventure is waiting inside.</p></header>
       <section className="storybook-shelf" aria-label="Storybook bookshelf">
         {storybooks.map(book => <button type="button" key={book.id} ref={element => { bookButtons.current[book.id] = element; }} className={`storybook-cover ${lastBook === book.id ? 'storybook-selected' : ''}`}
-          aria-label={`Read ${book.title}`} onClick={() => { setLastBook(book.id); setSelected(book); }}>
+          aria-label={`Read ${book.title}`} onClick={() => openBook(book)}>
           <img src={book.cover} alt={`${book.title} original cover`} loading="lazy" />
           <strong>{book.title}</strong><small>By {book.author}</small><span>{lastBook === book.id ? 'Read again' : 'Open book'} →</span>
         </button>)}

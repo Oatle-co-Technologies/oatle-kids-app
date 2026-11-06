@@ -1,3 +1,5 @@
+// Beginner sentences: three to five words, with no word longer than three letters.
+// Use familiar statements and actions; keep all 13 positions for saved progress.
 export const sentenceQuestions = [
   {
     words: ["The", "sun", "is", "hot"],
@@ -6,36 +8,36 @@ export const sentenceQuestions = [
     words: ["A", "dog", "can", "run"],
   },
   {
-    words: ["The", "pen", "is", "in", "the", "bag"],
+    words: ["I", "see", "a", "cat"],
   },
   {
-    words: ["The", "egg", "is", "in", "the", "bag"],
+    words: ["The", "hen", "has", "an", "egg"],
   },
   {
     words: ["I", "see", "an", "owl"],
   },
   {
-    words: ["The", "key", "is", "in", "the", "bag"],
+    words: ["The", "cat", "can", "nap"],
   },
   {
     words: ["The", "fan", "is", "on"],
   },
   {
-    words: ["The", "map", "is", "in", "the", "bag"],
+    words: ["Get", "the", "map"],
   },
   {
-    words: ["The", "web", "is", "big"],
+    words: ["A", "bug", "can", "hop"],
   },
   {
     words: ["The", "van", "is", "red"],
   },
   {
-    words: ["The", "net", "is", "big"],
+    words: ["I", "can", "dig"],
   },
   {
-    words: ["The", "rug", "is", "red"],
+    words: ["Sit", "on", "the", "rug"],
   },
   {
-    words: ["The", "hat", "is", "big"],
+    words: ["Put", "on", "a", "hat"],
   },
 ];

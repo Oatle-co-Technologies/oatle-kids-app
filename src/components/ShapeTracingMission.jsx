@@ -1,4 +1,6 @@
 import { drawingToolCursor } from "./drawingToolCursor";
+import MissionBalloonBreak from './MissionBalloonBreak';
+import WritingBackButton from "./WritingBackButton";
 import { useEffect, useRef, useState } from "react";
 
 import "./AlphabetTracingMission.css";
@@ -362,6 +364,7 @@ export default function ShapeTracingMission({
 
   return (
     <div className="alphabet-tracing-mission shape-tracing-mission">
+      <MissionBalloonBreak step={shapeIndex} total={SHAPES.length} soundOn={soundOn} resumePrompt={`Trace the ${currentShape.name.toLowerCase()}`} />
 
       <div className="alphabet-portrait-message">
         <div className="alphabet-portrait-title">
@@ -375,14 +378,7 @@ export default function ShapeTracingMission({
 
       <header className="alphabet-mission-header">
 
-        <button
-          type="button"
-          className="alphabet-back-button"
-          onClick={onBack}
-          aria-label="Go back"
-        >
-          ←
-        </button>
+        <WritingBackButton onBack={onBack} />
 
         <div className="alphabet-mission-title">
 

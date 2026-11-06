@@ -1,4 +1,7 @@
 import { drawingToolCursor } from "./drawingToolCursor";
+import MissionBalloonBreak from './MissionBalloonBreak';
+import WritingBackButton from "./WritingBackButton";
+import { WRITING_WORDS } from "../data/wordWriting";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./Scribbler.css";
 import "./SentenceWritingMission.css";
@@ -38,6 +41,8 @@ const SENTENCES = [
     },
   },
 ];
+
+const WORD_ACTIVITIES = WRITING_WORDS.map(word => ({ id: word, build: () => word }));
 
 const TOOLS = {
   pencil: { size: 3, opacity: 0.85 },
@@ -221,7 +226,11 @@ export default function SentenceWritingMission({
   initialStep = 0,
   onProgress,
   soundOn = true,
+  mode = "sentences",
 }) {
+  const isWordMission = mode === "words";
+  const activities = isWordMission ? WORD_ACTIVITIES : SENTENCES;
+  const orientationTipSpokenRef = useRef(false);
   const canvasRef = useRef(null);
   const targetCanvasRef = useRef(null);
   const guideDisplayRef = useRef(null);
@@ -234,7 +243,7 @@ export default function SentenceWritingMission({
   const hasDrawingRef = useRef(false);
 
   const [sentenceIndex, setSentenceIndex] = useState(() =>
-    Math.min(Math.max(initialStep, 0), SENTENCES.length - 1)
+    Math.min(Math.max(initialStep, 0), activities.length - 1)
   );
   const [tool, setTool] = useState("pencil");
   const [progress, setProgress] = useState(0);
@@ -245,7 +254,7 @@ export default function SentenceWritingMission({
   });
 
   const profile = childProfile || {};
-  const current = SENTENCES[sentenceIndex];
+  const current = activities[sentenceIndex];
   const sentence = current.build(profile);
   const sentenceLayoutKey = `${sentenceLayout.fontSize}:${sentenceLayout.lines.join("|")}`;
 
@@ -293,14 +302,17 @@ export default function SentenceWritingMission({
     }
 
     const timer = window.setTimeout(() => {
-      speak("Trace the sentence");
+      const instruction = isWordMission ? `Write the word ${sentence}. Trace the letters, then try writing it on the lines.` : "Trace the sentence";
+      const suggestion = orientationTipSpokenRef.current ? "" : "For more writing space, you can turn your device sideways. You can also keep it upright. ";
+      orientationTipSpokenRef.current = true;
+      speak(suggestion + instruction);
     }, 250);
 
     return () => {
       window.clearTimeout(timer);
       stopSpeech();
     };
-  }, [sentence, soundOn]);
+  }, [sentence, soundOn, isWordMission]);
 
   const getCanvasPoint = (event, canvas) => {
     const rect = canvas.getBoundingClientRect();
@@ -678,43 +690,36 @@ export default function SentenceWritingMission({
   const handleNext = () => {
     if (!hasDrawingRef.current) return;
 
-    if (sentenceIndex === SENTENCES.length - 1) {
+    if (sentenceIndex === activities.length - 1) {
       onComplete?.();
       return;
     }
 
     clearWritingCanvas();
-    setSentenceIndex((index) => {
-      const next = index + 1;
-      onProgress?.(next);
-      return next;
-    });
+    const next = sentenceIndex + 1;
+    setSentenceIndex(next);
+    onProgress?.(next);
   };
 
   return (
     <main className="scribbler-page sentence-writing-page">
+      <MissionBalloonBreak step={sentenceIndex} total={activities.length} soundOn={soundOn} resumePrompt={`Keep writing. ${sentence}`} />
       <div className="sentence-portrait-message" aria-live="polite">
-        <strong>Landscape gives you more writing space</strong>
-        <span>You can continue here, or turn your device for the best experience.</span>
+        <strong>Landscape recommended for more writing space</strong>
+        <span>Portrait works too. You can keep writing this way.</span>
       </div>
 
       <header className="sentence-writing-header">
-        <button
-          className="scribbler-back"
-          type="button"
-          onClick={onBack}
-          aria-label="Back to Writing Map"
-        >
-          ← Back
-        </button>
+        <WritingBackButton onBack={onBack} />
 
         <div>
-          <span>Writing Mission 4</span>
-          <h1>Write Sentences</h1>
+          <span>Writing Mission {isWordMission ? 4 : 5}</span>
+          <h1>{isWordMission ? "Write Words" : "Write Sentences"}</h1>
+          <p className="sentence-landscape-tip">Landscape recommended. Portrait works too.</p>
         </div>
 
         <div className="sentence-writing-progress">
-          {sentenceIndex + 1} / {SENTENCES.length} · {progress}%
+          {sentenceIndex + 1} / {activities.length} · {progress}%
         </div>
       </header>
 
@@ -743,7 +748,7 @@ export default function SentenceWritingMission({
               style={drawingToolCursor(tool, DEFAULT_COLOR)}
               className={`scribbler-canvas scribbler-canvas-${tool}`}
               data-tool={tool}
-              aria-label="Trace the sentence"
+              aria-label={isWordMission ? `Write the word ${sentence}` : "Trace the sentence"}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={releasePointer}
@@ -771,9 +776,9 @@ export default function SentenceWritingMission({
           onClick={handleNext}
           disabled={!hasDrawing}
           aria-label={
-            sentenceIndex === SENTENCES.length - 1
+            sentenceIndex === activities.length - 1
               ? "Complete writing mission"
-              : "Next sentence"
+              : isWordMission ? "Next word" : "Next sentence"
           }
         >
           →
@@ -809,7 +814,7 @@ export default function SentenceWritingMission({
       </aside>
 
       <p className="sentence-writing-hint">
-        Trace the whole sentence.
+        {isWordMission ? "Trace the word, then try writing it on the lines." : "Trace the whole sentence."}
       </p>
     </main>
   );

@@ -1,6 +1,8 @@
 export const PUZZLE_LEVELS = {
-  explorer: { title: 'Explorer', columns: 5, rows: 4, pieces: 20 },
-  commander: { title: 'Commander', columns: 6, rows: 5, pieces: 30 },
+  explorer: { title: 'Explorer', columns: 5, rows: 2, pieces: 10 },
+  navigator: { title: 'Navigator', columns: 4, rows: 3, pieces: 12 },
+  pilot: { title: 'Pilot', columns: 4, rows: 4, pieces: 16 },
+  commander: { title: 'Commander', columns: 5, rows: 4, pieces: 20 },
 };
 
 export function cosmicSolved(tiles, size) {

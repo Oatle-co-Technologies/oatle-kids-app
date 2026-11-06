@@ -1,9 +1,10 @@
+import ResponsivePlanetJourney from './ResponsivePlanetJourney';
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
 import { speak, stopSpeech } from '../utils/speech';
-import sunImage from '../assets/images/words/sun.webp';
-import vanImage from '../assets/images/words/van.webp';
-import neptuneScene from '../assets/images/story/neptune-page1.webp';
+import solarSystemImage from '../assets/images/puzzles/solar-system.webp';
+import logoImage from '../assets/images/puzzles/oatle-kids.svg';
+import astronautImage from '../assets/images/puzzles/astronaut.webp';
 import mercuryImage from '../assets/images/planets/mercury.webp';
 import saturnImage from '../assets/images/planets/saturn.webp';
 import neptuneImage from '../assets/images/planets/neptune.webp';
@@ -11,10 +12,11 @@ import victorySound from '../sounds/victory.mp3';
 import { PUZZLE_LEVELS, cosmicSolved, shuffleCosmicTiles, swapCosmicTiles } from './cosmicPuzzleLogic';
 import './CosmicPuzzles.css';
 
+// Keep mission IDs and level IDs stable so existing completion records survive.
 const MISSIONS = [
-  { id: 'solar', title: 'Solar Signal', image: sunImage, planet: mercuryImage, location: 'Near Mercury', subject: 'the Sun', brief: 'Mission Control received a scrambled picture of the Sun. Rebuild it to restore the solar signal.', success: 'Solar signal restored. Mission Control can see the Sun again!' },
-  { id: 'cargo', title: 'Cosmic Cargo', image: vanImage, planet: saturnImage, location: 'Deep-space delivery', subject: 'the space van', brief: 'The space van’s picture has been scrambled. Put it back together so the delivery crew can identify their vehicle.', success: 'Vehicle identified. The cosmic delivery can continue!' },
-  { id: 'neptune', title: 'Neptune Explorer', image: neptuneScene, planet: neptuneImage, location: 'Neptune expedition', subject: 'Atli on Neptune', brief: 'Atli has sent a picture from Neptune. Reconstruct the transmission to see what he discovered.', success: 'Transmission restored. Atli’s Neptune expedition is back in view!' },
+  { id: 'solar', title: 'The Solar System', image: solarSystemImage, planet: mercuryImage, location: 'Our solar neighbourhood', subject: 'the Solar System', brief: 'Explore the Sun and the nine named worlds, including Pluto. Rebuild the picture to restore the view of our solar system.', success: 'Solar system restored. All nine worlds are back in view!' },
+  { id: 'cargo', title: 'Oatle Kids', image: logoImage, planet: saturnImage, location: 'Your Oatle Kids mission', subject: 'the Oatle Kids logo', brief: 'The Oatle Kids logo has been scrambled. Bring its colours and letters back together to reveal the complete logo.', success: 'Logo restored. The Oatle Kids colours are shining again!' },
+  { id: 'neptune', title: 'Space Explorer', image: astronautImage, planet: neptuneImage, location: 'An astronaut among the stars', subject: 'an astronaut in a spacesuit', brief: 'An astronaut is exploring a distant space landscape. Rebuild the whole picture, from helmet to boots.', success: 'Picture restored. Your space explorer is ready for the next adventure!' },
 ];
 const SAVE_KEY = 'oatle-cosmic-puzzles-v1';
 function readCompleted() {
@@ -26,10 +28,10 @@ function readCompleted() {
 }
 
 function PuzzlePicture({ image, tile = null, columns = 5, rows = 4 }) {
-  // Existing artwork is 1024 × 683; every tile is a window on that same image.
-  const width = 1024 / columns, height = 683 / rows;
-  const viewBox = tile === null ? '0 0 1024 683' : `${tile % columns * width} ${Math.floor(tile / columns) * height} ${width} ${height}`;
-  return <svg className="cosmic-picture" viewBox={viewBox} aria-hidden="true" focusable="false"><image href={image} width="1024" height="683" /></svg>;
+  // Every tile and reference uses the same 3:2 canvas without cropping.
+  const width = 1536 / columns, height = 1024 / rows;
+  const viewBox = tile === null ? '0 0 1536 1024' : `${tile % columns * width} ${Math.floor(tile / columns) * height} ${width} ${height}`;
+  return <svg className="cosmic-picture" viewBox={viewBox} aria-hidden="true" focusable="false"><image href={image} width="1536" height="1024" /></svg>;
 }
 
 export function CosmicPuzzleEntry({ onClick }) {
@@ -42,7 +44,7 @@ export default function CosmicPuzzles({ onBack, soundOn = true }) {
   const [screen, setScreen] = useState('missions');
   const [missionIndex, setMissionIndex] = useState(0);
   const [levelId, setLevelId] = useState('explorer');
-  const [tiles, setTiles] = useState(() => shuffleCosmicTiles(20));
+  const [tiles, setTiles] = useState(() => shuffleCosmicTiles(PUZZLE_LEVELS.explorer.pieces));
   const [selected, setSelected] = useState(null);
   const [ghost, setGhost] = useState(null);
   const [showReference, setShowReference] = useState(true);
@@ -66,7 +68,7 @@ export default function CosmicPuzzles({ onBack, soundOn = true }) {
   useEffect(() => {
     if (!soundOn) { stopSpeech(); return undefined; }
     const prompt = screen === 'missions' ? 'Cosmic Puzzles. Choose your space mission.'
-      : screen === 'briefing' ? `${mission.title}. ${mission.brief} Choose twenty or thirty pieces, then launch your mission.`
+      : screen === 'briefing' ? `${mission.title}. ${mission.brief} Choose ten, twelve, sixteen or twenty pieces, then launch your mission.`
         : screen === 'play' ? `Restore the picture of ${mission.subject}. Drag one piece onto another, or tap two pieces to swap them.`
           : `Mission accomplished! ${mission.success}`;
     const timer = window.setTimeout(() => speak(prompt), screen === 'complete' ? 7800 : 220);
@@ -147,12 +149,11 @@ export default function CosmicPuzzles({ onBack, soundOn = true }) {
         <p>{screen === 'missions' ? 'A scrambled transmission. A sharp-eyed explorer. Your next mission awaits.' : screen === 'complete' ? mission.success : mission.location}</p>
       </header>
 
-      {screen === 'missions' && <section className="cosmic-missions" aria-label="Choose a puzzle mission">
-        {MISSIONS.map((item, index) => <button type="button" key={item.id} className="cosmic-mission-card" onClick={() => choose(index)}>
-          <div className="cosmic-card-picture"><img src={item.image} alt="" /><b>MISSION 0{index + 1}</b></div>
-          <span className="cosmic-card-copy"><small>{item.location}</small><strong>{item.title}</strong><span>20 or 30 pieces</span><span className="cosmic-completed">{Object.entries(PUZZLE_LEVELS).filter(([id]) => completed.includes(`${item.id}-${id}`)).map(([, value]) => `${value.pieces} pieces ✓`).join(' · ') || 'Ready to explore'}</span><b>Open briefing →</b></span>
-        </button>)}
-      </section>}
+      {screen === 'missions' && <ResponsivePlanetJourney label="Choose a puzzle mission" items={MISSIONS.map((item, index) => ({
+        id: item.id, title: item.title, subtitle: item.location, image: item.planet,
+        complete: Object.keys(PUZZLE_LEVELS).every(level => completed.includes(`${item.id}-${level}`)),
+        onSelect: () => choose(index),
+      }))} />}
 
       {screen === 'briefing' && <section className="cosmic-briefing" aria-label="Mission briefing">
         <figure><img src={mission.image} alt={`Complete picture of ${mission.subject}`} /><figcaption>Your transmission to restore</figcaption></figure>

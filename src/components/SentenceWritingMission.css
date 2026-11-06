@@ -1,6 +1,6 @@
 /* =========================================
-   WRITING MISSION 4
-   Responsive sentence-tracing workbook
+   WRITING WORKBOOK
+   Responsive word- and sentence-writing paper
    ========================================= */
 
 .sentence-writing-page {
@@ -385,3 +385,6 @@
     scroll-behavior: auto;
   }
 }
+
+.sentence-landscape-tip{margin:4px 0 0;color:#ffdf8b;font:11px/1.3 system-ui,sans-serif}
+@media(orientation:portrait){.sentence-landscape-tip{display:none}}

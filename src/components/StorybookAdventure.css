@@ -76,3 +76,31 @@
   .storybook-reader-footer > p { display: none; }
   .storybook-reader-header h2 { font-size: 1rem; }
 }
+
+.storybook-window-controls { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.storybook-reader:fullscreen { width: 100vw; height: 100dvh; max-width: none; max-height: none; }
+@media (max-width: 600px) { .storybook-window-controls { gap: 5px; } .storybook-window-controls button { padding: 8px; font-size: .8rem; } }
+
+/* Immersive in-app landscape reader: artwork owns the viewport, controls float. */
+.storybook-reader { overflow: hidden; background: #171322; }
+.storybook-reader-inner { position: relative; isolation: isolate; width: 100%; height: 100dvh; display: block; padding: 0; overflow: hidden; }
+.storybook-art-backdrop { position: absolute; inset: -5%; z-index: -1; width: 110%; height: 110%; object-fit: cover; filter: blur(28px) brightness(.6); pointer-events: none; }
+.storybook-reader .storybook-stage { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; }
+.storybook-reader .storybook-leaf, .storybook-reader .storybook-underlay { width: min(100%,calc(100dvh * var(--page-ratio,1.5))); border-radius: 0; box-shadow: none; }
+.storybook-reader .storybook-leaf img { width: 100%; height: auto; }
+.storybook-reader .storybook-leaf::after { display: none; }
+.storybook-reader .storybook-reader-header { position: absolute; z-index: 8; top: max(10px,env(safe-area-inset-top)); left: max(10px,env(safe-area-inset-left)); width: auto; margin: 0; }
+.storybook-reader-header h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.storybook-reader .storybook-reader-footer { position: absolute; z-index: 8; bottom: max(10px,env(safe-area-inset-bottom)); left: max(10px,env(safe-area-inset-left)); right: max(10px,env(safe-area-inset-right)); width: auto; max-width: none; display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0; pointer-events: none; }
+.storybook-reader-footer .storybook-navigation { flex: 1; }
+.storybook-reader-footer .storybook-navigation > span { padding: 8px 12px; border-radius: 20px; background: #171322c9; color: #fff6e4; }
+.storybook-reader-footer button, .storybook-reader-footer details { pointer-events: auto; }
+.storybook-reader button, .storybook-reader .storybook-options summary { background: #171322d9; color: #fff6e4; border: 1px solid #ffffff55; box-shadow: 0 2px 8px #0004; backdrop-filter: blur(8px); }
+.storybook-reader .storybook-reader-footer > p { display: none; }
+.storybook-reader .storybook-zoom .storybook-leaf { width: max(100%,1400px); }
+.storybook-reader .storybook-rotate-prompt { z-index: 6; }
+.storybook-reader-inner > p[role] { position: absolute; z-index: 9; top: 65px; left: 50%; transform: translateX(-50%); background: #171322e8; padding: 12px; }
+@media (orientation:landscape) and (max-height:540px) {
+  .storybook-reader .storybook-reader-footer { bottom: max(5px,env(safe-area-inset-bottom)); gap: 6px; }
+  .storybook-reader button, .storybook-reader .storybook-options summary { padding: 6px 10px; font-size: .8rem; }
+}

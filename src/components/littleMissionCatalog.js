@@ -24,17 +24,17 @@ export const EXTRA_ADVENTURES = [
     id: 'puzzles', title: 'Puzzle Adventure',
     description: 'Put together big, simple picture puzzles.',
     missions: [
-      { key: 'lion', scene: 0, missionTitle: 'Lion Puzzle', description: 'We are going to put ten pieces together to make a lion picture.' },
-      { key: 'cow', scene: 1, missionTitle: 'Cow Puzzle', description: 'We are going to put ten pieces together to make a cow picture.' },
-      { key: 'turtle', scene: 2, missionTitle: 'Turtle Puzzle', description: 'We are going to put ten pieces together to make a turtle picture.' },
+      { key: 'lion', scene: 0, missionTitle: 'Lion Puzzle', description: 'We are going to put five pieces together to make a lion picture.' },
+      { key: 'cow', scene: 1, missionTitle: 'Cow Puzzle', description: 'We are going to put five pieces together to make a cow picture.' },
+      { key: 'turtle', scene: 2, missionTitle: 'Turtle Puzzle', description: 'We are going to put five pieces together to make a turtle picture.' },
     ],
   },
   {
     id: 'music', title: 'Music & Movement',
-    description: 'Play instruments, copy little tunes and dance along.',
+    description: 'Play instruments, copy four sounds and dance along.',
     missions: [
-      { key: 'play', mode: 'play', missionTitle: 'My Little Band', description: 'We are going to make music with a drum, a bell and a piano. Play as long as you like, then tap I’m finished.' },
-      { key: 'copy', mode: 'copy', missionTitle: 'Copy My Music', description: 'We are going to listen and copy three little tunes.' },
+      { key: 'play', mode: 'play', missionTitle: 'My Little Band', description: 'Choose an instrument at the top, then tap it to play. Play as long as you like, then tap the tick.' },
+      { key: 'copy', mode: 'copy', missionTitle: 'Copy My Music', description: 'We are going to listen and copy four sounds, with one instrument at a time.' },
       { key: 'dance', mode: 'dance', missionTitle: 'Dance & Freeze', description: 'We are going to dance when the music plays and freeze when it stops. Let’s play three rounds!' },
     ],
   },

@@ -1,3 +1,4 @@
+import { isCoreMathQuestion } from "../utils/mathsLanguage.js";
 import { numberQuestions } from "./numberQuestions";
 
 import { shapeFactQuestions, shapeRecognitionQuestions } from "./shapeQuestions";
@@ -33,7 +34,7 @@ import { groupingQuestions } from "./groupingQuestions";
 */
 
 const isAssessmentQuestion = (question) => {
-  if (!question) return false;
+  if (!question || !isCoreMathQuestion(question)) return false;
 
   // Explicit teaching flags
   if (question.teaching === true) return false;
@@ -58,7 +59,7 @@ const addSkill = (questions, skill) =>
       assessmentId: [
         skill,
         question.type,
-        question.prompt,
+        question.assessmentKey || question.prompt,
         String(question.answer),
       ].join("::"),
     }));
@@ -269,10 +270,10 @@ export const assessmentSkills = [
   },
   {
     id: "multiplication",
-    name: "Multiplication / equal groups",
+    name: "Equal groups and repeated adding",
   },
   {
     id: "division",
-    name: "Division / sharing",
+    name: "Sharing into equal groups",
   },
 ];

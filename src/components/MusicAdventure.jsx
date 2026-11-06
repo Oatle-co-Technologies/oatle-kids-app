@@ -1,205 +1,156 @@
 import { useEffect, useRef, useState } from 'react';
-import LocalBackButton from './LocalBackButton';
 import useLittleMissionCompletion from './useLittleMissionCompletion';
 import { speak, stopSpeech } from '../utils/speech';
 import { createMusicAudio } from './musicAudio';
-import './MusicAdventure.css';
+import GardenInstrument, { InstrumentArt } from './MusicGardenInstruments';
+import { COPY_BEATS_MS, COPY_TURN_MS, COPY_INSTRUMENTS, MUSIC_INSTRUMENTS, DANCE_SONGS, MUSIC_LICENCE } from './musicGardenData';
+import './MusicGarden.css';
 
 const ACTIVITIES = [
-  { id: 'play', title: 'My Little Band', icon: 'drum', description: 'Tap, play and make your own music.', label: 'Play instruments' },
-  { id: 'copy', title: 'Copy My Music', icon: 'bell', description: 'Listen to two sounds. Then try them!', label: 'Listen & copy' },
-  { id: 'dance', title: 'Dance & Freeze', icon: 'dance', description: 'Move to the music. Stop when it stops!', label: 'Move & pause' },
+  { id:'play', title:'My Little Band', kind:'drum' },
+  { id:'copy', title:'Copy My Music', kind:'xylophone' },
+  { id:'dance', title:'Dance & Freeze', kind:'piano' },
 ];
-const PATTERNS = [['drum', 'drum'], ['bell', 'bell'], ['drum', 'bell']];
 const INSTRUCTIONS = {
-  menu: 'Let’s make music! Choose an activity.',
-  play: 'Tap the drum, ring the bell, or play the colourful keys. Make your own music!',
-  copy: 'Tap Listen. Hear the sounds, then tap the same instruments.',
-  dance: 'Make some room. Dance when the music plays. When it stops, freeze! You can move your hands too.',
+  menu:'Choose a music adventure.',
+  play:'Choose an instrument at the top. Then tap it to play. Tap the tick when you are finished.',
+  copy:'Tap the listening flower. Listen to four sounds. Then play the same instrument four times.',
+  dance:'Choose a song flower. Tap play. Dance when the music plays. When it stops, freeze! You can wave your hands too.',
 };
-
-function InstrumentArt({ kind }) {
-  return <svg viewBox="0 0 160 140" aria-hidden="true" focusable="false">
-    {kind === 'drum' ? <><path d="M30 57v46c0 30 100 30 100 0V57" fill="#ee8174" stroke="#713e63" strokeWidth="5" /><path d="m35 65 17 45 20-40 20 40 20-40 15 36" fill="none" stroke="#ffe6a5" strokeWidth="5" /><ellipse cx="80" cy="57" rx="50" ry="20" fill="#fff1cc" stroke="#713e63" strokeWidth="5" /><path d="m24 17 47 33m65-32L92 48" stroke="#f7c96b" strokeWidth="9" strokeLinecap="round" /></>
-      : kind === 'bell' ? <><circle cx="80" cy="25" r="12" fill="none" stroke="#97622a" strokeWidth="7" /><path d="M80 30c-35 0-31 47-45 64q-8 12 0 16h90q8-4 0-16C111 77 115 30 80 30" fill="#ffd46c" stroke="#97622a" strokeWidth="5" /><path d="M61 116q19 23 38 0" fill="#f18d69" /><path d="M60 48q-11 11-11 30" fill="none" stroke="#fff3c5" strokeWidth="7" strokeLinecap="round" /></>
-      : <><path d="M64 94V33l67-13v62" fill="none" stroke="#aaecda" strokeWidth="13" strokeLinejoin="round" /><ellipse cx="48" cy="99" rx="23" ry="16" transform="rotate(-20 48 99)" fill="#aaecda" /><ellipse cx="115" cy="87" rx="23" ry="16" transform="rotate(-20 115 87)" fill="#aaecda" /><path d="m18 34 4 9 10 1-8 7 2 11-8-6-9 6 2-11-7-7 10-1" fill="#ffda7b" /></>}
-  </svg>;
-}
-
-export function MusicIcon() { return <InstrumentArt kind="dance" />; }
-
-export default function MusicAdventure(props) {
-  // Reset a running activity if the app-wide sound setting changes.
-  return <MusicActivities key={String(props.soundOn)} {...props} />;
-}
-
-function MusicActivities({ onBack, soundOn = true, mission, onComplete }) {
-  const [activity, setActivity] = useState(mission?.mode || 'menu');
-  const [hasPlayed, setHasPlayed] = useState(false);
-  const [phase, setPhase] = useState('ready');
-  const [message, setMessage] = useState('');
-  const [lit, setLit] = useState(null);
-  const [round, setRound] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const audio = useRef(null);
-  const timers = useRef(new Set());
-  const generation = useRef(0);
-  const phaseRef = useRef('ready');
-  const answer = useRef(0);
-  const missionFinished = (activity === 'copy' && phase === 'success' && round === PATTERNS.length - 1) || (activity === 'dance' && phase === 'finished');
-  useLittleMissionCompletion(missionFinished, onComplete);
-
-  function later(callback, delay) {
-    const id = window.setTimeout(() => { timers.current.delete(id); callback(); }, delay);
-    timers.current.add(id);
-    return id;
-  }
-  function changePhase(next) { phaseRef.current = next; setPhase(next); }
+export function MusicIcon() { return <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 22C26 22 30 54 18 69q-4 8 5 10h54q9-2 5-10C70 54 74 22 50 22" fill="#ffce69" stroke="#9b6a39" strokeWidth="4" /><circle cx="50" cy="17" r="8" fill="none" stroke="#9b6a39" strokeWidth="4" /><path d="M39 83q11 16 22 0" fill="#d28b4f" /></svg>; }
+export default function MusicAdventure(props) { return <MusicGarden key={String(props.soundOn)} {...props} />; }
+function MusicGarden({ onBack, soundOn=true, mission, onComplete }) {
+  const [activity,setActivity]=useState(mission?.mode || 'menu');
+  const [phase,setPhase]=useState('ready');
+  const [round,setRound]=useState(0);
+  const [progress,setProgress]=useState(0);
+  const [lit,setLit]=useState(null);
+  const [hasPlayed,setHasPlayed]=useState(false);
+  const [songIndex,setSongIndex]=useState(0);
+  const [chosenInstrument,setChosenInstrument]=useState('piano');
+  const [message,setMessage]=useState('');
+  const [credits,setCredits]=useState(false);
+  const audio=useRef(null);
+  const recording=useRef(null);
+  const timers=useRef(new Set());
+  const generation=useRef(0);
+  const phaseRef=useRef('ready');
+  const copied=useRef(0);
+  const intro=useRef(null);
+  const creditDialog=useRef(null);
+  const copyKind=COPY_INSTRUMENTS[round];
+  const finished=(activity==='copy' && phase==='success' && round===COPY_INSTRUMENTS.length-1) || (activity==='dance' && phase==='finished');
+  useLittleMissionCompletion(finished,onComplete);
+  const setStatePhase=next=>{phaseRef.current=next;setPhase(next);};
+  function later(fn,ms) { const id=window.setTimeout(()=>{timers.current.delete(id);fn();},ms);timers.current.add(id);return id; }
+  function quietIntro() { window.clearTimeout(intro.current);stopSpeech(); }
   function clear() {
-    generation.current += 1;
-    for (const id of timers.current) window.clearTimeout(id);
-    timers.current.clear();
-    audio.current?.stop();
-    stopSpeech();
+    generation.current++;for(const id of timers.current)window.clearTimeout(id);timers.current.clear();
+    audio.current?.stop();recording.current?.pause();quietIntro();
   }
-  function say(text) { if (soundOn) speak(text); }
-  function reset() { clear(); changePhase('ready'); setLit(null); setProgress(0); answer.current = 0; setMessage(''); }
-  function choose(id) { reset(); setRound(0); setActivity(id); }
+  function reset() { clear();setStatePhase('ready');setLit(null);setProgress(0);copied.current=0;setMessage(''); }
+  function say(text) { setMessage(text);if(soundOn)speak(text); }
   async function readyAudio() {
-    if (!soundOn) return false;
-    if (!audio.current) audio.current = createMusicAudio();
-    const token = generation.current;
-    const ready = await audio.current.unlock();
-    if (generation.current !== token) return false;
-    if (!ready) { setMessage('Sound could not start. Tap again to retry.'); changePhase('ready'); }
+    if(!soundOn)return false;
+    if(!audio.current)audio.current=createMusicAudio();
+    const token=generation.current;
+    const ready=await audio.current.unlock();
+    if(token!==generation.current)return false;
+    if(!ready){setStatePhase('ready');say('Tap again to start the sound.');}
     return ready;
   }
-
-  useEffect(() => {
-    if (!soundOn) return undefined;
-    const id = window.setTimeout(() => speak(INSTRUCTIONS[activity]), 200);
-    // Keep the introduction cancellable by the first instrument tap.
-    const pending = timers.current;
-    pending.add(id);
-    return () => { window.clearTimeout(id); pending.delete(id); stopSpeech(); };
-  }, [activity, soundOn]);
-
-  useEffect(() => {
-    const pending = timers.current;
-    function pauseWhenHidden() {
-      if (!document.hidden) return;
-      generation.current += 1;
-      for (const id of pending) window.clearTimeout(id);
-      pending.clear();
-      audio.current?.stop(); stopSpeech();
-      phaseRef.current = 'ready'; setPhase('ready'); setLit(null); setProgress(0); answer.current = 0;
-      setMessage('Ready when you are.');
+  useEffect(()=>{
+    if(!soundOn)return undefined;
+    intro.current=window.setTimeout(()=>speak(INSTRUCTIONS[activity]),220);
+    return ()=>{window.clearTimeout(intro.current);stopSpeech();};
+  },[activity,soundOn]);
+  useEffect(()=>{
+    const pending=timers.current;
+    const lifecycle=generation;
+    function hidden() {
+      if(!document.hidden)return;
+      lifecycle.current++;for(const id of pending)window.clearTimeout(id);pending.clear();
+      window.clearTimeout(intro.current);audio.current?.stop();recording.current?.pause();stopSpeech();
+      phaseRef.current='ready';setPhase('ready');setLit(null);setProgress(0);copied.current=0;
     }
-    document.addEventListener('visibilitychange', pauseWhenHidden);
-    return () => {
-      generation.current += 1;
-      for (const id of pending) window.clearTimeout(id);
-      pending.clear(); audio.current?.dispose(); audio.current = null; stopSpeech();
-      document.removeEventListener('visibilitychange', pauseWhenHidden);
-    };
-  }, []);
-
-  async function play(instrument, pitch = 0, key = instrument) {
-    clear();
-    if (!await readyAudio()) return;
-    audio.current.hit(instrument, 0, pitch);
-    setHasPlayed(true);
-    setLit(key); later(() => setLit(null), 220);
-  }
-
-  async function listen(nextRound = round) {
-    reset(); changePhase('listening');
-    if (!await readyAudio()) return;
-    setMessage('Listen…');
-    PATTERNS[nextRound].forEach((instrument, index) => {
-      audio.current.hit(instrument, 0.25 + index * 0.85);
-      later(() => setLit(instrument), 250 + index * 850);
-      later(() => setLit(null), 700 + index * 850);
-    });
-    later(() => { changePhase('answer'); setMessage('Your turn!'); say('Your turn!'); }, 1950);
-  }
-
-  function copy(instrument) {
-    if (phaseRef.current !== 'answer') return;
-    stopSpeech(); audio.current.hit(instrument); setLit(instrument);
-    later(() => setLit(null), 250);
-    if (PATTERNS[round][answer.current] !== instrument) {
-      answer.current = 0; setProgress(0); changePhase('retry');
-      setMessage('Let’s listen again. You can try as many times as you like.');
-      later(() => say('Let’s listen again. Tap Listen to try again.'), 650);
+    document.addEventListener('visibilitychange',hidden);
+    return ()=>{lifecycle.current++;for(const id of pending)window.clearTimeout(id);pending.clear();window.clearTimeout(intro.current);audio.current?.dispose();recording.current?.pause();stopSpeech();document.removeEventListener('visibilitychange',hidden);};
+  },[]);
+  useEffect(()=>{if(credits)creditDialog.current?.showModal();else creditDialog.current?.close();},[credits]);
+  async function play(kind,pitch=0,key=kind) {
+    quietIntro();
+    if(activity==='copy') {
+      if(phaseRef.current!=='answer')return;
+      audio.current?.hit(kind,0,pitch);setLit(key);later(()=>setLit(null),230);
+      copied.current++;setProgress(copied.current);
+      if(copied.current===COPY_BEATS_MS.length){setStatePhase('success');later(()=>say('You copied the music!'),500);}
       return;
     }
-    answer.current += 1; setProgress(answer.current);
-    if (answer.current === PATTERNS[round].length) {
-      changePhase('success'); setMessage('You copied the music!');
-      later(() => say('You copied the music! Well done!'), 650);
-    }
+    if(!await readyAudio())return;
+    audio.current.hit(kind,0,pitch);setHasPlayed(true);setLit(key);later(()=>setLit(null),220);
   }
-
+  async function listen(next=round) {
+    reset();setStatePhase('listening');
+    if(!await readyAudio())return;
+    const kind=COPY_INSTRUMENTS[next];
+    COPY_BEATS_MS.forEach(ms=>{audio.current.hit(kind,ms/1000,0);later(()=>setLit(kind==='piano'||kind==='xylophone'?`${kind}-0`:kind),ms);later(()=>setLit(null),ms+260);});
+    later(()=>{setStatePhase('answer');say('Your turn. Play four sounds!');},COPY_TURN_MS);
+  }
   async function dance() {
-    reset(); changePhase('starting');
-    if (!await readyAudio()) return;
-    const melody = [0, 4, 7, 4, 5, 9, 7, 4, 0, 4, 2, 0];
-    function moving(turn) {
-      changePhase('dance'); setProgress(turn); setMessage('Dance, wiggle or wave!');
-      melody.forEach((pitch, index) => {
-        audio.current.hit('piano', index * 0.5, pitch);
-        if (index % 2 === 0) audio.current.hit('drum', index * 0.5);
-      });
-      later(() => {
-        audio.current.stop(); changePhase('freeze'); setMessage('Freeze! Stay still like a statue.'); say('Freeze!');
-        later(() => {
-          stopSpeech();
-          if (turn < 3) moving(turn + 1);
-          else { changePhase('finished'); setMessage('Wonderful moving! You danced and froze three times.'); say('Wonderful dancing!'); }
-        }, 3200);
-      }, 6200);
+    reset();setStatePhase('starting');
+    if(!soundOn){setStatePhase('ready');return;}
+    const token=generation.current;
+    const song=new Audio(DANCE_SONGS[songIndex].src);song.preload='auto';song.volume=.55;song.loop=true;recording.current=song;
+    async function moving(turn) {
+      try {await song.play();}catch {if(token===generation.current){reset();say('Tap play to try the music again.');}return;}
+      if(token!==generation.current){song.pause();return;}
+      setStatePhase('dance');setProgress(turn);setMessage('Dance!');
+      later(()=>{
+        song.pause();setStatePhase('freeze');say('Freeze!');
+        later(()=>{stopSpeech();if(turn<3)void moving(turn+1);else{setStatePhase('finished');say('Wonderful dancing!');}},3200);
+      },6200);
     }
-    moving(1);
+    void moving(1);
   }
-
-  const selected = ACTIVITIES.find(item => item.id === activity);
-  const playing = ['starting', 'dance', 'freeze'].includes(phase);
-  return <main className="little-explorers-page music-page">
-    <header className="music-header">
-      <LocalBackButton label={mission ? 'Music & Movement map' : activity === 'menu' ? 'Adventures' : 'Music activities'} onClick={() => { reset(); mission || activity === 'menu' ? onBack() : setActivity('menu'); }} />
-      <p className="eyebrow">{mission ? `PLANET ${mission.name.toUpperCase()} / MUSIC & MOVEMENT` : 'LITTLE EXPLORERS / MUSIC & MOVEMENT'}</p>
-      <h1>{selected?.title || 'Music & Movement'}</h1>
-      <p>{activity === 'menu' ? 'Little sounds. Big smiles. Let’s play!' : selected.description}</p>
-    </header>
-    {!soundOn && <p className="music-notice" role="status">Sound is off. Ask a grown-up to turn on app sounds to play these activities.</p>}
-    {activity === 'menu' ? <section className="music-choices" aria-label="Music activities">
-      {ACTIVITIES.map(item => <button type="button" key={item.id} onClick={() => choose(item.id)}><InstrumentArt kind={item.icon} /><strong>{item.title}</strong><span>{item.description}</span><b>{item.label} <span aria-hidden="true">→</span></b></button>)}
-    </section> : <section className="music-workshop" aria-label={selected.title}>
-      {activity === 'play' && <>
-        <p className="music-hint">Tap anything. Every sound is yours!</p>
-        <div className="music-instruments">{['drum', 'bell'].map(kind => <button type="button" className={`music-pad ${lit === kind ? 'is-lit' : ''}`} disabled={!soundOn} key={kind} onClick={() => play(kind)}><InstrumentArt kind={kind} /><strong>{kind === 'drum' ? 'Drum' : 'Bell'}</strong></button>)}</div>
-        <div className="music-keys" aria-label="Five piano keys">{['C', 'D', 'E', 'G', 'A'].map((note, index) => <button type="button" key={note} style={{ '--key-colour': ['#ef9894', '#ffd77d', '#a9e3b7', '#9ed9f3', '#ccbbf0'][index] }} className={lit === note ? 'is-lit' : ''} disabled={!soundOn} aria-label={`Play ${note}`} onClick={() => play('piano', [0, 2, 4, 7, 9][index], note)}><span aria-hidden="true">♪</span><b>{note}</b></button>)}</div>
-        <p className="music-hint">Your little piano</p>
-        {mission && <button type="button" className="music-primary" disabled={!hasPlayed} onClick={() => { clear(); onComplete(); }}>I’m finished ✓</button>}
+  function back() {reset();if(mission || activity==='menu')onBack();else setActivity('menu');}
+  const activeDance=['starting','dance','freeze'].includes(phase);
+  return <main className={`music-garden ${activity==='menu'?'music-garden-menu':'music-garden-immersive'} garden-mode-${activity}`}>
+    <button type="button" className="garden-back garden-control" aria-label={mission?'Back to Music & Movement map':'Back to music activities'} onClick={back}><span aria-hidden="true">←</span></button>
+    <h1 className={activity==='menu'?'':'garden-sr-only'}>{ACTIVITIES.find(a=>a.id===activity)?.title || 'Music & Movement'}</h1>
+    {activity==='menu' ? <div className="garden-activity-choices">{ACTIVITIES.map(item=><button type="button" key={item.id} onClick={()=>{reset();setRound(0);setHasPlayed(false);setActivity(item.id);}}><InstrumentArt kind={item.kind} /><strong>{item.title}</strong></button>)}</div> : <>
+      {!soundOn && <span className="garden-muted" role="img" aria-label="Sound is off. Ask a grown-up to turn sound on in Settings.">♪̸</span>}
+      {activity==='play' && <>
+        <nav className="garden-instrument-picker" aria-label="Choose an instrument">{MUSIC_INSTRUMENTS.map(kind=><button type="button" key={kind} aria-label={`Choose ${kind}`} aria-pressed={chosenInstrument===kind} onClick={()=>{quietIntro();audio.current?.stop();setLit(null);setChosenInstrument(kind);}}><InstrumentArt kind={kind} /></button>)}</nav>
+        <section className="garden-selected-instrument" aria-label={`Play the ${chosenInstrument}`}><GardenInstrument key={chosenInstrument} kind={chosenInstrument} disabled={!soundOn} lit={lit} onPlay={play} /></section>
+        {mission && <button type="button" className="garden-done garden-control" disabled={!hasPlayed} aria-label="Finish playing" onClick={()=>{clear();onComplete();}}><span aria-hidden="true">✓</span></button>}
       </>}
-      {activity === 'copy' && <>
-        <p className="music-hint">Little tune {round + 1} of {PATTERNS.length} · Two sounds to copy</p>
-        <div className="music-copy-progress" aria-label={`${progress} of 2 sounds copied`}>{PATTERNS[round].map((_, index) => <span key={index} className={index < progress ? 'is-complete' : ''} aria-hidden="true">{index < progress ? '★' : '♪'}</span>)}</div>
-        <button type="button" className="music-primary" disabled={!soundOn || phase === 'listening' || (mission && missionFinished)} onClick={() => listen()}>{phase === 'listening' ? 'Listening…' : phase === 'ready' ? '▶ Listen' : '↻ Listen again'}</button>
-        <div className="music-instruments">{['drum', 'bell'].map(kind => <button type="button" key={kind} disabled={!soundOn || phase !== 'answer'} className={`music-pad ${lit === kind ? 'is-lit' : ''}`} onClick={() => copy(kind)}><InstrumentArt kind={kind} /><strong>{kind === 'drum' ? 'Drum' : 'Bell'}</strong></button>)}</div>
-        {phase === 'success' && !(mission && missionFinished) && <button type="button" className="music-primary" onClick={() => { const next = (round + 1) % PATTERNS.length; setRound(next); void listen(next); }}>{round === PATTERNS.length - 1 ? 'Play again' : 'Next little tune'} <span aria-hidden="true">→</span></button>}
+      {activity==='copy' && <>
+        <div className="garden-copy-stars" aria-label={`${progress} of ${COPY_BEATS_MS.length} sounds copied`}><span aria-hidden="true">{COPY_BEATS_MS.map((_,index)=>index<progress?'★':'☆').join(' ')}</span></div>
+        <button type="button" className="garden-listen-flower" disabled={!soundOn || phase==='listening' || finished} aria-label="Listen to the pattern" onClick={()=>listen()}><Flower symbol="listen" /></button>
+        <section className="garden-copy-instrument" aria-label={`Copy the ${copyKind}`}><GardenInstrument kind={copyKind} disabled={!soundOn || phase!=='answer'} lit={lit} onPlay={play} /></section>
+        {phase==='success' && (!finished || !mission) && <button type="button" className="garden-done garden-control" aria-label={finished?'Play again':'Next instrument'} onClick={()=>{const next=(round+1)%COPY_INSTRUMENTS.length;setRound(next);void listen(next);}}><span aria-hidden="true">→</span></button>}
       </>}
-      {activity === 'dance' && <>
-        <p className="music-grownup">Grown-ups: make a little space and stay nearby. Seated dancing and waving hands work too.</p>
-        <div className={`music-dance-stage ${phase === 'dance' ? 'is-dancing' : ''} ${phase === 'freeze' ? 'is-frozen' : ''}`}>
-          <div className="music-mascot" aria-hidden="true">{phase === 'freeze' ? '🧊' : phase === 'finished' ? '🌟' : '🐻'}</div>
-          <h2>{phase === 'dance' ? 'Dance!' : phase === 'freeze' ? 'Freeze!' : phase === 'finished' ? 'You did it!' : 'Ready to wiggle?'}</h2>
-          <p>{playing ? `Round ${progress || 1} of 3` : 'Move when you hear the music'}</p>
+      {activity==='dance' && <>
+        <div className="garden-song-flowers" role="group" aria-label="Choose a dance song">{DANCE_SONGS.map((song,index)=><button type="button" key={song.id} disabled={activeDance} aria-label={`Choose ${song.title}`} aria-pressed={index===songIndex} onClick={()=>{reset();setSongIndex(index);}}><Flower symbol={song.symbol} /></button>)}</div>
+        <div className={`garden-dancers ${phase==='dance'?'is-dancing':''} ${phase==='freeze'?'is-frozen':''}`} aria-label={phase==='freeze'?'Freeze':phase==='dance'?'Dance':'Dancing friends'}>
+          <img src="/music-garden/dancing-friends.webp" alt="Two children, a puppy and a bunny ready to dance" draggable="false" />
+          {phase==='freeze' && <span className="garden-freeze-sparkles" aria-hidden="true">✦ ✦ ✦</span>}
         </div>
-        {!(mission && missionFinished) && <button type="button" className="music-primary" disabled={!soundOn} onClick={playing ? reset : dance}>{playing ? '■ Stop' : phase === 'finished' ? '▶ Dance again' : '▶ Start dancing'}</button>}
+        {(!finished || !mission) && <button type="button" className="garden-dance-play garden-control" disabled={!soundOn || phase==='starting'} aria-label={activeDance?'Stop dancing':'Start dancing'} onClick={activeDance?reset:dance}><span aria-hidden="true">{activeDance?'■':'▶'}</span></button>}
       </>}
-      <p className="music-message" role="status">{message || (activity === 'copy' ? 'Tap Listen when you’re ready.' : '')}</p>
-    </section>}
+    </>}
+    <p className="garden-sr-only" role="status" aria-live="polite">{message}</p>
+    <button type="button" className="garden-credits-button garden-control" aria-label="Music credits" onClick={()=>{if(activity!=='menu')reset();setCredits(true);}}>ⓘ</button>
+    <dialog ref={creditDialog} className="garden-credits" onCancel={()=>setCredits(false)} onClose={()=>setCredits(false)}>
+      <h2>Music credits</h2><p>Dance recordings by Kevin MacLeod (<a href="https://incompetech.com/">incompetech.com</a>), licensed under <a href={MUSIC_LICENCE}>Creative Commons Attribution 4.0</a>.</p>
+      <ul>{DANCE_SONGS.map(song=><li key={song.id}><a href={song.source}>{song.title}</a> — Kevin MacLeod.</li>)}</ul>
+      <p>Recordings excerpted to 45 seconds, with volume adjusted and pauses for Dance & Freeze. Interactive instrument tones are generated by Oatle Kids.</p>
+      <button type="button" onClick={()=>setCredits(false)}>Close credits</button>
+    </dialog>
   </main>;
+}
+function Flower({ symbol }) {
+  return <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g fill="#ffd66d">{[0,60,120,180,240,300].map(angle=><ellipse key={angle} cx="60" cy="28" rx="17" ry="24" transform={`rotate(${angle} 60 60)`} />)}</g><circle cx="60" cy="60" r="28" fill="#c6a3dc" stroke="#fff1bd" strokeWidth="3" />
+    {symbol==='listen'?<><path d="M42 54h10l12-9v30l-12-9H42Z" fill="#fff6e6" /><path d="M73 49q13 11 0 22" stroke="#fff6e6" strokeWidth="5" fill="none" strokeLinecap="round" /></>:symbol==='sun'?<circle cx="60" cy="60" r="16" fill="#fff19c" />:symbol==='star'?<path d="m60 39 6 13 15 2-11 11 3 15-13-7-13 7 3-15-11-11 15-2Z" fill="#fff19c" />:symbol==='rainbow'?<><path d="M39 71a21 21 0 0 1 42 0" stroke="#ee766a" strokeWidth="8" fill="none" /><path d="M46 71a14 14 0 0 1 28 0" stroke="#ffe69d" strokeWidth="7" fill="none" /><path d="M53 71a7 7 0 0 1 14 0" stroke="#9bd7bb" strokeWidth="6" fill="none" /></>:<><circle cx="60" cy="60" r="13" fill="#ffeab1" />{[0,90,180,270].map(angle=><ellipse key={angle} cx="60" cy="44" rx="7" ry="11" fill="#fff3c8" transform={`rotate(${angle} 60 60)`} />)}</>}
+  </svg>;
 }

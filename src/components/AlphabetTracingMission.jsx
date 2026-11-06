@@ -1,4 +1,6 @@
 import { drawingToolCursor } from "./drawingToolCursor";
+import MissionBalloonBreak from './MissionBalloonBreak';
+import WritingBackButton from "./WritingBackButton";
 import { useEffect, useRef, useState } from "react";
 import "./AlphabetTracingMission.css";
 import { speak, stopSpeech } from "../utils/speech";
@@ -26,8 +28,7 @@ const TOOLS = {
   },
 };
 
-/* =========================
-   TOOL ICONS
+/* ==================   TOOL ICONS
    ========================= */
 
 function PencilIcon() {
@@ -151,8 +152,7 @@ function EraserIcon() {
   );
 }
 
-/* =========================
-   COMPONENT
+/* ==================   COMPONENT
    ========================= */
 
 export default function AlphabetTracingMission({
@@ -175,8 +175,7 @@ export default function AlphabetTracingMission({
 
   const letter = LETTERS[letterIndex];
 
-  /* =========================
-     TEXT TO SPEECH
+  /* ==================     TEXT TO SPEECH
      ========================= */
 
   useEffect(() => {
@@ -195,8 +194,7 @@ export default function AlphabetTracingMission({
     };
   }, [letter, soundOn]);
 
-  /* =========================
-     CANVAS SETUP
+  /* ==================     CANVAS SETUP
      ========================= */
 
   useEffect(() => {
@@ -237,8 +235,7 @@ export default function AlphabetTracingMission({
     };
   }, [letterIndex]);
 
-  /* =========================
-     POINTER POSITION
+  /* ==================     POINTER POSITION
      ========================= */
 
   function getCanvasPoint(event, canvas) {
@@ -250,8 +247,7 @@ export default function AlphabetTracingMission({
     };
   }
 
-  /* =========================
-     DRAW SETTINGS
+  /* ==================     DRAW SETTINGS
      ========================= */
 
   function configureDrawing(ctx) {
@@ -272,8 +268,7 @@ export default function AlphabetTracingMission({
     }
   }
 
-  /* =========================
-     START DRAWING
+  /* ==================     START DRAWING
      ========================= */
 
   function handlePointerDown(event) {
@@ -326,8 +321,7 @@ export default function AlphabetTracingMission({
     ctx.fill();
   }
 
-  /* =========================
-     DRAWING
+  /* ==================     DRAWING
      ========================= */
 
   function handlePointerMove(event) {
@@ -365,8 +359,7 @@ export default function AlphabetTracingMission({
     lastPointRef.current = point;
   }
 
-  /* =========================
-     STOP DRAWING
+  /* ==================     STOP DRAWING
      ========================= */
 
   function handlePointerUp(event) {
@@ -389,8 +382,7 @@ export default function AlphabetTracingMission({
     }
   }
 
-  /* =========================
-     NEXT LETTER
+  /* ==================     NEXT LETTER
      ========================= */
 
   function handleNext() {
@@ -418,35 +410,26 @@ export default function AlphabetTracingMission({
      */
   }
 
-  /* =========================
-     TOOL
+  /* ==================     TOOL
      ========================= */
 
   function selectTool(nextTool) {
     setTool(nextTool);
   }
 
-  /* =========================
-     RENDER
+  /* ==================     RENDER
      ========================= */
 
   return (
     <div className="alphabet-tracing-mission">
+      <MissionBalloonBreak step={letterIndex} total={LETTERS.length} soundOn={soundOn} resumePrompt={`Trace the uppercase and lowercase ${letter}`} />
 
-      {/* =========================
-          HEADER
+      {/* ==================          HEADER
          ========================= */}
 
       <div className="alphabet-mission-header">
 
-        <button
-          type="button"
-          className="alphabet-back-button"
-          onClick={onBack}
-          aria-label="Back"
-        >
-          ←
-        </button>
+        <WritingBackButton onBack={onBack} />
 
         <div className="alphabet-mission-title">
 
@@ -466,22 +449,19 @@ export default function AlphabetTracingMission({
 
       </div>
 
-      {/* =========================
-          CONTENT
+      {/* ==================          CONTENT
          ========================= */}
 
       <main className="alphabet-mission-content">
 
         <div className="alphabet-paper-area">
 
-          {/* =========================
-              PAPER
+          {/* ==================              PAPER
              ========================= */}
 
           <div className="alphabet-paper">
 
-            {/* =========================
-                TRACING LETTERS
+            {/* ==================                TRACING LETTERS
                ========================= */}
 
             <div className="alphabet-target-display">
@@ -496,8 +476,7 @@ export default function AlphabetTracingMission({
 
             </div>
 
-            {/* =========================
-                CHILD DRAWING CANVAS
+            {/* ==================                CHILD DRAWING CANVAS
                ========================= */}
 
             <canvas
@@ -516,8 +495,7 @@ export default function AlphabetTracingMission({
             />
 
 
-            {/* =========================
-                NEXT BUTTON
+            {/* ==================                NEXT BUTTON
                ========================= */}
 
             <button
@@ -535,8 +513,7 @@ export default function AlphabetTracingMission({
 
           </div>
 
-            {/* =========================
-                TOOLS
+            {/* ==================                TOOLS
                ========================= */}
 
             <aside
@@ -614,8 +591,7 @@ export default function AlphabetTracingMission({
 
             </aside>
 
-          {/* =========================
-              INSTRUCTION
+          {/* ==================              INSTRUCTION
              ========================= */}
 
           <div className="alphabet-mission-hint">
@@ -626,8 +602,7 @@ export default function AlphabetTracingMission({
 
       </main>
 
-      {/* =========================
-          PORTRAIT MESSAGE
+      {/* ==================          PORTRAIT MESSAGE
          ========================= */}
 
       <div className="alphabet-portrait-message">

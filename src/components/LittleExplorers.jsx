@@ -1,11 +1,11 @@
 import { drawingToolCursor } from "./drawingToolCursor";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import SpaceJourney from "./SpaceJourney";
+import StarTrailTrace from "./StarTrailTrace";
+import LittleAdventureHomes from "./LittleAdventureHomes";
 import ResponsivePlanetJourney from "./ResponsivePlanetJourney";
-import { storybooks } from "../data/storybooks";
 import StorybookAdventure from "./StorybookAdventure";
 import LocalBackButton from "./LocalBackButton";
-import BuildingAdventure, { BuildingIcon } from "./BuildingAdventure";
+import BuildingAdventure from "./BuildingAdventure";
 import AnimalAdventure, { AnimalIcon } from "./AnimalAdventure";
 import PuzzleAdventure, { PuzzleIcon } from "./PuzzleAdventure";
 import MusicAdventure, { MusicIcon } from "./MusicAdventure";
@@ -228,7 +228,7 @@ const TRAIL_PATTERNS = {
     title: "Straight Line",
     cardText: "Across the sky",
     icon: "➖",
-    prompt: "Follow the stars in a straight line.",
+    prompt: "Start at the glowing star. Slide your finger along the dotted line.",
     progressId: "trail-straight",
     path: "M10 52 L90 52",
     stars: [
@@ -240,7 +240,7 @@ const TRAIL_PATTERNS = {
     title: "Zigzag",
     cardText: "Up, down, up",
     icon: "⚡",
-    prompt: "Follow the zigzag stars.",
+    prompt: "Start at the glowing star. Trace the zigzag line with your finger.",
     progressId: "trail-zigzag",
     path: "M9 72 L25 30 L41 72 L57 30 L73 72 L91 30",
     stars: [
@@ -252,7 +252,7 @@ const TRAIL_PATTERNS = {
     title: "Big Curve",
     cardText: "Around the moon",
     icon: "〰",
-    prompt: "Follow the stars around the big curve.",
+    prompt: "Start at the glowing star. Trace the curved line with your finger.",
     progressId: "trail-curve",
     path: "M9 74 C22 22 72 12 91 70",
     stars: [
@@ -264,7 +264,7 @@ const TRAIL_PATTERNS = {
     title: "Circle Orbit",
     cardText: "Round and round",
     icon: "⭕",
-    prompt: "Follow the stars around the circle.",
+    prompt: "Start at the glowing star. Trace all the way around the circle.",
     progressId: "trail-circle",
     path: "M50 14 C75 14 88 32 88 51 C88 72 72 87 50 87 C28 87 12 72 12 51 C12 31 28 14 50 14 Z",
     stars: [
@@ -276,7 +276,7 @@ const TRAIL_PATTERNS = {
     title: "Space Spiral",
     cardText: "Curl into the middle",
     icon: "🌀",
-    prompt: "Follow the spiral stars into the middle.",
+    prompt: "Start at the glowing star. Trace the spiral line into the middle.",
     progressId: "trail-spiral",
     path: "M10 77 C12 24 84 12 90 55 C94 90 38 94 29 61 C22 34 65 25 73 51 C79 70 49 78 43 59 C40 48 52 43 58 51",
     stars: [
@@ -522,7 +522,7 @@ function ActivityHeader({ title, instruction, onBack, backLabel = "Little Explor
       <div>
         <p className="eyebrow">LITTLE EXPLORERS</p>
         <h1>{title}</h1>
-        <p>{instruction}</p>
+        {instruction && <p>{instruction}</p>}
       </div>
     </header>
   );
@@ -550,7 +550,6 @@ export default function LittleExplorers({
   const [shapePopped, setShapePopped] = useState([]);
   const [wrongShape, setWrongShape] = useState(null);
   const [trailPattern, setTrailPattern] = useState(null);
-  const [trailStep, setTrailStep] = useState(0);
   const [discoveryRound, setDiscoveryRound] = useState(0);
   const [wrongDiscoveryChoice, setWrongDiscoveryChoice] = useState(null);
   const [correctDiscoveryChoice, setCorrectDiscoveryChoice] = useState(null);
@@ -834,7 +833,6 @@ export default function LittleExplorers({
     }
     if (planet.activity === "trail") {
       setTrailPattern(planet.pattern);
-      setTrailStep(0);
     }
     if (planet.activity === "shapes") {
       setShapeRound(planet.shapeRound);
@@ -1061,31 +1059,14 @@ export default function LittleExplorers({
     }, 800);
   };
 
-  const showTrailMenu = () => {
-    stopSpeech();
-    setTrailPattern(null);
-    setTrailStep(0);
-  };
-
   const startTrailPattern = (pattern) => {
     setTrailPattern(pattern);
-    setTrailStep(0);
   };
 
-  const tapTrailStar = (index) => {
-    if (!trailPattern) return;
-    if (index !== trailStep) return;
-
-    const pattern = TRAIL_PATTERNS[trailPattern];
-    const next = trailStep + 1;
-    setTrailStep(next);
-    playBoop(soundOn, next + 1);
-
-    if (next === pattern.stars.length) {
-      completePlanet();
-      playVictorySong();
-      celebratePlanet(650, false);
-    }
+  const finishTrail = () => {
+    completePlanet();
+    playVictorySong();
+    celebratePlanet(650, false);
   };
 
   const getCanvasPoint = (event) => {
@@ -1360,8 +1341,8 @@ export default function LittleExplorers({
     return (
       <main className="little-explorers-page little-activity-page">
         <ActivityHeader
-          title={lesson.title}
-          instruction={balloonBreak ? "Celebration bubble break!" : round.prompt}
+          title="Balloon Adventure"
+          instruction={balloonBreak ? "Celebration bubble break!" : undefined}
           backLabel={`${activeAdventure.title} map`}
           onBack={showMap}
         />
@@ -1406,18 +1387,20 @@ export default function LittleExplorers({
             </>
           ) : (
             <>
-              <div className="balloon-learning-prompt" aria-live="polite">
+              <div className="balloon-learning-prompt">
                 <span>Round {balloonRound + 1} of {lesson.rounds.length}</span>
-                <strong>{round.prompt}</strong>
-                {lesson.kind === "colours" ? (
-                  <i
-                    className="balloon-target-colour"
-                    style={{ "--target-colour": BALLOON_COLOURS[round.target] }}
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <b aria-hidden="true">{round.target}</b>
-                )}
+                <button
+                  type="button"
+                  className="balloon-listen-again"
+                  aria-label="Listen again"
+                  disabled={!soundOn || balloonFinished}
+                  onClick={() => speak(round.prompt)}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M4 9h4l5-4v14l-5-4H4Z" fill="currentColor" />
+                    <path d="M16 8q4 4 0 8m3-11q7 7 0 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                </button>
               </div>
 
               {round.choices.map((choice, index) => {
@@ -1624,59 +1607,18 @@ export default function LittleExplorers({
     }
 
     const pattern = TRAIL_PATTERNS[trailPattern];
-    const finished = trailStep === pattern.stars.length;
-    const rocketPoint = pattern.stars[Math.min(trailStep, pattern.stars.length - 1)];
 
     return (
       <main className="little-explorers-page little-activity-page">
         <ActivityHeader
           title={pattern.title}
-          instruction="Tap the glowing stars in order and help the rocket fly."
+          instruction="Slide your finger along the dotted line."
           backLabel={`${activeAdventure.title} map`}
           onBack={showMap}
         />
 
-        <section className="star-trail-space" aria-label={`${pattern.title} star trail`}>
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            <path d={pattern.path} />
-          </svg>
-
-          <span
-            className={`trail-rocket ${finished ? "finished" : ""}`}
-            style={{ "--star-x": `${rocketPoint.x}%`, "--star-y": `${rocketPoint.y}%` }}
-            aria-hidden="true"
-          >
-            🚀
-          </span>
-
-          {pattern.stars.map((star, index) => (
-            <button
-              key={`${star.x}-${star.y}`}
-              type="button"
-              className={`trail-star ${index < trailStep ? "visited" : ""} ${index === trailStep ? "current" : ""}`}
-              style={{ "--star-x": `${star.x}%`, "--star-y": `${star.y}%` }}
-              onClick={() => tapTrailStar(index)}
-              aria-label={index === trailStep ? "Tap the glowing star" : `Star ${index + 1}`}
-            >
-              ★
-            </button>
-          ))}
-
-          {finished && (
-            <div className="little-success-card" role="status">
-              <span aria-hidden="true">🌟🚀</span>
-              <strong>Star trail complete!</strong>
-              <div>
-                <button type="button" onClick={() => setTrailStep(0)}>
-                  ↻ Again
-                </button>
-                <button type="button" onClick={showTrailMenu}>
-                  ⭐ Trails
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
+        <StarTrailTrace key={trailPattern} pattern={pattern} onComplete={finishTrail}
+          onReach={index => playBoop(soundOn, index + 1)} />
       </main>
     );
   }
@@ -1785,37 +1727,16 @@ export default function LittleExplorers({
   }
 
   if (screen === "adventures") {
-    return (
-      <main className="little-explorers-page little-adventure-page expedition-hub">
-        <img className="expedition-brand" src="/oatle-kids-wordmark.webp" alt="Oatle Kids" />
-        <LocalBackButton
-          className="page-back-button"
-          label={backLabel}
-          onClick={onBack}
-        />
-
-        <header className="little-map-header">
-          <p className="eyebrow">LITTLE SPACE ADVENTURES</p>
-          <h1>Choose an Adventure</h1>
-          <p>Choose a section, then a little activity.</p>
-        </header>
-
-        <SpaceJourney playful label="Little Explorers adventure destinations" storageKey="oatle-little-adventure-destination" items={[
-          ...LITTLE_ADVENTURES.map((adventure, index) => {
-            const completeCount = adventure.planets.filter(planet => isPlanetComplete(planet, adventure)).length;
-            const icon = adventure.id === "building" ? <BuildingIcon /> : adventure.id === "animals" ? <AnimalIcon /> : adventure.id === "puzzles" ? <PuzzleIcon /> : adventure.id === "music" ? <MusicIcon /> : adventure.icon;
-            return { id: adventure.id, title: adventure.title, subtitle: `${completeCount} of ${adventure.planets.length} planets explored`,
-              image: PLANET_ART[index % PLANET_ART.length].image, art: <span className="little-journey-world"><img src={PLANET_ART[index % PLANET_ART.length].image} alt="" /><span>{icon}</span></span>,
-              complete: completeCount === adventure.planets.length, onSelect: () => openAdventure(adventure.id) };
-          }),
-          { id: "storybooks", title: "Storybook Adventure", subtitle: "A little world of picture books", art: <span className="journey-books">{storybooks.map(book => <img src={book.cover} key={book.id} alt="" />)}</span>, onSelect: () => { stopSpeech(); setScreen("storybooks"); } },
-        ]} />
-
-        <p className="little-grownup-note">
-          Grown-ups: each section has its own activities. Play and explore together.
-        </p>
-      </main>
-    );
+    return <LittleAdventureHomes onBack={onBack} backLabel={backLabel} items={[
+      ...LITTLE_ADVENTURES.map(adventure => {
+        const completeCount = adventure.planets.filter(planet => isPlanetComplete(planet, adventure)).length;
+        return { id: adventure.id, title: adventure.title,
+          subtitle: `${completeCount} of ${adventure.planets.length} planets explored`,
+          complete: completeCount === adventure.planets.length,
+          onSelect: () => openAdventure(adventure.id) };
+      }),
+      { id: "storybooks", title: "Storybook Adventure", subtitle: "A little world of picture books", onSelect: () => { stopSpeech(); setScreen("storybooks"); } },
+    ]} />;
   }
 
   return (

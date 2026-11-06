@@ -1,4 +1,4 @@
-// Small original instrument voices; all audio is generated locally, with no downloads.
+// Interactive instrument voices only. Dance music uses separately credited recordings.
 export function createMusicAudio() {
   let context;
   let output;
@@ -48,6 +48,12 @@ export function createMusicAudio() {
     if (instrument === 'drum') {
       tone(155, time, 0.3, 0.65, 'sine', 55);
       tone(310, time, 0.055, 0.12, 'triangle', 90);
+    } else if (instrument === 'bongos') {
+      tone(240, time, 0.22, 0.5, 'sine', 115);
+      tone(460, time, 0.045, 0.11, 'triangle', 220);
+    } else if (instrument === 'xylophone') {
+      tone(frequency, time, 0.5, 0.32);
+      tone(frequency * 3, time, 0.13, 0.06);
     } else if (instrument === 'bell') {
       tone(frequency * 1.5, time, 0.7, 0.26);
       tone(frequency * 3, time, 0.3, 0.07);

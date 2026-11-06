@@ -1,5 +1,9 @@
+import { submitPayfastCheckout } from './lib/payfastCheckout';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
+import AgeSelection from "./components/AgeSelection";
+import WritingProfileReminder from "./components/WritingProfileReminder";
+import { missingWritingProfileFields } from "./utils/writingProfile";
 
 import { questions } from "./data/questions";
 import { lowercaseQuestions } from "./data/lowercaseQuestions";
@@ -12,7 +16,7 @@ import { readingQuestions } from "./data/readingQuestions";
 import { sentenceQuestions } from "./data/sentenceQuestions";
 import { missingLettersQuestions } from "./data/missingLettersQuestions";
 import {
-  assessmentQuestions as plutoQuestions,
+  assessmentQuestions as plutoQuestionPool,
   assessmentSkills as plutoSkills,
 } from "./data/assessmentQuestions";
 import { speak, stopSpeech } from "./utils/speech";
@@ -21,6 +25,7 @@ import LoginPage from "./components/LoginPage";
 import PasswordRecovery from "./components/PasswordRecovery";
 import { supabase } from "./lib/supabase";
 
+import { selectAssessment, restoreAssessmentQuestions } from "./utils/assessmentSelection";
 import { generateOptions } from "./utils/generateOptions";
 import { generateReadingOptions } from "./utils/generateReadingOptions";
 import { generateSentenceOptions } from "./utils/generateSentenceOptions";
@@ -32,13 +37,15 @@ import AlphabetTracingMission from "./components/AlphabetTracingMission";
 import NumberTracingMission from "./components/NumberTracingMission";
 import ShapeTracingMission from "./components/ShapeTracingMission";
 import SentenceWritingMission from "./components/SentenceWritingMission";
+import { migrateWritingProgress } from "./data/wordWriting";
 import LocalBackButton from "./components/LocalBackButton";
 import LittleExplorers from "./components/LittleExplorers";
 import CosmicPuzzles from "./components/CosmicPuzzles";
+import ReadingBalloonBreak from "./components/ReadingBalloonBreak";
 import AdventureWorlds from "./components/AdventureWorlds";
 import BigKidsPlanetJourney from "./components/BigKidsPlanetJourney";
 import { adventureEntryScreen } from "./components/bigKidsHomes";
-import { withCompletedDestination } from "./components/spaceJourneyLogic";
+import { beginMissionRun, finishMissionRun } from "./utils/missionReplay";
 import StorybookAdventure from "./components/StorybookAdventure";
 import SpaceBuilder from "./components/SpaceBuilder";
 
@@ -228,13 +235,17 @@ const savedReadingAssessmentAttempt = () => {
       localStorage.getItem(READING_ASSESSMENT_ATTEMPT_KEY)
     );
 
+    const questions = restoreAssessmentQuestions(saved?.questionIds, plutoQuestionPool);
+    const valid = questions.length === plutoSkills.length * 4;
     return {
-      active: Boolean(saved?.active),
-      scores: saved?.scores || emptyPlutoResults(),
+      active: Boolean(saved?.active) && valid,
+      questions,
+      answered: valid ? Math.min(Math.max(0, saved?.answered || 0), questions.length) : 0,
+      scores: valid ? saved?.scores || emptyPlutoResults() : emptyPlutoResults(),
     };
   } catch {
     return {
-      active: false,
+      active: false, questions: [], answered: 0,
       scores: emptyPlutoResults(),
     };
   }
@@ -263,11 +274,6 @@ const BIG_KIDS_PRAISE = [
 ];
 
 const READING_BREAK_INTERVAL = 6;
-const READING_BREAK_BALLOONS = [
-  { id: 1, colour: "#ff6f91", label: "Pink balloon" },
-  { id: 2, colour: "#ffd45c", label: "Yellow balloon" },
-  { id: 3, colour: "#55c6ff", label: "Blue balloon" },
-];
 
 function stopAudioRef(audioRef) {
   if (!audioRef.current) {
@@ -316,22 +322,9 @@ const savedGame = () => {
 
 const savedWritingProgress = () => {
   try {
-    const saved = JSON.parse(
-      localStorage.getItem("atli-writing-progress")
-    );
-
-    return {
-      unlocked: 1,
-      missions: {},
-      startedMissions: {},
-      ...(saved || {}),
-    };
+    return migrateWritingProgress(JSON.parse(localStorage.getItem("atli-writing-progress")));
   } catch {
-    return {
-      unlocked: 1,
-      missions: {},
-      startedMissions: {},
-    };
+    return migrateWritingProgress(null);
   }
 };
 
@@ -389,8 +382,16 @@ const writingPlanets = [
     name: "Mars",
     image: marsImage,
     color: "#EF5B5B",
-    description: "Write simple sentences",
+    description: "Write ten simple words",
     mission: "writingMission4",
+  },
+  {
+    id: 5,
+    name: "Jupiter",
+    image: jupiterImage,
+    color: "#D6B44C",
+    description: "Write simple sentences",
+    mission: "writingMission5",
   },
 ];
 
@@ -542,53 +543,6 @@ function SettingsIcon() {
   );
 }
 
-function BookIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="M4 5.5c2.8-.8 5.5-.2 8 1.5v12c-2.5-1.7-5.2-2.3-8-1.5z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M20 5.5c-2.8-.8-5.5-.2-8 1.5v12c2.5-1.7 5.2-2.3 8-1.5z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-
-function LittleExplorerIcon() {
-  return (
-    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-      <path
-        d="M32 8c7 0 12.5 5.5 12.5 12.5 0 5.5-3.5 10.2-8.4 11.9L34 40h-4l-2.1-7.6A12.5 12.5 0 0 1 32 8Z"
-        fill="#ffd45c"
-        stroke="currentColor"
-        strokeWidth="3"
-      />
-      <path d="M25 43h14v10H25z" fill="#55c6ff" stroke="currentColor" strokeWidth="3" />
-      <path d="M20 55h24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-      <circle cx="27" cy="19" r="2.5" fill="currentColor" />
-      <circle cx="37" cy="19" r="2.5" fill="currentColor" />
-      <path d="M27 25c3 3 7 3 10 0" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="m10 15 1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9L6.4 26l.7-4-2.9-2.8 4-.6Z" fill="#ff6f91" />
-      <path d="m51 28 1.4 2.8 3.1.5-2.2 2.2.5 3.1-2.8-1.5-2.8 1.5.5-3.1-2.2-2.2 3.1-.5Z" fill="#a875e8" />
-    </svg>
-  );
-}
-
 function AppNav({
   onHome,
   onExplore,
@@ -624,6 +578,7 @@ function AppNav({
         activeScreen === "writingMission2" ||
         activeScreen === "writingMission3" ||
         activeScreen === "writingMission4" ||
+        activeScreen === "writingMission5" ||
         activeScreen === "littleExplorers",
     },
     {
@@ -699,6 +654,13 @@ function App() {
   const [accessGrant, setAccessGrant] = useState(null);
   const hasAccess = hasActiveEntitlement(accessGrant, user?.id);
 
+  const [authEntry, setAuthEntry] = useState(() => ['login', 'signup'].includes(new URLSearchParams(window.location.search).get('auth')));
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutMessage, setCheckoutMessage] = useState(() => {
+    const payment = new URLSearchParams(window.location.search).get('payment');
+    return payment === 'success' ? 'Payment submitted. Access will update after payment confirmation.' : payment === 'cancelled' ? 'Checkout was cancelled. You have not started a subscription through this checkout.' : '';
+  });
+  const checkoutFunction = import.meta.env.VITE_PAYFAST_CHECKOUT_FUNCTION || 'quick-service';
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoMessage, setPromoMessage] = useState("");
@@ -729,12 +691,28 @@ function App() {
 
   const [readingAssessmentActive, setReadingAssessmentActive] =
     useState(() => savedReadingAssessmentAttempt().active);
+  const [readingAssessmentQuestions, setReadingAssessmentQuestions] = useState(() => {
+    const saved = savedReadingAssessmentAttempt();
+    return saved.questions.length ? saved.questions : selectAssessment(plutoQuestionPool, plutoSkills, 4);
+  });
+  const [readingAssessmentAnswered, setReadingAssessmentAnswered] = useState(() => savedReadingAssessmentAttempt().answered);
+
 
   const [soundPreference, setSoundOn] = useState(true);
   const soundOn = soundPreference && hasAccess && !authLoading && !accessLoading;
 
   const [childProfile, setChildProfile] =
     useState(savedChildProfile);
+
+  const [settingsReturnScreen, setSettingsReturnScreen] = useState(null);
+  const missingProfileFields = missingWritingProfileFields(childProfile);
+  const writingProfileIncomplete = missingProfileFields.length > 0;
+  const openSettings = (returnScreen = null) => {
+    setSettingsReturnScreen(returnScreen);
+    setScreen("settings");
+  };
+  const profileReminder = (returnScreen) => <WritingProfileReminder
+    missing={missingProfileFields} onSettings={() => openSettings(returnScreen)} />;
 
   const [feedback, setFeedback] = useState("");
   const [builtSentence, setBuiltSentence] =
@@ -749,11 +727,9 @@ function App() {
     useState(0);
   const [completedReadingBreaks, setCompletedReadingBreaks] =
     useState([]);
-  const [poppedReadingBreakBalloons, setPoppedReadingBreakBalloons] =
-    useState([]);
 
   const advanceTimer = useRef(null);
-  const readingBreakTimer = useRef(null);
+  useEffect(() => () => window.clearTimeout(advanceTimer.current), [screen]);
   const victoryAudioRef = useRef(null);
   const effectAudioRef = useRef(null);
 
@@ -863,12 +839,12 @@ function App() {
       return planet.id === 8
         ? planet.questions
         : planet.id === 9
-          ? plutoQuestions
+          ? readingAssessmentQuestions
           : planet.id === 3
             ? shuffleArray(createMatchingQuestions())
             : shuffleArray(planet.questions);
     },
-    [planet.id, planet.questions, readingMissionRun]
+    [planet.id, planet.questions, readingMissionRun, readingAssessmentQuestions]
   );
 
   const question =
@@ -935,7 +911,7 @@ function App() {
   }, [question, planet.id]);
 
   const wordOrderOptions = useMemo(() => {
-    if (!question || planet.id !== 4) {
+    if (!question || (planet.id !== 4 && question.type !== "word-order")) {
       return [];
     }
 
@@ -1004,9 +980,11 @@ function App() {
       JSON.stringify({
         active: readingAssessmentActive,
         scores: assessmentScores,
+        questionIds: readingAssessmentQuestions.map(q => q.assessmentId),
+        answered: readingAssessmentAnswered,
       })
     );
-  }, [assessmentScores, readingAssessmentActive]);
+  }, [assessmentScores, readingAssessmentActive, readingAssessmentQuestions, readingAssessmentAnswered]);
 
   /*
    * Central reading speech.
@@ -1025,7 +1003,7 @@ function App() {
 
     if (readingBreakDue) {
       const timer = setTimeout(() => {
-        speak("Space break! Pop all three balloons, then keep exploring.");
+        speak("Pop the balloons for a mini break! Then keep exploring.");
       }, 250);
 
       return () => {
@@ -1039,7 +1017,7 @@ function App() {
 
     if (isWordOrder) {
       const timer = setTimeout(() => {
-        speak(`Listen to the word ${question.word}. Put its letters in the right order.`);
+        speak("Listen to the word and put it in the right order.");
       }, 250);
 
       return () => {
@@ -1115,10 +1093,12 @@ function App() {
       writingPlanet: `Welcome to planet ${selectedWritingPlanet.name}. ${selectedWritingPlanet.description}.`,
       writingCelebration: `Mission accomplished! You completed your writing mission on ${completedWritingPlanet.name}.`,
       scribbler:
-        "Welcome to the Scribbler. Draw, write, erase, and add stickers to your picture.",
+        "Welcome to the Scribbler. You can turn your device sideways for more space. You can also keep it upright. Draw, write, erase, and add stickers to your picture.",
     };
 
-    const prompt = prompts[screen];
+    const needsProfileReminder = writingProfileIncomplete && (screen === "writingMap" || screen === "writingMission5" || (screen === "writingPlanet" && selectedWritingPlanet.id === 5));
+    const profilePrompt = "Before Sentence Writing, ask a grown-up to open Settings and add your nickname, age, favourite colour and number of siblings.";
+    const prompt = needsProfileReminder ? `${prompts[screen] || "Sentence Writing."} ${profilePrompt}` : prompts[screen];
     if (!prompt) {
       return undefined;
     }
@@ -1144,6 +1124,7 @@ function App() {
     soundOn,
     writingActivePlanet,
     writingCelebrationMission,
+    writingProfileIncomplete,
   ]);
 
   useEffect(() => {
@@ -1195,9 +1176,6 @@ function App() {
     return () => {
       stopAudioRef(victoryAudioRef);
       stopAudioRef(effectAudioRef);
-      if (readingBreakTimer.current) {
-        window.clearTimeout(readingBreakTimer.current);
-      }
     };
   }, []);
 
@@ -1225,32 +1203,14 @@ function App() {
     });
   };
 
-  const popReadingBreakBalloon = (balloonId) => {
-    if (poppedReadingBreakBalloons.includes(balloonId)) return;
-
-    const next = [...poppedReadingBreakBalloons, balloonId];
-    setPoppedReadingBreakBalloons(next);
-    playSound(correctSound);
-
-    if (next.length !== READING_BREAK_BALLOONS.length) return;
-
-    if (readingBreakTimer.current) {
-      window.clearTimeout(readingBreakTimer.current);
-    }
-
-    readingBreakTimer.current = window.setTimeout(() => {
-      setCompletedReadingBreaks((current) =>
-        current.includes(readingBreakKey)
-          ? current
-          : [...current, readingBreakKey]
-      );
-      setPoppedReadingBreakBalloons([]);
-      readingBreakTimer.current = null;
-    }, 500);
+  const completeReadingBreak = () => {
+    setCompletedReadingBreaks(current =>
+      current.includes(readingBreakKey) ? current : [...current, readingBreakKey]
+    );
   };
 
   const celebrateReadingMission = () => {
-    setProgress(current => withCompletedDestination(current, planet.id));
+    setProgress(current => finishMissionRun(current, planet.id));
     setScreen("celebration");
   };
 
@@ -1263,12 +1223,8 @@ function App() {
         [current.activePlanet]: current.question,
       };
 
-      return {
-        ...current,
-        missions,
-        activePlanet: id,
-        question: missions[id] || 0,
-      };
+      const run = id === 9 ? { ...current, missions } : beginMissionRun({ ...current, missions }, id);
+      return { ...run, activePlanet: id, question: run.missions[id] || 0 };
     });
 
     setFeedback("");
@@ -1276,7 +1232,6 @@ function App() {
     setBuiltWord([]);
     setIsProcessing(false);
     setRevealedAnswer("");
-    setPoppedReadingBreakBalloons([]);
 
     if (advanceTimer.current) {
       clearTimeout(advanceTimer.current);
@@ -1289,16 +1244,24 @@ function App() {
     const savedAttempt = savedReadingAssessmentAttempt();
 
     if (!savedAttempt.active) {
+      setReadingAssessmentQuestions(selectAssessment(plutoQuestionPool, plutoSkills, 4, savedAttempt.questions.map(q => q.assessmentId)));
+      setReadingAssessmentAnswered(0);
       setAssessmentScores(emptyPlutoResults());
       setReadingAssessmentActive(true);
     } else {
+      setReadingAssessmentQuestions(savedAttempt.questions);
+      setReadingAssessmentAnswered(savedAttempt.answered);
       setAssessmentScores(savedAttempt.scores);
+      if (savedAttempt.answered === savedAttempt.questions.length) {
+        finishPlutoAssessment(savedAttempt.scores);
+        return;
+      }
     }
 
     setProgress((current) => ({
       ...current,
       question: savedAttempt.active
-        ? current.missions?.[9] || current.question || 0
+        ? savedAttempt.answered
         : 0,
     }));
 
@@ -1322,6 +1285,7 @@ function App() {
     };
 
     setAssessmentScores(nextScores);
+    setReadingAssessmentAnswered(progress.question + 1);
 
     return nextScores;
   };
@@ -1707,7 +1671,7 @@ function App() {
     missionId
   ) => {
     setWritingProgress((current) => ({
-      ...withCompletedDestination(current, missionId),
+      ...finishMissionRun(current, missionId),
       missions: {
         ...current.missions,
         [missionId]: 0,
@@ -1730,9 +1694,8 @@ function App() {
       return;
     }
 
-    setWritingActivePlanet(
-      planetId
-    );
+    setWritingProgress(current => beginMissionRun(current, planetId));
+    setWritingActivePlanet(planetId);
 
     setScreen("writingPlanet");
   };
@@ -1763,12 +1726,9 @@ function App() {
           item.id === nextPlanetId
       );
 
-    setWritingProgress((current) => ({
-      ...current,
-      unlocked: Math.max(
-        current.unlocked,
-        nextPlanetId
-      ),
+    setWritingProgress(current => ({
+      ...beginMissionRun(current, nextPlanetId),
+      unlocked: Math.max(current.unlocked, nextPlanetId),
     }));
 
     setWritingActivePlanet(
@@ -1823,16 +1783,10 @@ function App() {
       return;
     }
 
-    setProgress((current) => ({
-      ...current,
-      unlocked: Math.max(
-        current.unlocked,
-        nextPlanetId
-      ),
-      activePlanet: nextPlanetId,
-      question:
-        current.missions?.[nextPlanetId] || 0,
-    }));
+    setProgress(current => {
+      const run = nextPlanetId === 9 ? current : beginMissionRun(current, nextPlanetId);
+      return { ...run, unlocked: Math.max(current.unlocked, nextPlanetId), activePlanet: nextPlanetId, question: run.missions?.[nextPlanetId] || 0 };
+    });
 
     setScreen(
       unlockedPlanet
@@ -1850,11 +1804,7 @@ function App() {
       startedMissions: {},
     });
 
-    setWritingProgress({
-      unlocked: 1,
-      missions: {},
-      startedMissions: {},
-    });
+    setWritingProgress(migrateWritingProgress(null));
 
     setWritingActivePlanet(1);
     setWritingCelebrationMission(null);
@@ -1871,7 +1821,23 @@ function App() {
     setScreen(group === "little" ? "littleExplorers" : "explore");
   };
 
-  // Checkout remains paused until live payments are ready.
+  const startSubscription = async () => {
+    if (!checkoutFunction || checkoutLoading) return;
+    setCheckoutLoading(true); setCheckoutMessage('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Please log in again to subscribe.');
+      const { data, error } = await supabase.functions.invoke(checkoutFunction, {
+        body: {}, headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error) throw new Error('Checkout could not start. Please try again shortly.');
+      if (data?.error) throw new Error(data.error);
+      submitPayfastCheckout(data);
+    } catch (error) {
+      setCheckoutMessage(error?.message || 'Checkout could not start. Please try again.');
+    } finally { setCheckoutLoading(false); }
+  };
+
   const redeemPromoCode = async () => {
     const code =
       promoCode.trim();
@@ -2007,10 +1973,14 @@ function App() {
       window.history.replaceState(null, "", url.pathname + url.search);
       setPasswordRecovery(false);
     }} />;
-  } else if (!user) {
+  } else if (!user || authEntry) {
     content = (
       <LoginPage
         onLogin={(loggedInUser) => {
+          setAuthEntry(false);
+          const url = new URL(window.location.href);
+          url.searchParams.delete('auth');
+          window.history.replaceState(null, '', url.pathname + url.search + url.hash);
           setAccessGrant(null);
           setAccessLoading(true);
           setUser(loggedInUser);
@@ -2047,25 +2017,27 @@ function App() {
           </p>
 
           <h1>
-            Access required
+            Choose your access
           </h1>
 
           <p className="login-intro">
-            Oatle Kids is in private testing. This account has not been given active access.
+            Your parent account is ready. Choose a monthly subscription or enter your promo code to start exploring.
           </p>
 
           <p className="login-intro">
-            Only approved testers can enter. If Oatle Kids has sent you an invitation code, you can redeem it below. Public subscriptions are closed.
+            R120 per month for Little Explorers and Big Kids adventures. Have a promo code? Redeem it below.
           </p>
 
           <button
             className="primary-button"
-            disabled
+            disabled={!checkoutFunction || checkoutLoading}
+            onClick={startSubscription}
             type="button"
           >
-            Subscriptions opening soon
+            {checkoutLoading ? 'Opening secure checkout…' : 'Subscribe — R120/month'}
           </button>
 
+          {checkoutMessage && <p className="login-intro" role="status">{checkoutMessage}</p>}
           <p
             className="login-intro"
             style={{
@@ -2150,52 +2122,7 @@ function App() {
       </main>
     );
   } else if (!ageGroup || screen === "ageSelect") {
-    content = (
-      <main className="age-choice-page">
-        <div className="age-choice-panel">
-          <img className="expedition-brand" src="/oatle-kids-wordmark.webp" alt="Oatle Kids" />
-          <p className="eyebrow">CHOOSE AN ADVENTURE</p>
-          <h1>How old is your little explorer?</h1>
-          <p className="age-choice-intro">
-            Pick the age group that fits the child playing today.
-          </p>
-
-          <div className="age-choice-grid" aria-label="Choose a child age group">
-            <button
-              className="age-choice-card age-choice-little"
-              style={{ "--age-world": `url(${earthImage})` }}
-              onClick={() => selectAgeGroup("little")}
-              type="button"
-            >
-              <span className="age-choice-icon">
-                <LittleExplorerIcon />
-              </span>
-              <strong>Ages 2–3</strong>
-              <span>Little Space Adventures</span>
-              <small>Big taps, happy boops and playful exploring</small>
-            </button>
-
-            <button
-              className="age-choice-card age-choice-big"
-              style={{ "--age-world": `url(${saturnImage})` }}
-              onClick={() => selectAgeGroup("big")}
-              type="button"
-            >
-              <span className="age-choice-icon">
-                <BookIcon />
-              </span>
-              <strong>Ages 4–7</strong>
-              <span>Space Learning Adventures</span>
-              <small>Reading, counting, writing and assessments</small>
-            </button>
-          </div>
-
-          <p className="age-choice-note">
-            We’ll remember your choice. You can change the age group in Settings.
-          </p>
-        </div>
-      </main>
-    );
+    content = <AgeSelection onSelect={selectAgeGroup} />;
   } else if (
     screen === "explore"
   ) {
@@ -2250,10 +2177,11 @@ function App() {
   } else if (screen === "writingMap") {
     content = <BigKidsPlanetJourney title="Writing Adventure" label="Writing planet journey"
       description="Complete each planet to unlock the next writing adventure."
+      notice={profileReminder("writingMap")}
       currentId={writingActivePlanet} onBack={() => setScreen("explore")}
-      childName={childProfile.name} onProfile={() => setScreen("settings")}
+      childName={childProfile.name} onProfile={() => openSettings()}
       items={[...writingPlanets.map(item => ({ id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
-        locked: item.id > writingProgress.unlocked, complete: item.id < writingProgress.unlocked || Boolean(writingProgress.completedMissions?.[item.id]),
+        locked: item.id > writingProgress.unlocked, complete: Boolean(writingProgress.completedMissions?.[item.id] ?? (item.id < writingProgress.unlocked)),
         onSelect: () => startWritingPlanet(item.id),
       })), { id: "scribbler", title: "Scribbler", subtitle: "Write, draw and explore freely.", image: jupiterImage, color: "#D6B44C", free: true, onSelect: () => setScreen("scribbler") }]} />;
   } else if (
@@ -2306,7 +2234,8 @@ function App() {
           }. Get ready for your writing mission.
         </p>
 
-        {action(
+        {selectedWritingPlanet.id === 5 && profileReminder("writingPlanet")}
+        {(selectedWritingPlanet.id !== 5 || missingProfileFields.length === 0) && action(
           writingMissionStarted
             ? "Return to mission"
             : "Start mission",
@@ -2419,9 +2348,7 @@ function App() {
       <AlphabetTracingMission
         soundOn={soundOn}
         onBack={() =>
-          setScreen(
-            "writingPlanet"
-          )
+          setScreen("writingMap")
         }
         onComplete={() =>
           completeWritingMission(1)
@@ -2441,9 +2368,7 @@ function App() {
       <NumberTracingMission
         soundOn={soundOn}
         onBack={() =>
-          setScreen(
-            "writingPlanet"
-          )
+          setScreen("writingMap")
         }
         onComplete={() =>
           completeWritingMission(2)
@@ -2463,9 +2388,7 @@ function App() {
       <ShapeTracingMission
         soundOn={soundOn}
         onBack={() =>
-          setScreen(
-            "writingPlanet"
-          )
+          setScreen("writingMap")
         }
         onComplete={() =>
           completeWritingMission(3)
@@ -2481,24 +2404,36 @@ function App() {
   } else if (
     screen === "writingMission4"
   ) {
-    content = (
+    content = <SentenceWritingMission mode="words" soundOn={soundOn}
+      onBack={() => setScreen("writingMap")}
+      onComplete={() => completeWritingMission(4)}
+      initialStep={writingProgress.missions?.[4] || 0}
+      onProgress={step => saveWritingMissionStep(4, step)} />;
+  } else if (
+    screen === "writingMission5"
+  ) {
+    content = missingProfileFields.length ? (
+      <main className="planet-overview writing-planet-overview">
+        <LocalBackButton label="Writing map" onClick={() => setScreen("writingMap")} />
+        <h1>Sentence Writing</h1>
+        {profileReminder("writingMission5")}
+      </main>
+    ) : (
       <SentenceWritingMission
         soundOn={soundOn}
         onBack={() =>
-          setScreen(
-            "writingPlanet"
-          )
+          setScreen("writingMap")
         }
         onComplete={() =>
-          completeWritingMission(4)
+          completeWritingMission(5)
         }
         initialStep={
-          writingProgress.missions?.[4] || 0
+          writingProgress.missions?.[5] || 0
         }
         onProgress={(step) =>
-          saveWritingMissionStep(4, step)
+          saveWritingMissionStep(5, step)
         }
-        childProfile={childProfile}
+        childProfile={Object.fromEntries(Object.entries(childProfile).map(([key, value]) => [key, String(value ?? "").trim()]))}
       />
     );
   } else if (
@@ -2514,14 +2449,14 @@ function App() {
         }
         soundOn={soundOn}
         childName={childProfile.name}
-        onProfile={() => setScreen("settings")}
+        onProfile={() => openSettings()}
       />
     );
   } else if (screen === "map") {
     content = <BigKidsPlanetJourney title="Reading Adventure" label="Reading planet journey"
       description="Complete each planet to unlock the next destination."
       currentId={progress.activePlanet} onBack={() => setScreen("explore")} emblem="Aa"
-      childName={childProfile.name} onProfile={() => setScreen("settings")}
+      childName={childProfile.name} onProfile={() => openSettings()}
       items={planets.map(item => ({
         id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
         locked: item.id > progress.unlocked, complete: item.id < progress.unlocked || Boolean(progress.completedMissions?.[item.id]) || (item.id === 9 && Boolean(assessmentResults)),
@@ -2569,9 +2504,9 @@ function App() {
               ? "Return to story"
               : "Read story"
             : planet.id === 9
-              ? readingMissionStarted
+              ? readingAssessmentActive
                 ? "Return to assessment"
-                : "Start assessment"
+                : assessmentResults ? "Try a new assessment" : "Start assessment"
               : readingMissionStarted
                 ? "Return to mission"
                 : "Start mission",
@@ -2579,8 +2514,6 @@ function App() {
             if (planet.id === 3 && progress.question === 0) {
               setReadingMissionRun((current) => current + 1);
             }
-
-            setPoppedReadingBreakBalloons([]);
 
             setProgress((current) => ({
               ...current,
@@ -2628,7 +2561,7 @@ function App() {
       100;
 
     content = (
-      <main className="mission-panel">
+      <main className={`mission-panel ${readingBreakDue ? "has-reading-mini-break" : ""}`}>
         <LocalBackButton
           className="page-back-button"
           label="Planet"
@@ -2675,38 +2608,19 @@ function App() {
                 left: `${journeyPercent}%`,
               }}
             >
-              🚀
+              <img src="/rocket/oatle-rocket.png" alt="" aria-hidden="true" draggable="false" />
             </b>
           </div>
         </div>
 
-        {readingBreakDue ? (
-          <section className="reading-space-break" aria-label="Space balloon break">
-            <p className="eyebrow">QUICK SPACE BREAK</p>
-            <h2>Pop all three balloons!</h2>
-            <p>Then your reading mission will continue.</p>
-
-            <div className="reading-break-balloons">
-              {READING_BREAK_BALLOONS.map((balloon) => (
-                <button
-                  key={balloon.id}
-                  type="button"
-                  className={`reading-break-balloon ${
-                    poppedReadingBreakBalloons.includes(balloon.id)
-                      ? "popped"
-                      : ""
-                  }`}
-                  style={{ "--reading-balloon-colour": balloon.colour }}
-                  onClick={() => popReadingBreakBalloon(balloon.id)}
-                  disabled={poppedReadingBreakBalloons.includes(balloon.id)}
-                  aria-label={`Pop the ${balloon.label}`}
-                >
-                  <span aria-hidden="true" />
-                </button>
-              ))}
-            </div>
-          </section>
-        ) : planet.id === 8 ? (
+        {readingBreakDue && <ReadingBalloonBreak
+          key={readingBreakKey}
+          onComplete={completeReadingBreak}
+          onPop={() => playSound(correctSound)}
+        />}
+        <div className={`reading-question-content ${readingBreakDue ? "is-on-break" : ""}`}
+          inert={readingBreakDue} aria-hidden={readingBreakDue || undefined}>
+        {planet.id === 8 ? (
           <>
             <p className="eyebrow">
               ATLI AND THE LOST MAP
@@ -3099,6 +3013,7 @@ function App() {
         >
           {feedback}
         </p>
+        </div>
       </main>
     );
   } else if (
@@ -3365,6 +3280,10 @@ function App() {
   } else {
     content = (
       <main className="settings-panel">
+        <LocalBackButton label={settingsReturnScreen ? "Writing" : "Adventures"} onClick={() => {
+          setScreen(settingsReturnScreen || "explore");
+          setSettingsReturnScreen(null);
+        }} />
         <p className="eyebrow">
           MISSION CONTROL
         </p>
@@ -3482,6 +3401,13 @@ function App() {
               }
             />
           </label>
+          {settingsReturnScreen && <div className="writing-profile-return" aria-live="polite">
+            <p>{missingProfileFields.length ? `Add or check: ${missingProfileFields.join(", ")}.` : "Your child’s details are saved on this device."}</p>
+            <button type="button" className="primary-button" disabled={missingProfileFields.length > 0} onClick={() => {
+              setScreen(settingsReturnScreen);
+              setSettingsReturnScreen(null);
+            }}>Save and return to Writing</button>
+          </div>}
         </section>
 
         <label className="setting-row">
@@ -3547,7 +3473,7 @@ function App() {
   }
 
   const showBottomNav =
-    user && hasAccess && ageGroup && screen !== "scribbler";
+    user && hasAccess && ageGroup && screen !== "scribbler" && !screen.startsWith("writingMission");
 
   return (
     <div className={`app ${showBottomNav ? "app-with-bottom-nav" : ""}`}>
@@ -3559,9 +3485,7 @@ function App() {
             onExplore={() =>
               setScreen(ageGroup === "little" ? "littleExplorers" : "explore")
             }
-            onSettings={() =>
-              setScreen("settings")
-            }
+            onSettings={() => openSettings()}
             activeScreen={screen}
           />
         )}

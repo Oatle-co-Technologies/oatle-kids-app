@@ -1,4 +1,6 @@
 import { drawingToolCursor } from "./drawingToolCursor";
+import MissionBalloonBreak from './MissionBalloonBreak';
+import WritingBackButton from "./WritingBackButton";
 import { useEffect, useRef, useState } from "react";
 
 import "./AlphabetTracingMission.css";
@@ -146,8 +148,7 @@ export default function NumberTracingMission({
 
   const currentNumber = NUMBERS[numberIndex];
 
-  /* =========================
-     TEXT TO SPEECH
+  /* ==================     TEXT TO SPEECH
      ========================= */
 
   useEffect(() => {
@@ -353,6 +354,7 @@ export default function NumberTracingMission({
 
   return (
     <div className="alphabet-tracing-mission number-tracing-mission">
+      <MissionBalloonBreak step={numberIndex} total={NUMBERS.length} soundOn={soundOn} resumePrompt={`Trace the number ${currentNumber}`} />
 
       <div className="alphabet-portrait-message">
         <div className="alphabet-portrait-title">
@@ -366,14 +368,7 @@ export default function NumberTracingMission({
 
       <header className="alphabet-mission-header">
 
-        <button
-          type="button"
-          className="alphabet-back-button"
-          onClick={onBack}
-          aria-label="Go back"
-        >
-          ←
-        </button>
+        <WritingBackButton onBack={onBack} />
 
         <div className="alphabet-mission-title">
 
