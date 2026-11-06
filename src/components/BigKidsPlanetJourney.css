@@ -8,8 +8,8 @@
 .big-kids-planet-map .planet-map-banner h1 { margin: 0; color: #fff8e8; font: 1000 clamp(1.5rem, 2.2vw, 2.4rem)/1.15 'Nunito', sans-serif; text-align: center; text-shadow: 0 3px 0 #3c1b63, 0 5px 2px #1c103faa; white-space: nowrap; }
 .planet-banner-emblem { position: absolute; left: -25px; top: -10px; display: grid; place-items: center; width: 92px; height: 92px; border-radius: 50%; border: 5px solid #ffe5a1; background: radial-gradient(circle at 35% 25%, #64d8ff, #2765bc 55%, #382987); color: #ffdf69; font: 1000 2.5rem/1 'Nunito', sans-serif; text-shadow: 0 3px 0 #9b611b; box-shadow: inset 0 2px 6px #fff8, 0 3px 9px #090a2855; transform: rotate(-15deg); }
 .planet-map-banner > p { position: absolute; left: 50%; bottom: -37px; transform: translateX(-50%) rotate(1deg); margin: 0; padding: 7px 24px; border: 2px solid #ffdc85; border-radius: 30px; background: linear-gradient(#30315d, #141a3b); color: #fff7e8; font: 900 .93rem/1.1 'Nunito', sans-serif; white-space: nowrap; box-shadow: 0 3px 9px #070b2e88, inset 0 1px 3px #fff4; }
-.planet-map-profile { overflow: hidden; white-space: nowrap; grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 9px; max-width: 190px; min-height: 44px; margin-top: 6px; padding: 5px 13px 5px 5px; border: 1px solid #bfb8ff; border-radius: 30px; background: linear-gradient(#39336b, #1d1a46); color: #fff8e8; font: 900 1rem 'Nunito', sans-serif; cursor: pointer; }
-.planet-map-profile > span:first-child { display: grid; place-items: center; width: 33px; height: 33px; border: 1px solid #e7c67f; border-radius: 50%; background: #7062b1; color: #fff4d7; }
+.planet-map-profile { overflow: hidden; white-space: nowrap; grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 9px; max-width: 190px; min-height: 44px; margin-top: 6px; padding: 8px 13px; border: 1px solid #bfb8ff; border-radius: 30px; background: linear-gradient(#39336b, #1d1a46); color: #fff8e8; font: 900 1rem 'Nunito', sans-serif; cursor: pointer; }
+.planet-map-profile-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .planet-map-profile:focus-visible { outline: 3px solid #fff1b9; outline-offset: 4px; }
 .planet-map-guidance { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .big-planet-journey { width: min(1440px, 100%); margin: 0 auto; }
@@ -69,7 +69,6 @@
   .planet-map-brand-back > img { width: 90px; }
   .planet-map-brand-back .local-back-button { padding: 8px 10px; font-size: .72rem; }
   .planet-map-profile { font-size: .7rem; padding-right: 8px; max-width: 110px; overflow: hidden; gap: 5px; }
-  .planet-map-profile > span:first-child { width: 24px; height: 24px; flex-shrink: 0; }
   .planet-map-banner { width: calc(100% - 30px); padding: 13px 10px 14px 45px; }
   .big-kids-planet-map .planet-map-banner h1 { font-size: clamp(1.1rem, 5vw, 1.6rem); }
   .planet-banner-emblem { width: 62px; height: 62px; left: -24px; font-size: 1.6rem; }
@@ -91,8 +90,6 @@
 .big-planet-journey .journey-stop.is-complete .journey-stamp { background: linear-gradient(135deg, #ffe982, #ffc22e 55%, #e89112); color: #152051; border-color: #fff0b1; }
 @media (min-width: 1000px) { .planet-journey-progress { font-size: 1.1rem; gap: 20px; padding: 12px 20px; } .planet-progress-orbs { gap: 11px; } .planet-progress-orbs > span { width: 24px; height: 24px; } }
 @media (max-width: 640px) {
-  .planet-map-profile { width: 38px; max-width: 38px; min-height: 38px; padding: 5px; gap: 0; font-size: 0; }
-  .planet-map-profile > span:first-child { font-size: .8rem; }
-  .planet-map-profile > span:last-child { display: none; }
+  .planet-map-profile { width: auto; max-width: 130px; min-height: 38px; padding: 7px 10px; gap: 5px; font-size: .8rem; }
   .big-planet-journey .journey-planet > img { width: 120%; height: 120%; }
 }

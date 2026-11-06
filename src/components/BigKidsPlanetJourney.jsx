@@ -25,7 +25,7 @@ export default function BigKidsPlanetJourney({ title, description, label, items,
       <header className="planet-map-toolbar">
         <div className="planet-map-brand-back"><img src="/oatle-kids-wordmark.webp" alt="Oatle Kids" /><LocalBackButton label="Adventures" onClick={onBack} /></div>
         <div className="planet-map-banner"><span className="planet-banner-emblem" aria-hidden="true">{emblem}</span><h1>{title}</h1><p>Your {journeyName} Journey</p></div>
-        {childName && <button className="planet-map-profile" aria-label={`${childName} — Settings`} type="button" onClick={onProfile} disabled={!onProfile}><span aria-hidden="true">{childName.charAt(0).toUpperCase()}</span>{childName}<span aria-hidden="true">⌄</span></button>}
+        {childName && <button className="planet-map-profile" aria-label={`${childName} — Settings`} type="button" onClick={onProfile} disabled={!onProfile}><span className="planet-map-profile-name">{childName}</span><span aria-hidden="true">⌄</span></button>}
       </header>
       {notice}
       <p className="planet-map-guidance">{description}</p>
