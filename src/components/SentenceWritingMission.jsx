@@ -1,3 +1,4 @@
+import { drawingToolCursor } from "./drawingToolCursor";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./Scribbler.css";
 import "./SentenceWritingMission.css";
@@ -739,6 +740,7 @@ export default function SentenceWritingMission({
 
             <canvas
               ref={canvasRef}
+              style={drawingToolCursor(tool, DEFAULT_COLOR)}
               className={`scribbler-canvas scribbler-canvas-${tool}`}
               data-tool={tool}
               aria-label="Trace the sentence"

@@ -1,3 +1,4 @@
+import { drawingToolCursor } from "./drawingToolCursor";
 import { useEffect, useRef, useState } from "react";
 import "./AlphabetTracingMission.css";
 import { speak, stopSpeech } from "../utils/speech";
@@ -501,6 +502,7 @@ export default function AlphabetTracingMission({
 
             <canvas
               ref={canvasRef}
+              style={drawingToolCursor(tool, DEFAULT_COLOR)}
               className="alphabet-tracing-canvas"
 
               onPointerDown={handlePointerDown}

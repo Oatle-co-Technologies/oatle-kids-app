@@ -1,3 +1,4 @@
+import { drawingToolCursor } from "./drawingToolCursor";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import SpaceJourney from "./SpaceJourney";
 import ResponsivePlanetJourney from "./ResponsivePlanetJourney";
@@ -1705,6 +1706,7 @@ export default function LittleExplorers({
           </div>
           <canvas
             ref={canvasRef}
+              style={selectedSticker ? undefined : drawingToolCursor(drawingTool === "eraser" ? "eraser" : "brush", drawingColor)}
             className={selectedSticker ? "little-canvas-sticker-mode" : ""}
             aria-label="Draw colourful space trails"
             onPointerDown={handleDrawStart}
