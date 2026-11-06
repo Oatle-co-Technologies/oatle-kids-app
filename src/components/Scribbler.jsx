@@ -1,4 +1,4 @@
-import { drawingToolCursor } from "./drawingToolCursor";
+import { drawingToolCursor, useDrawingToolCursor } from "./drawingToolCursor";
 import { DrawingToolIcon } from "./DrawingToolIcon";
 import { useLayoutEffect, useRef, useState } from "react";
 
@@ -676,6 +676,8 @@ export default function Scribbler({ onBack }) {
 
   const [selectedSticker, setSelectedSticker] =
     useState(null);
+
+  useDrawingToolCursor(canvasRef, tool, selectedColor, !selectedSticker);
 
   const [stickers, setStickers] =
     useState([]);

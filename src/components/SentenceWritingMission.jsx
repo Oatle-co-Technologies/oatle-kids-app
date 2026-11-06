@@ -1,4 +1,4 @@
-import { drawingToolCursor } from "./drawingToolCursor";
+import { drawingToolCursor, useDrawingToolCursor } from "./drawingToolCursor";
 import MissionBalloonBreak from './MissionBalloonBreak';
 import WritingBackButton from "./WritingBackButton";
 import { WRITING_WORDS } from "../data/wordWriting";
@@ -246,6 +246,7 @@ export default function SentenceWritingMission({
     Math.min(Math.max(initialStep, 0), activities.length - 1)
   );
   const [tool, setTool] = useState("pencil");
+  useDrawingToolCursor(canvasRef, tool, DEFAULT_COLOR);
   const [progress, setProgress] = useState(0);
   const [hasDrawing, setHasDrawing] = useState(false);
   const [sentenceLayout, setSentenceLayout] = useState({

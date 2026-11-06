@@ -1,4 +1,4 @@
-import { drawingToolCursor } from "./drawingToolCursor";
+import { drawingToolCursor, useDrawingToolCursor } from "./drawingToolCursor";
 import MissionBalloonBreak from './MissionBalloonBreak';
 import WritingBackButton from "./WritingBackButton";
 import { useEffect, useRef, useState } from "react";
@@ -145,6 +145,7 @@ export default function NumberTracingMission({
     Math.min(Math.max(initialStep, 0), NUMBERS.length - 1)
   );
   const [tool, setTool] = useState("pencil");
+  useDrawingToolCursor(canvasRef, tool, DEFAULT_COLOR);
 
   const currentNumber = NUMBERS[numberIndex];
 

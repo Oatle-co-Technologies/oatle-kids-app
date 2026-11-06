@@ -1,4 +1,4 @@
-import { drawingToolCursor } from "./drawingToolCursor";
+import { drawingToolCursor, useDrawingToolCursor } from "./drawingToolCursor";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import StarTrailTrace from "./StarTrailTrace";
 import LittleAdventureHomes from "./LittleAdventureHomes";
@@ -559,6 +559,7 @@ export default function LittleExplorers({
   const [stickers, setStickers] = useState([]);
 
   const canvasRef = useRef(null);
+  useDrawingToolCursor(canvasRef, drawingTool === "eraser" ? "eraser" : "brush", drawingColor, !selectedSticker);
   const activePointerRef = useRef(null);
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);

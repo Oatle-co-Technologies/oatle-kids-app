@@ -1,4 +1,4 @@
-import { drawingToolCursor } from "./drawingToolCursor";
+import { drawingToolCursor, useDrawingToolCursor } from "./drawingToolCursor";
 import MissionBalloonBreak from './MissionBalloonBreak';
 import WritingBackButton from "./WritingBackButton";
 import { useEffect, useRef, useState } from "react";
@@ -172,6 +172,7 @@ export default function AlphabetTracingMission({
     Math.min(Math.max(initialStep, 0), LETTERS.length - 1)
   );
   const [tool, setTool] = useState("pencil");
+  useDrawingToolCursor(canvasRef, tool, DEFAULT_COLOR);
 
   const letter = LETTERS[letterIndex];
 
