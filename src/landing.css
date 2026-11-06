@@ -114,3 +114,10 @@ body.marketing::before { display: block; opacity: 1; background: linear-gradient
  .marketing .cosmic-hero .planet-label { bottom:-18px;font-size:9px; }
 }
 @media(max-width:380px) { .marketing .cosmic-hero { height:340px; }.marketing .nav .login-link {padding:10px 14px;} }
+
+.install-guide { max-width: 900px; }
+.install-guide > p { max-width: 680px; }
+.install-options details { padding: 18px 0; border-bottom: 1px solid #8fe7ff33; }
+.install-options summary { cursor: pointer; font-weight: 700; }
+.install-options p { margin: 14px 0 0; color: #c7d2f6; }
+.install-options a { text-underline-offset: 3px; }

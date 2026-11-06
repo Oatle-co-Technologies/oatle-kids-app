@@ -1,30 +1,10 @@
-let deferredInstallPrompt = null;
-
-export function getDeferredInstallPrompt() {
-  return deferredInstallPrompt;
-}
-
-export function clearDeferredInstallPrompt() {
-  deferredInstallPrompt = null;
-}
-
+// Let the browser offer installation through its native UI.
+// Do not cancel beforeinstallprompt without a working custom install control.
 function requestOfflineAssets(registration) {
   registration.active?.postMessage({
     type: "CACHE_OFFLINE_ASSETS",
   });
 }
-
-window.addEventListener("beforeinstallprompt", (event) => {
-  event.preventDefault();
-  deferredInstallPrompt = event;
-  window.dispatchEvent(
-    new CustomEvent("oatle-install-ready", { detail: event })
-  );
-});
-
-window.addEventListener("appinstalled", () => {
-  clearDeferredInstallPrompt();
-});
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

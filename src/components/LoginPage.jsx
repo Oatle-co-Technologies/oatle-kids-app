@@ -78,6 +78,12 @@ function LoginPage({ onLogin }) {
         </p>
 
 
+        <aside className="pwa-install-panel" aria-label="Install Oatle Kids">
+          <p>Keep Oatle Kids on your home screen</p>
+          <a className="pwa-open-chrome-button" href="/#install">How to install Oatle Kids</a>
+          <p className="pwa-install-help">On iPhone or iPad, use Safari’s Share menu → Add to Home Screen. You can also keep playing in this browser.</p>
+        </aside>
+
         <form onSubmit={handleSubmit} className="login-form">
           <label>
             Email
