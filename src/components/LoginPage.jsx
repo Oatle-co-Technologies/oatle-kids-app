@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 function LoginPage({ onLogin }) {
   const [isSignUp, setIsSignUp] = useState(() => new URLSearchParams(window.location.search).get('auth') === 'signup');
   const [isResetRequest, setIsResetRequest] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -35,7 +36,7 @@ function LoginPage({ onLogin }) {
       if (isSignUp) {
         const { data, error: signupError } = await supabase.auth.signUp({
           email: email.trim(), password,
-          options: { emailRedirectTo: `${window.location.origin}/app.html` },
+          options: { data: { email_marketing_opt_in: marketingConsent, email_marketing_version: '2026-11-10' }, emailRedirectTo: `${window.location.origin}/app.html` },
         });
         if (signupError) { setError(signupError.message); return; }
         if (data.session) onLogin(data.user);
@@ -113,6 +114,9 @@ function LoginPage({ onLogin }) {
 
           {isSignUp && !isResetRequest && <label className="signup-terms"><input type="checkbox" required />
             <span>I agree to the <a href="/terms.html" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</span>
+          </label>}
+          {isSignUp && !isResetRequest && <label className="signup-terms"><input type="checkbox" checked={marketingConsent} onChange={e => setMarketingConsent(e.target.checked)} />
+            <span>Yes, email me Oatle Kids news, offers and subscription reminders (optional). I can unsubscribe at any time. Assessment reports are separate.</span>
           </label>}
           {error && <p className="login-error" role="alert">{error}</p>}
 

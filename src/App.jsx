@@ -1,3 +1,7 @@
+import { prepareAccountStorage } from './lib/accountStorage';
+import EmailPreferences from './components/EmailPreferences';
+import ReportDelivery from './components/ReportDelivery';
+import { attemptId, queueReport } from './lib/parentEmail';
 import { submitPayfastCheckout } from './lib/payfastCheckout';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
@@ -759,6 +763,7 @@ function App() {
         if (!mounted) return;
 
         if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
+        if (prepareAccountStorage(localStorage, session?.user?.id || null)) { window.location.reload(); return; }
         setUser(session?.user ?? null);
 
         if (event === "SIGNED_OUT") {
@@ -1244,6 +1249,7 @@ function App() {
     const savedAttempt = savedReadingAssessmentAttempt();
 
     if (!savedAttempt.active) {
+      attemptId("reading", true);
       setReadingAssessmentQuestions(selectAssessment(plutoQuestionPool, plutoSkills, 4, savedAttempt.questions.map(q => q.assessmentId)));
       setReadingAssessmentAnswered(0);
       setAssessmentScores(emptyPlutoResults());
@@ -1291,6 +1297,7 @@ function App() {
   };
 
   const finishPlutoAssessment = (scores) => {
+    queueReport(user.id, "reading", scores);
     setAssessmentResults(scores);
     setReadingAssessmentActive(false);
     celebrateReadingMission();
@@ -2106,6 +2113,7 @@ function App() {
             )}
           </form>
 
+          <EmailPreferences />
           <button
             className="secondary-button"
             onClick={async () => {
@@ -2441,6 +2449,7 @@ function App() {
   ) {
     content = (
       <MathSection
+        userId={user.id}
         onHome={() =>
           setScreen("explore")
         }
@@ -3292,6 +3301,7 @@ function App() {
           Settings
         </h1>
 
+        <EmailPreferences />
         {assessmentResults && action("Parent Results", () => setScreen("results"), "secondary-button")}
 
         <section
@@ -3477,6 +3487,7 @@ function App() {
 
   return (
     <div className={`app ${showBottomNav ? "app-with-bottom-nav" : ""}`}>
+      {user && <ReportDelivery userId={user.id} />}
       {content}
 
       {showBottomNav && (

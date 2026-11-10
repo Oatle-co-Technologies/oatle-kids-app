@@ -1,3 +1,4 @@
+import { attemptId, queueReport } from '../lib/parentEmail';
 import MissionBalloonBreak from './MissionBalloonBreak';
 import { prepareMathQuestion, mathsQuestionNarration } from "../utils/mathsLanguage";
 import { selectAssessment, restoreAssessmentQuestions, assessmentResults as summarizeAssessment } from "../utils/assessmentSelection";
@@ -2152,6 +2153,7 @@ function getAssessmentQuestions(previousIds = []) {
 }
 
 export default function MathSection({
+  userId,
   onHome,
   onBack,
   soundOn,
@@ -2494,6 +2496,7 @@ export default function MathSection({
       if (savedAttempt.active && savedAttempt.questions.length && savedAttempt.answers.length === savedAttempt.questions.length) {
         setAssessmentQuestions(savedAttempt.questions);
         setAssessmentAnswers(savedAttempt.answers);
+        queueReport(userId, "maths", summarizeAssessment(assessmentSkills, savedAttempt.answers));
         setAssessmentActive(false);
         setProgress(current => ({
           ...finishMissionRun(current, id), activeMission: id,
@@ -2515,6 +2518,7 @@ export default function MathSection({
           savedAttempt.questions.length - 1
         );
       } else {
+        attemptId("maths", true);
         assessmentQuestionSet = getAssessmentQuestions(savedAttempt.questions.map(q => q.assessmentId));
         setAssessmentActive(true);
       }
@@ -2565,6 +2569,7 @@ export default function MathSection({
   const finishMission =
     (answers = assessmentAnswers) => {
       if (isAssessment) {
+        queueReport(userId, "maths", summarizeAssessment(assessmentSkills, answers));
         setProgress(current => ({
           ...finishMissionRun(current, current.activeMission),
           assessmentResults: summarizeAssessment(assessmentSkills, answers),

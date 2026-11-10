@@ -1,0 +1,11 @@
+[functions.parent-email]
+# The handler verifies the bearer token with auth.getUser (supports current signing keys).
+verify_jwt = false
+
+[functions.email-worker]
+# Gateway JWT plus the private X-Email-Worker-Secret header are both required.
+verify_jwt = true
+
+[functions.email-unsubscribe]
+# Public signed-token access awaits approval; keep delivery disabled meanwhile.
+verify_jwt = true
