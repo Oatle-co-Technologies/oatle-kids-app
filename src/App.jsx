@@ -1,3 +1,4 @@
+import { promoErrorMessage } from './lib/promoErrors';
 import { SUBSCRIPTION_PLANS } from './lib/subscriptionPlans';
 import { learningStorage } from './lib/profileStorage.js';
 import { readSavedActivity, saveActivity, resumeScreen } from './utils/savedActivity';
@@ -1780,9 +1781,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
         await supabase.auth.getSession();
 
       if (!session?.access_token) {
-        throw new Error(
-          "No authenticated session found."
-        );
+        throw Object.assign(new Error("Session expired"), { code: "session_expired" });
       }
 
       const { data, error } =
@@ -1798,15 +1797,9 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
           }
         );
 
-      if (error) {
-        throw error;
-      }
-
-      if (!data?.success) {
-        throw new Error(
-          data?.error ||
-            "Promo code could not be redeemed."
-        );
+      if (error || !data?.success) {
+        setPromoMessage(await promoErrorMessage(error, data));
+        return;
       }
 
       setPromoMessage(
@@ -1836,10 +1829,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
         error
       );
 
-      setPromoMessage(
-        error?.message ||
-          "We couldn't redeem that promo code. Please try again."
-      );
+      setPromoMessage(await promoErrorMessage(error));
 
       setAccessLoading(false);
     } finally {
