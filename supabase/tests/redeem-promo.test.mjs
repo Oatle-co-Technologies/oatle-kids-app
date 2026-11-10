@@ -33,7 +33,7 @@ const promo = async (code,extra={}) => {
 
 before(async()=>{
   await db.exec(`create role anon; create role authenticated; create role service_role bypassrls;
-    create schema auth; create table auth.users(id uuid primary key);
+    create schema auth; create table auth.users(id uuid primary key, email text, email_confirmed_at timestamptz);
     create table public.subscriptions(id uuid primary key);
     create table public.promo_codes(
       id uuid primary key default gen_random_uuid(),code text not null unique,description text,
@@ -59,8 +59,10 @@ before(async()=>{
     alter table public.entitlements enable row level security;
     grant usage on schema public to service_role;
     grant select,insert,update on all tables in schema public to service_role;`);
-  for(const user of users) await db.query('insert into auth.users values($1)',[user]);
+  for(const user of users) await db.query('insert into auth.users(id) values($1)',[user]);
   await db.exec(await readFile(new URL('../migrations/202610270001_atomic_promo_redemption.sql',import.meta.url),'utf8'));
+  await db.exec(await readFile(new URL('../migrations/202611100004_promo_invitation_permissions.sql',import.meta.url),'utf8'));
+  await db.exec('grant usage on schema auth to service_role;');
 });
 after(async()=>{await db.close();delete globalThis.promoTestAuth;});
 
@@ -142,12 +144,54 @@ test('endpoint rejects malformed codes and uses the verified identity',async()=>
 });
 
 
-test('private-testing upgrade blocks shared codes and preserves assigned invitations',async()=>{
+test('email-linked invitation works as service role without exposing the account table',async()=>{
+  const invited=users[63];
+  await db.query("update auth.users set email='invited@example.invalid', email_confirmed_at=now() where id=$1",[invited]);
+  await promo('NAME-BASED-INVITATION',{discount_type:'free_months',duration_days:null,duration_months:3,max_redemptions:1,assigned_email:' INVITED@EXAMPLE.INVALID '});
+  assert.equal(await scalar("select has_table_privilege('service_role','auth.users','SELECT')"),false);
+  for(const role of ['anon','authenticated']) assert.equal(await scalar("select has_function_privilege($1,'public.promo_invitation_email_matches(uuid,text)','execute')",[role]),false);
+  await db.exec('set role service_role');
+  try {
+    const result=await redeem(invited,' name-based-invitation ');
+    assert.equal(result.outcome,'redeemed');
+    const days=(new Date(result.expires_at)-Date.now())/86400000;assert.ok(days>88&&days<93);
+    assert.equal((await redeem(invited,'NAME-BASED-INVITATION')).outcome,'already_redeemed');
+  } finally {await db.exec('reset role');}
+  assert.equal(await scalar("select redemptions_count from promo_codes where code='NAME-BASED-INVITATION'"),1);
+  await assert.rejects(db.exec('set role authenticated; select public.promo_invitation_email_matches(null,null);'));
+  await db.exec('reset role');
+});
+test('wrong and unverified email accounts cannot consume an invitation',async()=>{
+  await db.query("update auth.users set email='unverified@example.invalid',email_confirmed_at=null where id=$1",[users[64]]);
+  await db.query("update auth.users set email='other@example.invalid',email_confirmed_at=now() where id=$1",[users[65]]);
+  await promo('VERIFIED-ONLY',{assigned_email:'unverified@example.invalid',max_redemptions:1});
+  await db.exec('set role service_role');
+  try {
+    for(const user of [users[64],users[65]]) assert.equal((await redeem(user,'VERIFIED-ONLY')).outcome,'wrong_account');
+  } finally {await db.exec('reset role');}
+  assert.equal(await scalar("select redemptions_count from promo_codes where code='VERIFIED-ONLY'"),0);
+  assert.equal(await scalar('select count(*)::int from promo_redemptions where user_id=any($1::uuid[])',[users.slice(64,66)]),0);
+});
+test('permission migration is safe to reapply and keeps legacy rewards working',async()=>{
+  const migration=await readFile(new URL('../migrations/202611100004_promo_invitation_permissions.sql',import.meta.url),'utf8');
+  const before=await scalar('select count(*)::int from promo_redemptions');
+  await db.exec(migration);
+  assert.equal(await scalar('select count(*)::int from promo_redemptions'),before);
+  assert.equal(await scalar("select has_table_privilege('service_role','auth.users','SELECT')"),false);
+  await promo('OLD-SEVEN-DAY',{duration_days:7});
+  await db.exec('set role service_role');
+  try {assert.equal((await redeem(users[66],'OLD-SEVEN-DAY')).outcome,'redeemed');}
+  finally {await db.exec('reset role');}
+});
+
+test('historical private-testing upgrade blocks shared codes and preserves assigned invitations',async()=>{
+  // This historical migration is applied to its original predecessor, not the newer live policy.
+  await db.exec(await readFile(new URL('../migrations/202610270001_atomic_promo_redemption.sql',import.meta.url),'utf8'));
   const migration=await readFile(new URL('../migrations/202610270002_private_promo_invites.sql',import.meta.url),'utf8');
   await db.exec(migration);
   await db.exec(migration); // Safe to reapply without changing permissions or data.
   const invited=randomUUID(),other=randomUUID();
-  for(const user of [invited,other]) await db.query('insert into auth.users values($1)',[user]);
+  for(const user of [invited,other]) await db.query('insert into auth.users(id) values($1)',[user]);
   const existingGrants=await scalar('select count(*)::int from entitlements');
   await promo('PRIVATE-INVITE');
   assert.equal((await redeem(invited,'PRIVATE-INVITE')).outcome,'wrong_account');
