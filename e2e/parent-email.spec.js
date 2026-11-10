@@ -74,3 +74,13 @@ for(const subject of ['reading','maths']) test(`${subject} completed attempt res
  expect(Object.keys(calls.find(c=>c.subject===subject).scores)).toHaveLength(subject==='reading'?7:10);
  await page.waitForTimeout(500);expect(calls.filter(c=>c.subject===subject)).toHaveLength(1);
 });
+test('promo rejection explains the invitation email instead of exposing an edge function error',async({page})=>{
+ await mock(page,true,false);
+ await page.route('https://test.supabase.co/functions/v1/hyper-action',route=>route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:'This promo code is assigned to another account.'})}));
+ await page.goto('/app.html');
+ await page.getByPlaceholder(/promo/i).fill('TEST-INVITATION');
+ await page.getByRole('button',{name:'Redeem promo code',exact:true}).click();
+ await expect(page.getByText(/email your invitation was sent to/)).toBeVisible();
+ await expect(page.getByText(/Edge Function|non-2xx/)).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Redeem promo code',exact:true})).toBeEnabled();
+});
