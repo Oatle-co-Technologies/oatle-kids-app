@@ -26,6 +26,7 @@ test('worker kill switch makes zero database/provider calls, and rejects unautho
  env={EMAIL_WORKER_SECRET:'test-worker'};
  globalThis.emailTestClient=()=>{throw new Error('Unexpected database call');};
  assert.equal((await workerHandler(new Request('https://example.invalid',{method:'POST'}))).status,401);
+ assert.equal((await workerHandler(new Request('https://example.invalid',{method:'POST',headers:{Authorization:'Bearer gateway-jwt'}}))).status,401);
  const response=await workerHandler(new Request('https://example.invalid',{method:'POST',headers:{Authorization:'Bearer gateway-jwt','X-Email-Worker-Secret':'test-worker'}}));
  assert.deepEqual(await response.json(),{disabled:true});
 });

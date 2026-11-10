@@ -7,4 +7,5 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.email-unsubscribe]
-verify_jwt = false
+# Public signed-token access awaits approval; keep delivery disabled meanwhile.
+verify_jwt = true
