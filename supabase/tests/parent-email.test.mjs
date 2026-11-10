@@ -1,0 +1,73 @@
+import { test,before,after } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { PGlite } from '@electric-sql/pglite';
+import { randomUUID } from 'node:crypto';
+const db=new PGlite(), ids=Array.from({length:7},()=>randomUUID());
+const score=Object.fromEntries(['capital','lowercase','matching','word-order','reading','missing','sentences'].map(id=>[id,{correct:2,total:4}]));
+const scalar=async(sql,args=[])=>Object.values((await db.query(sql,args)).rows[0])[0];
+before(async()=>{
+ await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;
+ create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}',email_confirmed_at timestamptz,created_at timestamptz default now());
+ create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ grant usage on schema auth to authenticated;
+ create table public.subscriptions(user_id uuid,status text,current_period_end timestamptz);
+ create table public.entitlements(user_id uuid,status text,expires_at timestamptz);
+ insert into auth.users(id) values('${ids[0]}');`);
+ await db.exec(await readFile(new URL('../migrations/202611100001_parent_email.sql',import.meta.url),'utf8'));
+ for(let i=1;i<ids.length;i++) await db.query(`insert into auth.users values($1,$2,now(),now()-interval '3 days')`,[ids[i],{email_marketing_opt_in:i!==2}]);
+ await db.query(`insert into public.subscriptions values($1,'active',null),($2,'cancelled',now()+interval '1 day')`,[ids[3],ids[4]]);
+ await db.query(`insert into public.entitlements values($1,'active',null)`,[ids[5]]);
+});
+after(()=>db.close());
+test('historical and unchecked accounts default out; signup opt-in persists, metadata updates cannot re-opt in',async()=>{
+ assert.equal(await scalar('select opted_in from email_preferences where user_id=$1',[ids[0]]),false);
+ assert.equal(await scalar('select opted_in from email_preferences where user_id=$1',[ids[2]]),false);
+ assert.equal(await scalar('select opted_in from email_preferences where user_id=$1',[ids[1]]),true);
+ await db.query(`update auth.users set raw_user_meta_data='{"email_marketing_opt_in":true}' where id=$1`,[ids[2]]);
+ assert.equal(await scalar('select opted_in from email_preferences where user_id=$1',[ids[2]]),false);
+});
+test('atomic report deduplication, payload conflict rejection, user isolation and invalid-score rejection',async()=>{
+ const id=randomUUID();
+ await db.query(`select set_config('request.jwt.claim.sub',$1,false)`,[ids[1]]);
+ await db.exec('set role authenticated');
+ await db.query('select enqueue_assessment($1,$2,$3)',[id,'reading',score]);
+ await db.query('select enqueue_assessment($1,$2,$3)',[id,'reading',score]);
+ assert.equal(await scalar('select count(*) from assessment_reports'),1);
+ await assert.rejects(()=>db.query('select enqueue_assessment($1,$2,$3)',[id,'reading',{...score,capital:{correct:1,total:4}}]));
+ await assert.rejects(()=>db.query('select enqueue_assessment($1,$2,$3)',[randomUUID(),'reading',{...score,capital:{correct:5,total:4}}]));
+ await db.query(`select set_config('request.jwt.claim.sub',$1,false)`,[ids[2]]);
+ assert.equal(await scalar('select count(*) from assessment_reports'),0);
+ await assert.rejects(()=>db.query('select enqueue_assessment($1,$2,$3)',[id,'reading',score]));
+ await assert.rejects(()=>db.exec('select * from parent_email_outbox'));
+ await assert.rejects(()=>db.exec('update email_preferences set opted_in=true'));
+ await assert.rejects(()=>db.exec('select claim_parent_emails()'));
+ await db.exec('reset role');
+ assert.equal(await scalar('select count(*) from parent_email_outbox where report_id=$1',[id]),1);
+});
+test('campaign only queues confirmed opted-in non-subscribers once',async()=>{
+ await db.exec('select enqueue_subscription_reminders();select enqueue_subscription_reminders();');
+ const rows=(await db.query(`select user_id from parent_email_outbox where kind='reminder' order by user_id`)).rows.map(r=>r.user_id);
+ assert.deepEqual(rows,[ids[1],ids[6]].sort());
+});
+test('preference opt-out is audited; token unsubscribe is repeatable and preserves educational reports',async()=>{
+ await db.query(`select set_config('request.jwt.claim.sub',$1,false)`,[ids[1]]);
+ await db.exec('set role authenticated;select set_email_marketing(false);reset role;');
+ assert.equal(await scalar(`select opted_in from email_preferences where user_id=$1`,[ids[1]]),false);
+ assert.equal(await scalar(`select status from parent_email_outbox where user_id=$1 and kind='reminder'`,[ids[1]]),'suppressed');
+ assert.equal(await scalar(`select status from parent_email_outbox where user_id=$1 and kind='report'`,[ids[1]]),'pending');
+ await db.query('insert into email_unsubscribe_tokens(token_hash,user_id) values($1,$2)',['test-hash',ids[6]]);
+ assert.equal(await scalar(`select unsubscribe_email('missing')`),false);
+ for(let i=0;i<2;i++) assert.equal(await scalar(`select unsubscribe_email('test-hash')`),true);
+ assert.equal(await scalar(`select opted_in from email_preferences where user_id=$1`,[ids[6]]),false);
+ assert.ok(await scalar(`select count(*) from email_consent_events where user_id=$1 and not opted_in`,[ids[6]])>0);
+});
+test('leases prevent duplicate claims, recover crashed workers, and quarantine ambiguous delivery after 23h',async()=>{
+ assert.equal((await db.query('select * from claim_parent_emails()')).rows.length,1);
+ assert.equal((await db.query('select * from claim_parent_emails()')).rows.length,0);
+ await db.exec(`update parent_email_outbox set locked_until=now()-interval '1 minute' where kind='report'`);
+ assert.equal((await db.query('select * from claim_parent_emails()')).rows.length,1);
+ await db.exec(`update parent_email_outbox set first_attempt_at=now()-interval '24 hours',locked_until=now()-interval '1 minute' where kind='report'`);
+ assert.equal((await db.query('select * from claim_parent_emails()')).rows.length,0);
+ assert.equal(await scalar(`select status from parent_email_outbox where kind='report'`),'review');
+});

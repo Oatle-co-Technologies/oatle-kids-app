@@ -1,0 +1,9 @@
+[functions.parent-email]
+# The handler verifies the bearer token with auth.getUser (supports current signing keys).
+verify_jwt = false
+
+[functions.email-worker]
+verify_jwt = false
+
+[functions.email-unsubscribe]
+verify_jwt = false

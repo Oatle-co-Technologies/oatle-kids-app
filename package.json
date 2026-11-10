@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.mjs supabase/tests/*.test.mjs",
+    "test:email": "node --test tests/parent-email.test.mjs tests/email-handlers.test.mjs supabase/tests/parent-email.test.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@capacitor-community/text-to-speech": "8.0.2",
@@ -20,7 +23,9 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.2",
+    "@electric-sql/pglite": "^0.5.16",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
