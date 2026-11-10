@@ -1,4 +1,6 @@
-import { prepareAccountStorage } from './lib/accountStorage';
+import { SUBSCRIPTION_PLANS } from './lib/subscriptionPlans';
+import { learningStorage } from './lib/profileStorage.js';
+import { readSavedActivity, saveActivity, resumeScreen } from './utils/savedActivity';
 import EmailPreferences from './components/EmailPreferences';
 import ReportDelivery from './components/ReportDelivery';
 import { attemptId, queueReport } from './lib/parentEmail';
@@ -23,6 +25,8 @@ import {
   assessmentQuestions as plutoQuestionPool,
   assessmentSkills as plutoSkills,
 } from "./data/assessmentQuestions";
+import { getReadingSpeechText } from "./utils/readingSpeech";
+import { preloadImages } from "./utils/preloadImages";
 import { speak, stopSpeech } from "./utils/speech";
 import { hasActiveEntitlement } from "./lib/accessPolicy";
 import LoginPage from "./components/LoginPage";
@@ -36,7 +40,10 @@ import { generateSentenceOptions } from "./utils/generateSentenceOptions";
 import { generateMissingLettersOptions } from "./utils/generateMissingLettersOptions";
 
 import MathSection from "./components/MathSection";
+import { BigMusicAdventure } from './components/MusicStudio';
 import Scribbler from "./components/Scribbler";
+import ColoringBook from "./components/ColoringBook";
+import FeelingsAdventure from "./components/FeelingsAdventure";
 import AlphabetTracingMission from "./components/AlphabetTracingMission";
 import NumberTracingMission from "./components/NumberTracingMission";
 import ShapeTracingMission from "./components/ShapeTracingMission";
@@ -222,7 +229,7 @@ const savedAssessmentResults = () => {
   try {
     return (
       JSON.parse(
-        localStorage.getItem("atli-space-assessment-results")
+        learningStorage.getItem("atli-space-assessment-results")
       ) || null
     );
   } catch {
@@ -236,7 +243,7 @@ const READING_ASSESSMENT_ATTEMPT_KEY =
 const savedReadingAssessmentAttempt = () => {
   try {
     const saved = JSON.parse(
-      localStorage.getItem(READING_ASSESSMENT_ATTEMPT_KEY)
+      learningStorage.getItem(READING_ASSESSMENT_ATTEMPT_KEY)
     );
 
     const questions = restoreAssessmentQuestions(saved?.questionIds, plutoQuestionPool);
@@ -292,7 +299,7 @@ function stopAudioRef(audioRef) {
 const savedGame = () => {
   try {
     const saved = JSON.parse(
-      localStorage.getItem("atli-space-progress")
+      learningStorage.getItem("atli-space-progress")
     );
 
     if (!saved) {
@@ -326,7 +333,7 @@ const savedGame = () => {
 
 const savedWritingProgress = () => {
   try {
-    return migrateWritingProgress(JSON.parse(localStorage.getItem("atli-writing-progress")));
+    return migrateWritingProgress(JSON.parse(learningStorage.getItem("atli-writing-progress")));
   } catch {
     return migrateWritingProgress(null);
   }
@@ -343,7 +350,7 @@ const savedChildProfile = () => {
   try {
     return (
       JSON.parse(
-        localStorage.getItem("oatle-child-profile")
+        learningStorage.getItem("oatle-child-profile")
       ) || { ...EMPTY_CHILD_PROFILE }
     );
   } catch {
@@ -352,7 +359,7 @@ const savedChildProfile = () => {
 };
 
 const savedAgeGroup = () => {
-  const saved = localStorage.getItem("oatle-age-group");
+  const saved = learningStorage.getItem("oatle-age-group");
   return saved === "little" || saved === "big" ? saved : null;
 };
 
@@ -404,93 +411,6 @@ const writingPlanets = [
  * are narrated, while assessment answers stay silent until the child
  * has made a choice.
  */
-function getSpeechText(planetId, question) {
-  if (!question) {
-    return null;
-  }
-
-  switch (planetId) {
-    case 1:
-      return question.target
-        ? `Find ${question.target}.`
-        : null;
-
-    case 2:
-      return question.target
-        ? `Find ${question.target}.`
-        : null;
-
-    case 3:
-      if (
-        question.target &&
-        question.target === question.target.toUpperCase()
-      ) {
-        return "Match the uppercase letter to its lowercase letter.";
-      }
-
-      return "Match the lowercase letter to its uppercase letter.";
-
-    case 4:
-      return null;
-
-    case 5:
-      return "What is this?";
-
-    case 6:
-      return "Find the missing letter.";
-
-    case 7:
-      return "Build the sentence.";
-
-    case 8:
-      return question.text?.join(" ") || null;
-
-    case 9:
-      if (
-        question.skill === "reading" ||
-        question.type === "reading"
-      ) {
-        return null;
-      }
-
-      switch (question.skill) {
-        case "capital":
-          return question.target
-            ? `Find ${question.target}.`
-            : null;
-
-        case "lowercase":
-          return question.target
-            ? `Find ${question.target}.`
-            : null;
-
-        case "matching":
-          if (
-            question.target &&
-            question.target === question.target.toUpperCase()
-          ) {
-            return "Match the uppercase letter to its lowercase letter.";
-          }
-
-          return "Match the lowercase letter to its uppercase letter.";
-
-        case "phonics":
-          return null;
-
-        case "missing":
-          return "Find the missing letter.";
-
-        case "sentences":
-          return "Build the sentence.";
-
-        default:
-          return null;
-      }
-
-    default:
-      return null;
-  }
-}
 
 function PlanetIcon() {
   return (
@@ -578,6 +498,8 @@ function AppNav({
         activeScreen === "writingPlanet" ||
         activeScreen === "writingCelebration" ||
         activeScreen === "scribbler" ||
+        activeScreen === "coloringBook" ||
+        activeScreen === "feelings" ||
         activeScreen === "writingMission1" ||
         activeScreen === "writingMission2" ||
         activeScreen === "writingMission3" ||
@@ -645,7 +567,7 @@ function PlanetVisual({
   );
 }
 
-function App() {
+function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone, profileNickname = '' } = {}) {
   const [passwordRecovery, setPasswordRecovery] = useState(() =>
     new URLSearchParams(window.location.search).get("reset") === "1" ||
     new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery"
@@ -675,7 +597,7 @@ function App() {
     useState(savedWritingProgress);
 
   const [writingActivePlanet, setWritingActivePlanet] =
-    useState(() => Math.min(writingPlanets.length, Math.max(1, savedWritingProgress().unlocked || 1)));
+    useState(() => Math.min(writingPlanets.length, Math.max(1, readSavedActivity('oatle-app-location', {}).writingActivePlanet || savedWritingProgress().unlocked || 1)));
 
   const [writingCelebrationMission, setWritingCelebrationMission] =
     useState(null);
@@ -683,9 +605,14 @@ function App() {
   // Ask once, then open the saved age group's adventures on later visits.
   const [screen, setScreen] = useState(() => {
     const group = savedAgeGroup();
-    return group === "little" ? "littleExplorers" : group === "big" ? "explore" : "ageSelect";
+    const fallback = group === 'little' ? 'littleExplorers' : group === 'big' ? 'explore' : 'ageSelect';
+    return group === 'big' ? resumeScreen(readSavedActivity('oatle-app-location', {}),
+      ['explore', 'map', 'planet', 'writingMap', 'writingPlanet', 'writingMission1', 'writingMission2', 'writingMission3', 'writingMission4', 'writingMission5', 'coloringBook', 'math'], fallback) : fallback;
   });
   const [ageGroup, setAgeGroup] = useState(savedAgeGroup);
+  useEffect(() => {
+    saveActivity('oatle-app-location', { screen, writingActivePlanet });
+  }, [screen, writingActivePlanet]);
 
   const [assessmentResults, setAssessmentResults] =
     useState(savedAssessmentResults);
@@ -706,7 +633,7 @@ function App() {
   const soundOn = soundPreference && hasAccess && !authLoading && !accessLoading;
 
   const [childProfile, setChildProfile] =
-    useState(savedChildProfile);
+    useState(() => { const saved = savedChildProfile(); return { ...saved, name: saved.name || profileNickname }; });
 
   const [settingsReturnScreen, setSettingsReturnScreen] = useState(null);
   const missingProfileFields = missingWritingProfileFields(childProfile);
@@ -763,14 +690,11 @@ function App() {
         if (!mounted) return;
 
         if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
-        if (prepareAccountStorage(localStorage, session?.user?.id || null)) { window.location.reload(); return; }
         setUser(session?.user ?? null);
 
         if (event === "SIGNED_OUT") {
           setAccessGrant(null);
-          localStorage.removeItem("oatle-age-group");
-          localStorage.removeItem("oatle-child-profile");
-          setChildProfile({ ...EMPTY_CHILD_PROFILE });
+          // Learning progress stays in this child’s cache after signing out.
           setAgeGroup(null);
           setScreen("explore");
         }
@@ -872,13 +796,9 @@ function App() {
     !question?.image || loadedQuestionImage === question.image;
 
   useEffect(() => {
-    const nextQuestion = missionQuestions[progress.question + 1];
-
-    if (!nextQuestion?.image) return;
-
-    const preload = new Image();
-    preload.src = nextQuestion.image;
-  }, [missionQuestions, progress.question]);
+    if (screen !== "mission" && screen !== "planet") return;
+    preloadImages(missionQuestions.slice(progress.question, progress.question + 3).map(item => item.image));
+  }, [missionQuestions, progress.question, screen]);
 
   const options = useMemo(() => {
     if (!question || planet.id === 8) {
@@ -950,21 +870,21 @@ function App() {
       },
     };
 
-    localStorage.setItem(
+    learningStorage.setItem(
       "atli-space-progress",
       JSON.stringify(savedProgress)
     );
   }, [progress]);
 
   useEffect(() => {
-    localStorage.setItem(
+    learningStorage.setItem(
       "atli-writing-progress",
       JSON.stringify(writingProgress)
     );
   }, [writingProgress]);
 
   useEffect(() => {
-    localStorage.setItem(
+    learningStorage.setItem(
       "oatle-child-profile",
       JSON.stringify(childProfile)
     );
@@ -972,7 +892,7 @@ function App() {
 
   useEffect(() => {
     if (assessmentResults) {
-      localStorage.setItem(
+      learningStorage.setItem(
         "atli-space-assessment-results",
         JSON.stringify(assessmentResults)
       );
@@ -980,7 +900,7 @@ function App() {
   }, [assessmentResults]);
 
   useEffect(() => {
-    localStorage.setItem(
+    learningStorage.setItem(
       READING_ASSESSMENT_ATTEMPT_KEY,
       JSON.stringify({
         active: readingAssessmentActive,
@@ -995,7 +915,7 @@ function App() {
    * Central reading speech.
    *
    * Mars uses whole-word TTS. Neptune reads each story page aloud.
-   * Pluto keeps reading answers silent because it is an assessment.
+   * Assessment tasks are narrated without speaking their answers.
    */
   useEffect(() => {
     if (
@@ -1031,16 +951,7 @@ function App() {
       };
     }
 
-    const isPlutoReading =
-      planet.id === 9 &&
-      (question.skill === "reading" ||
-        question.type === "reading");
-
-    if (isPlutoReading) {
-      return;
-    }
-
-    const speechText = getSpeechText(
+    const speechText = getReadingSpeechText(
       planet.id,
       question
     );
@@ -1803,6 +1714,9 @@ function App() {
   };
 
   const resetProgress = () => {
+    for (const key of ['oatle-app-location', 'oatle-maths-location', 'oatle-little-location', 'oatle-colouring-little', 'oatle-colouring-big', 'oatle-block-build-little', 'oatle-block-build-big']) {
+      try { learningStorage.removeItem(key); } catch { /* Storage unavailable. */ }
+    }
     setProgress({
       unlocked: 1,
       activePlanet: 1,
@@ -1815,31 +1729,31 @@ function App() {
 
     setWritingActivePlanet(1);
     setWritingCelebrationMission(null);
-    localStorage.removeItem("oatle-little-explorers-progress");
-    localStorage.removeItem("oatle-little-explorers-started");
-    localStorage.removeItem("oatle-balloon-learning-session");
+    learningStorage.removeItem("oatle-little-explorers-progress");
+    learningStorage.removeItem("oatle-little-explorers-started");
+    learningStorage.removeItem("oatle-balloon-learning-session");
 
     setScreen(ageGroup === "little" ? "littleExplorers" : "explore");
   };
 
   const selectAgeGroup = (group) => {
-    localStorage.setItem("oatle-age-group", group);
+    learningStorage.setItem("oatle-age-group", group);
     setAgeGroup(group);
     setScreen(group === "little" ? "littleExplorers" : "explore");
   };
 
-  const startSubscription = async () => {
+  const startSubscription = async (planId = 'single') => {
     if (!checkoutFunction || checkoutLoading) return;
     setCheckoutLoading(true); setCheckoutMessage('');
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) throw new Error('Please log in again to subscribe.');
       const { data, error } = await supabase.functions.invoke(checkoutFunction, {
-        body: {}, headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { plan_id: planId }, headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error) throw new Error('Checkout could not start. Please try again shortly.');
       if (data?.error) throw new Error(data.error);
-      submitPayfastCheckout(data);
+      await submitPayfastCheckout(data, planId);
     } catch (error) {
       setCheckoutMessage(error?.message || 'Checkout could not start. Please try again.');
     } finally { setCheckoutLoading(false); }
@@ -1915,6 +1829,7 @@ function App() {
       setAccessGrant(accessError ? null : entitlement);
 
       setAccessLoading(false);
+      onAccessChanged?.();
     } catch (error) {
       console.error(
         "Promo redemption error:",
@@ -1953,9 +1868,7 @@ function App() {
       <main className="login-page">
         <div className="login-card">
           <div className="login-logo">
-            <div className="login-logo-mark">
-              O
-            </div>
+            <img className="login-logo-image" src="/icons/oatle-kids-192.png" alt="Oatle Kids" width="78" height="78" loading="eager" fetchPriority="high" />
           </div>
 
           <p className="eyebrow">
@@ -1979,6 +1892,7 @@ function App() {
       url.hash = "";
       window.history.replaceState(null, "", url.pathname + url.search);
       setPasswordRecovery(false);
+      onRecoveryDone?.();
     }} />;
   } else if (!user || authEntry) {
     content = (
@@ -1991,7 +1905,7 @@ function App() {
           setAccessGrant(null);
           setAccessLoading(true);
           setUser(loggedInUser);
-          localStorage.removeItem("oatle-age-group");
+          learningStorage.removeItem("oatle-age-group");
           setAgeGroup(null);
           setScreen("ageSelect");
         }}
@@ -2031,18 +1945,16 @@ function App() {
             Your parent account is ready. Choose a monthly subscription or enter your promo code to start exploring.
           </p>
 
-          <p className="login-intro">
-            R120 per month for Little Explorers and Big Kids adventures. Have a promo code? Redeem it below.
-          </p>
-
-          <button
-            className="primary-button"
-            disabled={!checkoutFunction || checkoutLoading}
-            onClick={startSubscription}
-            type="button"
-          >
-            {checkoutLoading ? 'Opening secure checkout…' : 'Subscribe — R120/month'}
-          </button>
+          <div className="subscription-options" aria-label="Subscription plans">
+            {Object.values(SUBSCRIPTION_PLANS).map(plan => <section key={plan.id} className="subscription-option">
+              <h2>{plan.name} · R{plan.price}/month</h2>
+              <p>{plan.profiles === 1 ? '1 child profile · 1 child playing at a time' : 'Up to 3 child profiles · 2 children playing at once'}<br />2 registered devices · Separate saved progress for each child</p>
+              <button className="primary-button" disabled={!checkoutFunction || checkoutLoading} onClick={() => startSubscription(plan.id)} type="button">
+                {checkoutLoading ? 'Opening secure checkout…' : `Choose ${plan.name} — R${plan.price}/month`}
+              </button>
+            </section>)}
+          </div>
+          <p className="login-intro">Promo codes grant Single Child access: one child profile and one child playing at a time.</p>
 
           {checkoutMessage && <p className="login-intro" role="status">{checkoutMessage}</p>}
           <p
@@ -2117,7 +2029,8 @@ function App() {
           <button
             className="secondary-button"
             onClick={async () => {
-              await supabase.auth.signOut();
+              await onBeforeSignOut?.();
+            await supabase.auth.signOut({ scope: 'local' });
               setUser(null);
               setAccessGrant(null);
               setAgeGroup(null);
@@ -2136,7 +2049,7 @@ function App() {
   ) {
     content = (
       <main className="page adventure-hub expedition-hub big-kids-galaxy">
-        <img className="expedition-brand" src="/oatle-kids-wordmark.webp" alt="Oatle Kids" />
+        <img className="expedition-brand" src="/oatle-kids-wordmark.webp" loading="eager" fetchPriority="high" alt="Oatle Kids" />
         <p className="eyebrow">
           LET'S EXPLORE
         </p>
@@ -2157,8 +2070,12 @@ function App() {
         }} />
       </main>
     );
+  } else if (screen === "music") {
+    content = <BigMusicAdventure soundOn={soundOn} onBack={() => setScreen("explore")} />;
+  } else if (screen === "feelings") {
+    content = <FeelingsAdventure ageGroup="big" soundOn={soundOn} onBack={() => setScreen("explore")} />;
   } else if (screen === "storybooks") {
-    content = <StorybookAdventure onBack={() => setScreen("explore")} />;
+    content = <StorybookAdventure soundOn={soundOn} onBack={() => setScreen("explore")} />;
   } else if (screen === "cosmicPuzzles") {
     content = <CosmicPuzzles onBack={() => setScreen("explore")} soundOn={soundOn} />;
   } else if (screen === "spaceBuilder") {
@@ -2171,7 +2088,7 @@ function App() {
         backLabel={ageGroup === "little" ? "Age groups" : "Explore"}
         onBack={() => {
           if (ageGroup === "little") {
-            localStorage.removeItem("oatle-age-group");
+            learningStorage.removeItem("oatle-age-group");
             setAgeGroup(null);
             setScreen("ageSelect");
             return;
@@ -2183,15 +2100,15 @@ function App() {
       />
     );
   } else if (screen === "writingMap") {
-    content = <BigKidsPlanetJourney title="Writing Adventure" label="Writing planet journey"
-      description="Complete each planet to unlock the next writing adventure."
+    content = <BigKidsPlanetJourney title="Writing and Arts" label="Writing planet journey"
+      description="Complete each planet to unlock the next writing and arts planet."
       notice={profileReminder("writingMap")}
       currentId={writingActivePlanet} onBack={() => setScreen("explore")}
       childName={childProfile.name} onProfile={() => openSettings()}
       items={[...writingPlanets.map(item => ({ id: item.id, title: item.name, subtitle: item.description, image: item.image, color: item.color,
         locked: item.id > writingProgress.unlocked, complete: Boolean(writingProgress.completedMissions?.[item.id] ?? (item.id < writingProgress.unlocked)),
         onSelect: () => startWritingPlanet(item.id),
-      })), { id: "scribbler", title: "Scribbler", subtitle: "Write, draw and explore freely.", image: jupiterImage, color: "#D6B44C", free: true, onSelect: () => setScreen("scribbler") }]} />;
+      })), { id: "scribbler", title: "Scribbler", subtitle: "Write, draw and explore freely.", image: jupiterImage, color: "#D6B44C", free: true, onSelect: () => setScreen("scribbler") }, { id: "coloring-book", title: "Coloring Book", subtitle: "Scribbler: colour your own picture.", image: venusImage, color: "#C59DEB", free: true, onSelect: () => setScreen("coloringBook") }]} />;
   } else if (
     screen === "writingPlanet"
   ) {
@@ -2340,10 +2257,15 @@ function App() {
       </main>
     );
   } else if (
+    screen === "coloringBook"
+  ) {
+    content = <ColoringBook ageGroup="big" soundOn={soundOn} onBack={() => setScreen("writingMap")} />;
+  } else if (
     screen === "scribbler"
   ) {
     content = (
       <Scribbler
+        onColoringBook={() => setScreen("coloringBook")}
         onBack={() =>
           setScreen("writingMap")
         }
@@ -2629,6 +2551,7 @@ function App() {
         />}
         <div className={`reading-question-content ${readingBreakDue ? "is-on-break" : ""}`}
           inert={readingBreakDue} aria-hidden={readingBreakDue || undefined}>
+        {planet.id !== 4 && question.type !== 'word-order' && <button type="button" className="reading-listen-question" aria-label="Hear the question again" disabled={!soundOn || isProcessing} onClick={() => speak(getReadingSpeechText(planet.id, question))}><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5Z M15 8q4 4 0 8 M18 5q7 7 0 14" /></svg> Listen</button>}
         {planet.id === 8 ? (
           <>
             <p className="eyebrow">
@@ -2868,10 +2791,7 @@ function App() {
                     )
                   )}
 
-                  <span className="sentence-hint">
-                    Tap a word to remove
-                    it.
-                  </span>
+
                 </>
               ) : (
                 <span className="sentence-placeholder">
@@ -2913,7 +2833,7 @@ function App() {
           question.type === "word-order" ? (
           <>
             <p className="eyebrow">
-              LISTEN TO THE WORD AND PUT IT IN THE RIGHT ORDER
+              BUILD THE WORD
             </p>
 
             <button
@@ -3313,7 +3233,7 @@ function App() {
           </h2>
 
           <p className="page-intro">
-            Add only the details needed to personalize writing adventures. Use a nickname rather than a full name. These details stay on this device and are cleared when you log out.
+            Add only the details needed to personalize writing adventures. Use a nickname rather than a full name. These details are saved privately with this child’s progress in your parent account.
           </p>
 
           <label className="profile-field">
@@ -3412,7 +3332,7 @@ function App() {
             />
           </label>
           {settingsReturnScreen && <div className="writing-profile-return" aria-live="polite">
-            <p>{missingProfileFields.length ? `Add or check: ${missingProfileFields.join(", ")}.` : "Your child’s details are saved on this device."}</p>
+            <p>{missingProfileFields.length ? `Add or check: ${missingProfileFields.join(", ")}.` : "Your child’s details are saved with their profile."}</p>
             <button type="button" className="primary-button" disabled={missingProfileFields.length > 0} onClick={() => {
               setScreen(settingsReturnScreen);
               setSettingsReturnScreen(null);
@@ -3440,6 +3360,8 @@ function App() {
           </button>
         </label>
 
+        {onParentAccount && <button className="primary-button" type="button" onClick={onParentAccount}>Children, plan and devices</button>}
+
         <button
           className="danger-button"
           onClick={
@@ -3455,7 +3377,7 @@ function App() {
         <button
           className="secondary-button"
           onClick={() => {
-            localStorage.removeItem("oatle-age-group");
+            learningStorage.removeItem("oatle-age-group");
             setAgeGroup(null);
             setScreen("ageSelect");
           }}
@@ -3467,10 +3389,11 @@ function App() {
         <button
           className="secondary-button"
           onClick={async () => {
-            await supabase.auth.signOut();
+            await onBeforeSignOut?.();
+            await supabase.auth.signOut({ scope: 'local' });
             setUser(null);
             setAccessGrant(null);
-            localStorage.removeItem("oatle-age-group");
+            learningStorage.removeItem("oatle-age-group");
             setAgeGroup(null);
             setScreen("explore");
           }}
@@ -3483,7 +3406,7 @@ function App() {
   }
 
   const showBottomNav =
-    user && hasAccess && ageGroup && screen !== "scribbler" && !screen.startsWith("writingMission");
+    user && hasAccess && ageGroup && screen !== "scribbler" && screen !== "coloringBook" && !screen.startsWith("writingMission");
 
   return (
     <div className={`app ${showBottomNav ? "app-with-bottom-nav" : ""}`}>

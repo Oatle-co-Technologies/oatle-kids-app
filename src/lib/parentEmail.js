@@ -1,8 +1,9 @@
+import { learningStorage } from './profileStorage.js';
 import { supabase } from './supabase';
 export function attemptId(subject, fresh = false) {
  const key = `oatle-report-attempt-${subject}`;
- let id = localStorage.getItem(key);
- if (!id || fresh) { id = crypto.randomUUID(); localStorage.setItem(key, id); }
+ let id = learningStorage.getItem(key);
+ if (!id || fresh) { id = crypto.randomUUID(); learningStorage.setItem(key, id); }
  return id;
 }
 export function queueReport(userId, subject, scores) {

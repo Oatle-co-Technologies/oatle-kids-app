@@ -1,5 +1,6 @@
 export function FeedingAnimal({ id, happy }) {
-  const colour = { dog: '#d69553', cat: '#efa958', cow: '#fff7e8', sheep: '#fff7e8', elephant: '#a3b6ce' }[id];
+  if (id === 'duck' || id === 'chicken') return <FeedingBird id={id} happy={happy} />;
+  const colour = { dog: '#d69553', cat: '#efa958', cow: '#fff7e8', sheep: '#fff7e8', elephant: '#a3b6ce', horse: '#ba8354', pig: '#f2adbb' }[id];
   return <svg viewBox="0 0 300 300" aria-hidden="true" focusable="false">
     <ellipse cx="150" cy="274" rx="100" ry="12" fill="#244b3533" />
     {id === 'dog' && <path className="feeding-tail" d="M210 235 Q270 185 250 157" fill="none" stroke="#aa6937" strokeWidth="25" strokeLinecap="round" />}
@@ -9,22 +10,50 @@ export function FeedingAnimal({ id, happy }) {
     <ellipse cx="150" cy="226" rx="37" ry="43" fill="#ffffff55" />
     <ellipse cx="104" cy="264" rx="29" ry="17" fill={colour} /><ellipse cx="196" cy="264" rx="29" ry="17" fill={colour} />
     <g className={happy ? 'feeding-face is-munching' : 'feeding-face'}>
+      {id === 'horse' && <><ellipse cx="106" cy="66" rx="17" ry="43" fill={colour} transform="rotate(-12 106 66)" /><ellipse cx="194" cy="66" rx="17" ry="43" fill={colour} transform="rotate(12 194 66)" /><path d="M114 78q36-57 72 0l-12 29-23-27-24 27Z" fill="#704935" /></>}
+      {id === 'pig' && <><path d="m83 108-10-62q38-3 51 35m52 0q13-38 51-35l-10 62" fill={colour} stroke="#d78a9f" strokeWidth="8" strokeLinejoin="round" /></>}
       {id === 'dog' && <><ellipse cx="82" cy="115" rx="29" ry="60" fill="#8c5634" transform="rotate(20 82 115)" /><ellipse cx="218" cy="115" rx="29" ry="60" fill="#8c5634" transform="rotate(-20 218 115)" /></>}
       {id === 'cat' && <><path d="M83 102 87 35 135 80M165 80 213 35 217 102" fill={colour} stroke={colour} strokeWidth="12" strokeLinejoin="round" /><path d="m96 77 1-20 20 22m66 0 20-22 1 20" stroke="#f3a4a0" strokeWidth="13" strokeLinejoin="round" /></>}
       {id === 'elephant' && <><ellipse cx="76" cy="125" rx="48" ry="65" fill={colour} /><ellipse cx="224" cy="125" rx="48" ry="65" fill={colour} /><ellipse cx="74" cy="126" rx="29" ry="44" fill="#d7adc0" /><ellipse cx="226" cy="126" rx="29" ry="44" fill="#d7adc0" /></>}
       {(id === 'cow' || id === 'sheep') && <><ellipse cx="76" cy="113" rx="33" ry="20" fill={colour} transform="rotate(25 76 113)" /><ellipse cx="224" cy="113" rx="33" ry="20" fill={colour} transform="rotate(-25 224 113)" /></>}
       {id === 'cow' && <><path d="M108 78 Q86 48 108 43M192 78 Q214 48 192 43" stroke="#e5c084" strokeWidth="14" strokeLinecap="round" fill="none" /></>}
       <ellipse cx="150" cy="126" rx="74" ry="69" fill={colour} />
+      {id === 'horse' && <path d="M140 65h20l-3 76h-14Z" fill="#fff1db" />}
       {id === 'cow' && <ellipse cx="119" cy="100" rx="24" ry="30" fill="#5b5360" />}
       {id === 'sheep' && <><ellipse cx="150" cy="140" rx="48" ry="54" fill="#877b80" />{[95,120,150,180,205].map((x,i)=><circle key={x} cx={x} cy={83-(i===2?12:0)} r="23" fill="#fff8ed" />)}</>}
       {happy ? <path d="M111 125q10-13 20 0m38 0q10-13 20 0" stroke="#303447" strokeWidth="6" strokeLinecap="round" fill="none" /> : <><ellipse cx="122" cy="124" rx="8" ry="11" fill="#303447" /><ellipse cx="178" cy="124" rx="8" ry="11" fill="#303447" /><circle cx="125" cy="120" r="3" fill="white" /><circle cx="181" cy="120" r="3" fill="white" /></>}
       {id === 'elephant' ? <path d="M150 144v42q0 30 25 22" fill="none" stroke={colour} strokeWidth="29" strokeLinecap="round" /> : <><ellipse cx="150" cy="157" rx={id==='cow'?44:31} ry="24" fill={id==='cow'?'#f1b2ad':'#ffe5c5'} /><path d="m143 149 7 6 7-6Z" fill="#503c40" /><path d={happy?'M136 163q14 22 28 0':'M138 163q12 10 24 0'} fill={happy?'#b5636a':'none'} stroke="#503c40" strokeWidth="3" strokeLinecap="round" /></>}
+      {id === 'pig' && <><ellipse cx="150" cy="155" rx="35" ry="24" fill="#dc839f" /><ellipse cx="138" cy="154" rx="5" ry="8" fill="#874d65" /><ellipse cx="162" cy="154" rx="5" ry="8" fill="#874d65" /></>}
       {id === 'cat' && <path d="m99 153-25-5m25 15-27 3m129-13 25-5m-25 15 27 3" stroke="#9a674d" strokeWidth="3" strokeLinecap="round" />}
     </g>
   </svg>;
 }
 
+function FeedingBird({ id, happy }) {
+  const chicken = id === 'chicken';
+  return <svg viewBox="0 0 300 300" aria-hidden="true" focusable="false">
+    <ellipse cx="150" cy="274" rx="100" ry="12" fill="#244b3533" />
+    <path d="M110 248v20l-25 6h50m55-26v20l25 6h-50" fill="none" stroke="#e9a548" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
+    <ellipse cx="150" cy="207" rx="78" ry="62" fill={chicken ? '#fff5dc' : '#ffe084'} />
+    <path d="M91 182q-31 42 24 56m94-56q31 42-24 56" fill="none" stroke={chicken ? '#e1d2ac' : '#e9ba54'} strokeWidth="15" strokeLinecap="round" />
+    <g className={happy ? 'feeding-face is-munching' : 'feeding-face'}>
+      {chicken && <path d="M123 69q-24-34-4-41 17-6 24 22-3-40 17-36 20 4 10 38 24-23 33-6 9 20-23 30" fill="#df6d68" />}
+      <ellipse cx="150" cy="121" rx="68" ry="65" fill={chicken ? '#fff5dc' : '#ffe084'} />
+      {happy ? <path d="M109 118q10-13 20 0m42 0q10-13 20 0" fill="none" stroke="#303447" strokeWidth="6" strokeLinecap="round" /> : <><ellipse cx="119" cy="116" rx="8" ry="11" fill="#303447" /><ellipse cx="181" cy="116" rx="8" ry="11" fill="#303447" /><circle cx="122" cy="112" r="3" fill="white" /><circle cx="184" cy="112" r="3" fill="white" /></>}
+      {chicken && <ellipse cx="150" cy="170" rx="12" ry="22" fill="#df6d68" />}
+      {chicken ? <path d="m128 143 22-12 22 12-22 23Z" fill="#eba443" /> : <><ellipse cx="150" cy="151" rx="43" ry="20" fill="#edaa48" /><path d="M119 152q31 14 62 0" fill="none" stroke="#ae7137" strokeWidth="3" /></>}
+    </g>
+  </svg>;
+}
+
 export function FeedingFood({ id }) {
+  if (['horse','pig','duck','chicken'].includes(id)) return <svg viewBox="0 0 120 100" aria-hidden="true" focusable="false">
+    {id === 'horse' ? <><path d="m28 86 23-63q14-18 31 1 8 12-4 24Z" fill="#f5a044" stroke="#d88035" strokeWidth="3" /><path d="m67 24-6-19m10 19L84 7m-7 20L98 17" stroke="#63a552" strokeWidth="7" strokeLinecap="round" /><path d="m42 53 13 9m-3-29 13 9" stroke="#d88035" strokeWidth="3" /></>
+    : id === 'pig' ? <><path d="M60 26Q23 9 23 48q0 39 27 41l10-4 10 4q27-2 27-41 0-39-37-22" fill="#e96d68" stroke="#c74f51" strokeWidth="3" /><path d="M60 28V10" stroke="#805d3d" strokeWidth="7" strokeLinecap="round" /><path d="M65 16q12-20 31-9-13 18-31 9" fill="#69aa57" /><path d="M38 40q-9 14-4 25" fill="none" stroke="#ffb6a0" strokeWidth="6" strokeLinecap="round" /></>
+    : id === 'duck' ? <><path d="M12 74Q48 9 107 27 92 89 12 74Z" fill="#68b75d" stroke="#3f944c" strokeWidth="4" />{[32,55,78].map((x,i)=><circle key={x} cx={x} cy={61-i*10} r="13" fill="#b2db72" />)}<path d="m15 75 92-48" stroke="#3f944c" strokeWidth="3" /></>
+    : <>{[32,60,88].map((x,i)=><g key={x} transform={`rotate(${(i-1)*16} ${x} 85)`}><path d={`M${x} 90V18`} stroke="#bd8d3d" strokeWidth="4" />{[27,43,59].map(y=><g key={y}><ellipse cx={x-8} cy={y} rx="6" ry="12" fill="#edc366" transform={`rotate(-35 ${x-8} ${y})`} /><ellipse cx={x+8} cy={y} rx="6" ry="12" fill="#f6d887" transform={`rotate(35 ${x+8} ${y})`} /></g>)}</g>)}</>}
+  </svg>;
+
   return <svg viewBox="0 0 120 100" aria-hidden="true" focusable="false">
     {id === 'dog' ? <path d="M32 32C12 9 0 41 22 50 0 63 17 91 34 68h52c17 23 34-5 12-18 22-9 10-41-10-18Z" fill="#fff2cf" stroke="#d5ac70" strokeWidth="4" strokeLinejoin="round" />
       : id === 'cat' ? <><path d="m30 50-22-24v48Z" fill="#43b9d6" /><ellipse cx="68" cy="50" rx="40" ry="26" fill="#71d9e7" /><path d="m57 27 14-14 10 16m-24 46 14 12 10-16" fill="#30a9cb" /><circle cx="91" cy="44" r="5" fill="#203e5a" /><path d="M56 33q-13 17 0 34" stroke="#36adc9" strokeWidth="4" fill="none" /></>

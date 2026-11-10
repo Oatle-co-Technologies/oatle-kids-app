@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { littleHomeLayout } from '../src/components/littleHomeLayout.js';
 import { routeBetween } from '../src/components/spaceJourneyLogic.js';
 
-test('ten Little Explorers homes fit the board without overlapping rows', () => {
+test('eleven Little Explorers homes fit the board without overlapping rows', () => {
   for (const compact of [true, false]) {
-    const { points, height } = littleHomeLayout(10, compact);
+    const { points, height } = littleHomeLayout(11, compact);
     for (const point of points) {
       const halfWidth = compact ? .235 * 720 : .135 * 720;
       assert.ok(point.x - halfWidth >= 0 && point.x + halfWidth <= 720);
@@ -18,11 +18,11 @@ test('ten Little Explorers homes fit the board without overlapping rows', () => 
     }
   }
 });
-test('existing rocket navigation can reach all ten homes from every other home', () => {
+test('existing rocket navigation can reach all eleven homes from every other home', () => {
   for (const compact of [true, false]) {
-    const { points } = littleHomeLayout(10, compact);
-    for (let from = 0; from < 10; from++) {
-      for (let to = 0; to < 10; to++) {
+    const { points } = littleHomeLayout(11, compact);
+    for (let from = 0; from < 11; from++) {
+      for (let to = 0; to < 11; to++) {
         const route = routeBetween(points, from, to);
         assert.ok(route.startsWith(`M ${points[from].x} ${points[from].y}`));
         assert.ok(route.endsWith(`${points[to].x} ${points[to].y}`));

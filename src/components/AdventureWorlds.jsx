@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import SpaceJourney from './SpaceJourney';
 import { BIG_KIDS_HOMES } from './bigKidsHomes';
-import { galaxyHomeLayout } from './galaxyHomeLayout';
+import { adventureHomeLayout } from './galaxyHomeLayout';
 import './AdventureWorlds.css';
 
 const query = '(max-width: 640px)';
@@ -15,7 +15,7 @@ const compactViewport = () => window.matchMedia(query).matches;
 
 export default function AdventureWorlds({ onAdventure }) {
   const compact = useSyncExternalStore(subscribeViewport, compactViewport, () => true);
-  const { points, height } = galaxyHomeLayout(compact);
+  const { points, height } = adventureHomeLayout(compact);
   return (
     <div className="galaxy-environment">
       <div className="galaxy-orbit" aria-hidden="true" />

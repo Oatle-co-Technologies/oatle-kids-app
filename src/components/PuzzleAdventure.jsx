@@ -26,7 +26,7 @@ export default function PuzzleAdventure({ onBack, soundOn, mission, onComplete }
   useLittleMissionCompletion(solved, onComplete);
   useEffect(() => {
     if (!soundOn) { stopSpeech(); return undefined; }
-    const timer = window.setTimeout(() => speak(scene === null ? 'Choose a picture puzzle.' : `Let’s make the ${PICTURES[scene]} picture. Move a piece onto another piece to swap them.`), 220);
+    const timer = window.setTimeout(() => speak(scene === null ? 'Choose a picture puzzle.' : `Let’s make the ${PICTURES[scene]} picture. Drag one piece onto another, or tap two pieces to swap them.`), 220);
     return () => { window.clearTimeout(timer); stopSpeech(); };
   }, [scene, soundOn]);
   function clearDrag() { dragRef.current = null; setGhost(null); }
@@ -76,7 +76,6 @@ export default function PuzzleAdventure({ onBack, soundOn, mission, onComplete }
       <LocalBackButton label={mission ? 'Puzzle Adventure map' : scene === null ? 'Adventures' : 'Pictures'} onClick={() => { clearDrag(); setSelected(null); mission || scene === null ? onBack() : setScene(null); }} />
       <p className="eyebrow">{mission ? `PLANET ${mission.name.toUpperCase()} / PUZZLES` : 'LITTLE EXPLORERS / PUZZLES'}</p>
       <h1>{scene === null ? 'Puzzle Adventure' : `${PICTURES[scene]} Puzzle`}</h1>
-      <p>{scene === null ? 'Choose a picture. Put its five pieces back together.' : 'Drag one piece onto another to swap them.'}</p>
     </header>
     {scene === null ? <section className="picture-choices" aria-label="Choose a picture puzzle">
       {PICTURES.map((name, index) => <button type="button" key={name} onClick={() => start(index)}><Picture scene={index} /><strong>{name}</strong><span>5 pieces · Let’s play</span></button>)}
@@ -86,7 +85,7 @@ export default function PuzzleAdventure({ onBack, soundOn, mission, onComplete }
         {tiles.map((tile, position) => <button type="button" key={position} data-piece={tile} className={`picture-tile ${selected === position ? 'is-selected' : ''} ${ghost?.index === position ? 'is-moving' : ''}`} aria-label={`Piece ${tile + 1}, position ${position + 1}`} aria-pressed={selected === position} disabled={solved} onClick={() => tap(position)} onPointerDown={event => down(event, position)} onPointerMove={move} onPointerUp={up} onPointerCancel={clearDrag} onLostPointerCapture={clearDrag}><Picture scene={scene} tile={tile} /></button>)}
       </div>
       {ghost && <div className="picture-ghost" style={{ left: ghost.x, top: ghost.y, width: ghost.width, height: ghost.height }}><Picture scene={scene} tile={ghost.tile} /></div>}
-      <p className="picture-message" role="status">{message || 'You can also tap two pieces to swap them.'}</p>
+      <p className="picture-message app-sr-only" role="status">{message || 'You can also tap two pieces to swap them.'}</p>
       {solved && <div className="picture-celebration"><span aria-hidden="true">🌟</span><h2>You put it together!</h2>{!mission && <><button type="button" onClick={() => start(scene)}>Play again</button><button type="button" onClick={() => setScene(null)}>Choose another picture</button></>}</div>}
     </section>}
   </main>;

@@ -2717,3 +2717,10 @@ button:focus-visible,
 
 .login-form .signup-terms { display: flex; flex-direction: row; align-items: flex-start; gap: 10px; font-size: .85rem; line-height: 1.5; }
 .login-form .signup-terms input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
+
+/* Show app artwork immediately; avoid staged fades that resemble loading. */
+.login-card, .hero-logo, .reading-image.loaded, .story-image { animation: none; }
+.app-sr-only { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip-path:inset(50%) !important; white-space:nowrap !important; border:0 !important; }
+.reading-listen-question { display:block; margin:12px auto; padding:10px 18px; min-height:44px; border:1px solid #8fe7ff; border-radius:16px; color:#f8fbff; background:#20345d; font-weight:800; cursor:pointer; }
+
+.reading-listen-question { display:flex; align-items:center; justify-content:center; gap:8px; }

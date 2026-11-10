@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { storybooks } from '../data/storybooks';
+import { preloadImages } from '../utils/preloadImages';
+import { speak, stopSpeech } from '../utils/speech';
 import LocalBackButton from './LocalBackButton';
 import './StorybookAdventure.css';
 
@@ -156,11 +158,20 @@ function BookReader({ book, onClose }) {
   );
 }
 
-export default function StorybookAdventure({ onBack }) {
+export default function StorybookAdventure({ onBack, soundOn = true }) {
   const [selected, setSelected] = useState(null);
   const [lastBook, setLastBook] = useState(null);
   const bookButtons = useRef({});
+  useEffect(() => {
+    if (!soundOn) { stopSpeech(); return undefined; }
+    const prompt = selected
+      ? `${selected.title}. Read together with a grown-up. Swipe or use the arrows to turn the pages.`
+      : 'Choose a picture book to read together.';
+    const timer = window.setTimeout(() => speak(prompt), 220);
+    return () => { window.clearTimeout(timer); stopSpeech(); };
+  }, [selected, soundOn]);
   const openBook = (book) => {
+    preloadImages([book.cover, ...book.pages.slice(0, 3)]);
     setLastBook(book.id);
     setSelected(book);
   };
@@ -176,7 +187,7 @@ export default function StorybookAdventure({ onBack }) {
       <section className="storybook-shelf" aria-label="Storybook bookshelf">
         {storybooks.map(book => <button type="button" key={book.id} ref={element => { bookButtons.current[book.id] = element; }} className={`storybook-cover ${lastBook === book.id ? 'storybook-selected' : ''}`}
           aria-label={`Read ${book.title}`} onClick={() => openBook(book)}>
-          <img src={book.cover} alt={`${book.title} original cover`} loading="lazy" />
+          <img src={book.cover} alt={`${book.title} original cover`} loading="eager" />
           <strong>{book.title}</strong><small>By {book.author}</small><span>{lastBook === book.id ? 'Read again' : 'Open book'} →</span>
         </button>)}
       </section>

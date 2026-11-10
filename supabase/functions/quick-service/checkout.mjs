@@ -1,3 +1,4 @@
+import { subscriptionPlan } from './subscriptionPlans.js';
 import { createHash } from 'node:crypto';
 
 export const PRICE_CENTS = 12000;
@@ -20,7 +21,8 @@ export function signedFields(data, passphrase) {
   parameters.push(`passphrase=${encodeValue(passphrase)}`);
   return { ...fields, signature: createHash('md5').update(parameters.join('&')).digest('hex') };
 }
-export function makeCheckout({ merchantId, merchantKey, passphrase, appUrl, supabaseUrl, userId, email, paymentId }) {
+export function makeCheckout({ merchantId, merchantKey, passphrase, appUrl, supabaseUrl, userId, email, paymentId, planId = 'single' }) {
+  const plan = subscriptionPlan(planId);
   const origin = new URL(appUrl);
   if (origin.protocol !== 'https:' || !['www.oatlekids.co.za','oatlekids.co.za'].includes(origin.hostname)) throw new Error('APP_URL must use the Oatle Kids HTTPS domain.');
   const notifyOrigin = new URL(supabaseUrl);
@@ -30,8 +32,8 @@ export function makeCheckout({ merchantId, merchantKey, passphrase, appUrl, supa
     return_url: `${origin.origin}/app.html?payment=success`,
     cancel_url: `${origin.origin}/app.html?payment=cancelled`,
     notify_url: `${notifyOrigin.origin}/functions/v1/payfast-itn`,
-    email_address: email, m_payment_id: paymentId, amount: '120.00',
-    item_name: 'Oatle Kids Monthly Subscription', item_description: 'Oatle Kids — Space Learning Adventures',
-    custom_str1: userId, subscription_type: '1', recurring_amount: '120.00', frequency: '3', cycles: '0',
+    email_address: email, m_payment_id: paymentId, amount: plan.amount,
+    item_name: `Oatle Kids ${plan.name} Monthly`, item_description: 'Oatle Kids — Space Learning Adventures',
+    custom_str1: userId, custom_str2: plan.id, subscription_type: '1', recurring_amount: plan.amount, frequency: '3', cycles: '0',
   }, passphrase) };
 }

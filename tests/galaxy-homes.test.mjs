@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { galaxyHomeLayout } from '../src/components/galaxyHomeLayout.js';
+import { adventureHomeLayout as galaxyHomeLayout } from '../src/components/galaxyHomeLayout.js';
 import { BIG_KIDS_HOMES } from '../src/components/bigKidsHomes.js';
 import { routeBetween } from '../src/components/spaceJourneyLogic.js';
 
 test('all existing adventures retain their exact navigation IDs, with storybooks following Arcade', () => {
-  assert.deepEqual(BIG_KIDS_HOMES.map(item => item.id), ['reading', 'writing', 'counting', 'cosmicPuzzles', 'spaceBuilder', 'storybooks']);
-  assert.equal(new Set(BIG_KIDS_HOMES.map(item => item.image)).size, 6);
-  for (const home of BIG_KIDS_HOMES) assert.match(home.image, /^\/adventure-homes\/[^/]+\.webp$/);
+  assert.deepEqual(BIG_KIDS_HOMES.map(item => item.id), ['reading', 'writing', 'counting', 'cosmicPuzzles', 'spaceBuilder', 'storybooks', 'feelings', 'music']);
+  assert.equal(new Set(BIG_KIDS_HOMES.map(item => item.image)).size, 8);
+  for (const home of BIG_KIDS_HOMES) assert.match(home.image, /^\/adventure-homes\/[^/]+\.(webp|svg)$/);
 });
 
 test('desktop and phone layouts keep every complete home within the board', () => {
@@ -39,10 +39,11 @@ test('the existing rocket path engine reaches every home in both layouts and dir
   }
 });
 
-test('every home and galaxy background uses an existing WebP asset', async () => {
+test('every home and galaxy background uses a valid local image asset', async () => {
   const { readFile } = await import('node:fs/promises');
   for (const path of [...BIG_KIDS_HOMES.map(home => home.image), '/adventure-homes/galaxy.webp']) {
     const file = await readFile(new URL(`../public${path}`, import.meta.url));
+    if (path.endsWith('.svg')) { assert.match(file.toString(), /<svg/); continue; }
     assert.equal(file.subarray(0, 4).toString(), 'RIFF', path);
     assert.equal(file.subarray(8, 12).toString(), 'WEBP', path);
     assert.ok(file.length < 250_000, `${path} stays lightweight`);

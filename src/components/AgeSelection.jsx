@@ -8,7 +8,7 @@ const worlds = [
 export default function AgeSelection({ onSelect }) {
   return <main className="age-galaxy-home" aria-labelledby="age-home-title">
     <header className="age-home-header">
-      <img className="age-home-brand" src="/oatle-kids-wordmark.webp" alt="Oatle Kids" />
+      <img className="age-home-brand" src="/oatle-kids-wordmark.webp" loading="eager" fetchPriority="high" alt="Oatle Kids" />
       <p className="age-home-eyebrow">LET’S EXPLORE</p>
       <h1 id="age-home-title">Choose your <em>Adventure</em></h1>
       <p>Pick your explorer’s age group to begin.</p>

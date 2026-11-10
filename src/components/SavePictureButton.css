@@ -1,0 +1,13 @@
+.drawing-save-control{flex:0 0 auto;min-width:0}
+.drawing-save-button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:46px;padding:10px 13px;border:2px solid #a9eacb;border-radius:12px;background:#d3f3df;color:#14352c;font-family:inherit;font-size:13px;font-weight:800;line-height:1.15;cursor:pointer;touch-action:manipulation}
+.drawing-save-button svg{width:20px;height:20px;flex-shrink:0}
+.drawing-save-button:disabled{opacity:.6;cursor:wait}
+.drawing-save-button:focus-visible{outline:3px solid #ffd45c;outline-offset:3px}
+.drawing-save-message{position:fixed;z-index:90;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);margin:0;padding:12px 18px;border:1px solid #d3f3df;border-radius:14px;background:#112445;color:#fff;box-shadow:0 6px 25px #0005;font:700 14px/1.4 'Nunito',Arial,sans-serif;text-align:center;pointer-events:none}
+.scribbler-page-actions{position:absolute;z-index:20;top:max(12px,env(safe-area-inset-top));right:12px;display:flex;align-items:stretch;gap:8px;max-width:calc(100% - 124px)}
+.scribbler-page-actions .scribbler-colouring-launcher{position:static;min-width:0;min-height:46px}
+.scribbler-page-actions .drawing-save-button{height:100%}
+.scribbler-page.scribbler-with-colouring .scribbler-landscape-tip{right:340px}
+.little-drawing-tools>.drawing-save-control{position:sticky;top:0;z-index:6;width:100%;padding-bottom:4px;background:#0e1934;border-radius:12px}
+.little-drawing-tools .drawing-save-button{flex-direction:column;width:100%;min-height:66px;padding:7px 3px;font-size:12px;gap:4px}
+@media(max-width:600px){.scribbler-page-actions{gap:6px;max-width:calc(100% - 112px)}.scribbler-page-actions .drawing-save-button{padding:7px;font-size:12px;gap:4px}.scribbler-page-actions .drawing-save-button svg{width:17px;height:17px}.scribbler-page-actions .scribbler-colouring-launcher{font-size:12px;padding:7px;max-width:120px}}

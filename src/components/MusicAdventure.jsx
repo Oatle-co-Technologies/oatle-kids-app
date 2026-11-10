@@ -3,18 +3,21 @@ import useLittleMissionCompletion from './useLittleMissionCompletion';
 import { speak, stopSpeech } from '../utils/speech';
 import { createMusicAudio } from './musicAudio';
 import GardenInstrument, { InstrumentArt } from './MusicGardenInstruments';
-import { COPY_BEATS_MS, COPY_TURN_MS, COPY_INSTRUMENTS, MUSIC_INSTRUMENTS, DANCE_SONGS, MUSIC_LICENCE } from './musicGardenData';
+import { COPY_BEATS_MS, COPY_TURN_MS, COPY_INSTRUMENTS, DANCE_SONGS, MUSIC_LICENCE } from './musicGardenData';
 import './MusicGarden.css';
+import KaraokeMission from './KaraokeMission';
+import MusicStudio from './MusicStudio';
 
 const ACTIVITIES = [
   { id:'play', title:'My Little Band', kind:'drum' },
-  { id:'copy', title:'Copy My Music', kind:'xylophone' },
   { id:'dance', title:'Dance & Freeze', kind:'piano' },
+  { id:'karaoke', title:'Karaoke Mission', kind:'xylophone' },
 ];
 const INSTRUCTIONS = {
   menu:'Choose a music adventure.',
-  play:'Choose an instrument at the top. Then tap it to play. Tap the tick when you are finished.',
+  play:'Choose an instrument below. Tap to play, or slide across the keys. Tap Done when you are finished.',
   copy:'Tap the listening flower. Listen to four sounds. Then play the same instrument four times.',
+  karaoke:'Choose a song. Tap play. After four gentle beats, follow the glowing words and sing along.',
   dance:'Choose a song flower. Tap play. Dance when the music plays. When it stops, freeze! You can wave your hands too.',
 };
 export function MusicIcon() { return <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 22C26 22 30 54 18 69q-4 8 5 10h54q9-2 5-10C70 54 74 22 50 22" fill="#ffce69" stroke="#9b6a39" strokeWidth="4" /><circle cx="50" cy="17" r="8" fill="none" stroke="#9b6a39" strokeWidth="4" /><path d="M39 83q11 16 22 0" fill="#d28b4f" /></svg>; }
@@ -25,9 +28,7 @@ function MusicGarden({ onBack, soundOn=true, mission, onComplete }) {
   const [round,setRound]=useState(0);
   const [progress,setProgress]=useState(0);
   const [lit,setLit]=useState(null);
-  const [hasPlayed,setHasPlayed]=useState(false);
   const [songIndex,setSongIndex]=useState(0);
-  const [chosenInstrument,setChosenInstrument]=useState('piano');
   const [message,setMessage]=useState('');
   const [credits,setCredits]=useState(false);
   const audio=useRef(null);
@@ -87,7 +88,7 @@ function MusicGarden({ onBack, soundOn=true, mission, onComplete }) {
       return;
     }
     if(!await readyAudio())return;
-    audio.current.hit(kind,0,pitch);setHasPlayed(true);setLit(key);later(()=>setLit(null),220);
+    audio.current.hit(kind,0,pitch);setLit(key);later(()=>setLit(null),220);
   }
   async function listen(next=round) {
     reset();setStatePhase('listening');
@@ -114,16 +115,13 @@ function MusicGarden({ onBack, soundOn=true, mission, onComplete }) {
   }
   function back() {reset();if(mission || activity==='menu')onBack();else setActivity('menu');}
   const activeDance=['starting','dance','freeze'].includes(phase);
+  if(activity==='play') return <MusicStudio onStart={quietIntro} soundOn={soundOn} onBack={back} onComplete={mission?onComplete:undefined} />;
+  if(activity==='karaoke') return <KaraokeMission onBack={back} onComplete={onComplete} soundOn={soundOn} onStart={quietIntro} />;
   return <main className={`music-garden ${activity==='menu'?'music-garden-menu':'music-garden-immersive'} garden-mode-${activity}`}>
     <button type="button" className="garden-back garden-control" aria-label={mission?'Back to Music & Movement map':'Back to music activities'} onClick={back}><span aria-hidden="true">←</span></button>
     <h1 className={activity==='menu'?'':'garden-sr-only'}>{ACTIVITIES.find(a=>a.id===activity)?.title || 'Music & Movement'}</h1>
-    {activity==='menu' ? <div className="garden-activity-choices">{ACTIVITIES.map(item=><button type="button" key={item.id} onClick={()=>{reset();setRound(0);setHasPlayed(false);setActivity(item.id);}}><InstrumentArt kind={item.kind} /><strong>{item.title}</strong></button>)}</div> : <>
+    {activity==='menu' ? <div className="garden-activity-choices">{ACTIVITIES.map(item=><button type="button" key={item.id} onClick={()=>{reset();setRound(0);setActivity(item.id);}}><InstrumentArt kind={item.kind} /><strong>{item.title}</strong></button>)}</div> : <>
       {!soundOn && <span className="garden-muted" role="img" aria-label="Sound is off. Ask a grown-up to turn sound on in Settings.">♪̸</span>}
-      {activity==='play' && <>
-        <nav className="garden-instrument-picker" aria-label="Choose an instrument">{MUSIC_INSTRUMENTS.map(kind=><button type="button" key={kind} aria-label={`Choose ${kind}`} aria-pressed={chosenInstrument===kind} onClick={()=>{quietIntro();audio.current?.stop();setLit(null);setChosenInstrument(kind);}}><InstrumentArt kind={kind} /></button>)}</nav>
-        <section className="garden-selected-instrument" aria-label={`Play the ${chosenInstrument}`}><GardenInstrument key={chosenInstrument} kind={chosenInstrument} disabled={!soundOn} lit={lit} onPlay={play} /></section>
-        {mission && <button type="button" className="garden-done garden-control" disabled={!hasPlayed} aria-label="Finish playing" onClick={()=>{clear();onComplete();}}><span aria-hidden="true">✓</span></button>}
-      </>}
       {activity==='copy' && <>
         <div className="garden-copy-stars" aria-label={`${progress} of ${COPY_BEATS_MS.length} sounds copied`}><span aria-hidden="true">{COPY_BEATS_MS.map((_,index)=>index<progress?'★':'☆').join(' ')}</span></div>
         <button type="button" className="garden-listen-flower" disabled={!soundOn || phase==='listening' || finished} aria-label="Listen to the pattern" onClick={()=>listen()}><Flower symbol="listen" /></button>

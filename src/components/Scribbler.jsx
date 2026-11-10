@@ -2,6 +2,7 @@ import { drawingToolCursor, useDrawingToolCursor } from "./drawingToolCursor";
 import { DrawingToolIcon } from "./DrawingToolIcon";
 import { useLayoutEffect, useRef, useState } from "react";
 
+import SavePictureButton from "./SavePictureButton";
 import "./Scribbler.css";
 
 const COLORS = [
@@ -663,7 +664,7 @@ const getCanvasPoint = (event, canvas) => {
   };
 };
 
-export default function Scribbler({ onBack }) {
+export default function Scribbler({ onBack, onColoringBook }) {
   const canvasRef = useRef(null);
   const drawingRef = useRef(false);
   const activePointerIdRef = useRef(null);
@@ -1062,7 +1063,11 @@ export default function Scribbler({ onBack }) {
   };
 
   return (
-    <main className="scribbler-page scribbler-with-landscape-tip">
+    <main className={`scribbler-page scribbler-with-landscape-tip ${onColoringBook ? "scribbler-with-colouring" : ""}`}>
+      <div className="scribbler-page-actions">
+        <SavePictureButton canvasRef={canvasRef} filename="oatle-kids-scribbler.png" />
+        {onColoringBook && <button type="button" className="scribbler-colouring-launcher" onClick={onColoringBook}>Coloring Book →</button>}
+      </div>
       <div className="scribbler-landscape-tip" role="note">
         <strong>Landscape recommended</strong>
         <span>Portrait works too.</span>
