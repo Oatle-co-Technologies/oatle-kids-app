@@ -3,7 +3,8 @@
 verify_jwt = false
 
 [functions.email-worker]
-verify_jwt = false
+# Gateway JWT plus the private X-Email-Worker-Secret header are both required.
+verify_jwt = true
 
 [functions.email-unsubscribe]
 verify_jwt = false

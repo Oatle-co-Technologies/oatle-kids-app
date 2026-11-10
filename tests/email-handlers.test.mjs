@@ -26,7 +26,7 @@ test('worker kill switch makes zero database/provider calls, and rejects unautho
  env={EMAIL_WORKER_SECRET:'test-worker'};
  globalThis.emailTestClient=()=>{throw new Error('Unexpected database call');};
  assert.equal((await workerHandler(new Request('https://example.invalid',{method:'POST'}))).status,401);
- const response=await workerHandler(new Request('https://example.invalid',{method:'POST',headers:{Authorization:'Bearer test-worker'}}));
+ const response=await workerHandler(new Request('https://example.invalid',{method:'POST',headers:{Authorization:'Bearer gateway-jwt','X-Email-Worker-Secret':'test-worker'}}));
  assert.deepEqual(await response.json(),{disabled:true});
 });
 test('unsubscribe GET is scanner-safe; POST hashes token and changes only marketing preference',async()=>{
@@ -58,7 +58,7 @@ test('worker sends educational report despite marketing opt-out and suppresses i
  const oldFetch=globalThis.fetch;
  globalThis.fetch=async(url,options)=>{requests.push({url,...options});return Response.json({id:'fake-provider-id'});};
  try {
-  const response=await workerHandler(new Request('https://example.invalid',{method:'POST',headers:{Authorization:'Bearer test-worker'}}));
+  const response=await workerHandler(new Request('https://example.invalid',{method:'POST',headers:{Authorization:'Bearer gateway-jwt','X-Email-Worker-Secret':'test-worker'}}));
   assert.equal(response.status,200);assert.equal(requests.length,1);
   assert.ok(JSON.parse(requests[0].body).text.includes('Capital letters: 2/4'));
   assert.ok(updates.some(u=>u.status==='sent'));assert.ok(updates.some(u=>u.status==='suppressed'));

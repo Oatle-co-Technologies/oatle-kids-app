@@ -3,7 +3,7 @@ import { eligibleForReminder, reportText } from '../_shared/report.mjs';
 import { sendEmail, hashToken } from '../_shared/delivery.mjs';
 Deno.serve(async req => {
  const secret = Deno.env.get('EMAIL_WORKER_SECRET');
- if (!secret || req.headers.get('Authorization') !== `Bearer ${secret}`) return new Response('Unauthorized',{status:401});
+ if (!secret || req.headers.get('X-Email-Worker-Secret') !== secret) return new Response('Unauthorized',{status:401});
  if (req.method !== 'POST') return new Response('Method not allowed',{status:405});
  // Explicit kill switch: no claims, tokens, provider calls or marketing enqueue while disabled.
  if (Deno.env.get('EMAIL_DELIVERY_ENABLED') !== 'true') return Response.json({disabled:true});
