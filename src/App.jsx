@@ -1944,7 +1944,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
               </button>
             </section>)}
           </div>
-          <p className="login-intro">Promo codes grant Single Child access: one child profile and one child playing at a time.</p>
+          <p className="login-intro">Your promo code includes the plan stated in your invitation. Family access supports up to three child profiles and two children playing at a time.</p>
 
           {checkoutMessage && <p className="login-intro" role="status">{checkoutMessage}</p>}
           <p
