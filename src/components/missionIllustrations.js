@@ -1,17 +1,17 @@
 // Visual associations only. IDs, curriculum, locks and completion come from callers.
 export const MISSION_ILLUSTRATIONS = {
   reading: [['uppercase'], ['lowercase'], ['letter-pair'], ['ear'], ['book'], ['pencil'], ['blocks'], ['storybook'], ['trophy']],
-  writing: [['uppercase', 'pencil'], ['numbers', 'pencil'], ['shapes', 'pencil'], ['blocks', 'pencil']],
+  writing: [['uppercase', 'pencil'], ['numbers', 'pencil'], ['shapes', 'pencil'], ['uppercase', 'pencil'], ['blocks', 'pencil']],
   counting: [['numbers'], ['shapes'], ['shapes', 'numbers'], ['palette'], ['blocks', 'shapes'], ['plus'], ['minus'], ['sharing'], ['trophy']],
   balloons: [['numbers'], ['numbers'], ['uppercase'], ['uppercase'], ['palette']],
   shapes: [['circle'], ['square'], ['triangle'], ['rectangle'], ['star']],
   trail: [['pencil'], ['pencil'], ['pencil'], ['pencil'], ['pencil']],
-  scribble: [['palette', 'pencil']],
+  scribble: [['palette', 'pencil'], ['palette']],
   discovery: [['numbers', 'blocks'], ['blocks', 'blocks']],
   building: [['blocks'], ['house'], ['bridge'], ['rocket']],
   animals: [['animal-food'], ['house'], ['ear']],
   puzzles: [['lion-puzzle'], ['cow-puzzle'], ['turtle-puzzle']],
-  music: [['music'], ['ear', 'music'], ['dance']],
+  music: [['music'], ['dance'], ['music']],
 };
 
 export function missionIllustration(adventureId, item, index) {

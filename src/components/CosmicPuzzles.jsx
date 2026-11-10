@@ -1,3 +1,4 @@
+import { learningStorage } from '../lib/profileStorage.js';
 import ResponsivePlanetJourney from './ResponsivePlanetJourney';
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
@@ -21,7 +22,7 @@ const MISSIONS = [
 const SAVE_KEY = 'oatle-cosmic-puzzles-v1';
 function readCompleted() {
   try {
-    const saved = JSON.parse(localStorage.getItem(SAVE_KEY));
+    const saved = JSON.parse(learningStorage.getItem(SAVE_KEY));
     const allowed = MISSIONS.flatMap(mission => Object.keys(PUZZLE_LEVELS).map(level => `${mission.id}-${level}`));
     return Array.isArray(saved) ? saved.filter(key => allowed.includes(key)) : [];
   } catch { return []; }
@@ -105,7 +106,7 @@ export default function CosmicPuzzles({ onBack, soundOn = true }) {
       const key = `${mission.id}-${levelId}`;
       const saved = [...new Set([...completed, key])];
       setCompleted(saved);
-      try { localStorage.setItem(SAVE_KEY, JSON.stringify(saved)); } catch { /* Play still works if storage is unavailable. */ }
+      try { learningStorage.setItem(SAVE_KEY, JSON.stringify(saved)); } catch { /* Play still works if storage is unavailable. */ }
       navigate('complete');
     } else setMessage('Pieces swapped. Keep restoring the picture.');
   }

@@ -1,6 +1,6 @@
 import { createSupabaseContext } from 'npm:@supabase/server@^1';
 import { corsHeaders } from 'npm:@supabase/supabase-js@^2/cors';
-import { makeCheckout, PRICE_CENTS } from './checkout.mjs';
+import { makeCheckout } from './checkout.mjs';
 
 function json(body: Record<string, unknown>, status = 200) {
   return Response.json(body, { status, headers: { ...corsHeaders, 'Cache-Control': 'no-store' } });
@@ -21,14 +21,21 @@ export default {
     const userId = ctx.userClaims?.id || ctx.userClaims?.sub;
     const email = ctx.userClaims?.email;
     if (!userId || !email) return json({ error: 'Authenticated user information is missing.' }, 401);
+    let body;
+    try { body = await req.json(); } catch { return json({ error: 'Please choose a subscription plan.' }, 400); }
+    const planId = body?.plan_id ?? 'single';
+    if (!['single', 'family'].includes(planId)) return json({ error: 'Unknown subscription plan.' }, 400);
     const paymentId = crypto.randomUUID();
     try {
-      const checkout = makeCheckout({ merchantId, merchantKey, passphrase, appUrl, supabaseUrl, userId, email, paymentId });
-      const { error } = await ctx.supabaseAdmin.from('subscriptions').insert({
-        user_id: userId, provider: 'payfast', provider_payment_id: paymentId,
-        status: 'pending', amount_cents: PRICE_CENTS, currency: 'ZAR', frequency: 'monthly',
+      const { data: reservation, error } = await ctx.supabaseAdmin.rpc('prepare_plan_checkout', {
+        p_user_id: userId, p_plan_id: planId, p_payment_id: paymentId,
       });
       if (error) return json({ error: 'Could not start your subscription. Please try again.' }, 500);
+      if (reservation?.outcome === 'existing_subscription') return json({ error: 'You already have a recurring subscription. Contact support to change plans without duplicate billing.' }, 409);
+      if (reservation?.outcome === 'pending_subscription') return json({ error: 'A checkout for another plan is already open. Finish that checkout or contact support to change the plan safely.' }, 409);
+      if (reservation?.outcome !== 'ready') return json({ error: 'Could not reserve this plan.' }, 400);
+      const checkout = makeCheckout({ merchantId, merchantKey, passphrase, appUrl, supabaseUrl, userId, email,
+        paymentId: reservation.payment_id, planId: reservation.plan_id });
       return json(checkout);
     } catch {
       return json({ error: 'Subscription checkout is not configured correctly.' }, 503);

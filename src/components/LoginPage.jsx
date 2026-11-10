@@ -74,7 +74,7 @@ function LoginPage({ onLogin }) {
           {isResetRequest
             ? "Enter your account email and we’ll send you a password reset link."
             : isSignUp
-            ? "Create your parent account, then choose the R120 monthly subscription or use a promo code."
+            ? "Create your parent account, then choose Single Child at R120/month or Family at R200/month, or use a promo code."
             : "Sign in to continue your adventures. New here? Create a parent account below."}
         </p>
 

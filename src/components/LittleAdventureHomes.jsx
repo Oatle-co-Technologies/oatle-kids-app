@@ -17,7 +17,7 @@ export default function LittleAdventureHomes({ items, onBack, backLabel }) {
   const { points, height } = littleHomeLayout(items.length, compact);
   return <main className="page adventure-hub expedition-hub big-kids-galaxy little-home-galaxy">
     <header className="little-home-toolbar">
-      <img src="/oatle-kids-wordmark.webp" alt="Oatle Kids" />
+      <img src="/oatle-kids-wordmark.webp" loading="eager" fetchPriority="high" alt="Oatle Kids" />
       <LocalBackButton label={backLabel} onClick={onBack} />
     </header>
     <p className="eyebrow">LITTLE EXPLORERS · AGES 2–3</p>
@@ -27,8 +27,7 @@ export default function LittleAdventureHomes({ items, onBack, backLabel }) {
       <div className="galaxy-orbit" aria-hidden="true" />
       <SpaceJourney className="galaxy-journey little-home-journey" positions={points} stageHeight={height}
         autoScrollCurrent={false} storageKey="oatle-little-adventure-destination"
-        label="Little Explorers adventure destinations" items={items.map(item => ({ ...item, image: `/little-adventure-homes/${item.id}.webp` }))} />
+        label="Little Explorers adventure destinations" items={items.map(item => ({ ...item, image: item.image || `/little-adventure-homes/${item.id}.webp` }))} />
     </div>
-    <p className="little-home-grownup-note">Grown-ups: play and explore together. Each little world has its own activities.</p>
   </main>;
 }

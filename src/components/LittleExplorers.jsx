@@ -1,6 +1,11 @@
+import { learningStorage } from '../lib/profileStorage.js';
+import { readSavedActivity, saveActivity, resumeScreen } from '../utils/savedActivity';
 import { drawingToolCursor, useDrawingToolCursor } from "./drawingToolCursor";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import StarTrailTrace from "./StarTrailTrace";
+import ColoringBook from "./ColoringBook";
+import FeelingsAdventure from "./FeelingsAdventure";
+import SavePictureButton from "./SavePictureButton";
 import LittleAdventureHomes from "./LittleAdventureHomes";
 import ResponsivePlanetJourney from "./ResponsivePlanetJourney";
 import StorybookAdventure from "./StorybookAdventure";
@@ -9,7 +14,7 @@ import BuildingAdventure from "./BuildingAdventure";
 import AnimalAdventure, { AnimalIcon } from "./AnimalAdventure";
 import PuzzleAdventure, { PuzzleIcon } from "./PuzzleAdventure";
 import MusicAdventure, { MusicIcon } from "./MusicAdventure";
-import { makeExtraAdventures } from "./littleMissionCatalog";
+import { makeExtraAdventures, isLittleMissionLocked } from "./littleMissionCatalog";
 import {
   EraserIcon,
   ScribblerStickerPicker,
@@ -392,6 +397,14 @@ const LITTLE_ADVENTURES = [
         missionTitle: "Magic Space Scribbler",
         description: "We are going to draw, scribble and make a space picture.",
       },
+      {
+        ...PLANET_ART[1],
+        id: 2,
+        activity: "coloring",
+        progressId: "scribble-coloring",
+        missionTitle: "Coloring Book",
+        description: "Choose a colour and tap the big shapes to colour your own picture.",
+      },
     ],
   },
   {
@@ -435,7 +448,7 @@ let sharedAudioContext;
 
 function readProgress() {
   try {
-    const saved = JSON.parse(localStorage.getItem(LITTLE_PROGRESS_KEY));
+    const saved = JSON.parse(learningStorage.getItem(LITTLE_PROGRESS_KEY));
     return Array.isArray(saved) ? saved : [];
   } catch {
     return [];
@@ -444,7 +457,7 @@ function readProgress() {
 
 function readStartedPlanets() {
   try {
-    const saved = JSON.parse(localStorage.getItem(LITTLE_STARTED_KEY));
+    const saved = JSON.parse(learningStorage.getItem(LITTLE_STARTED_KEY));
     return Array.isArray(saved) ? saved : [];
   } catch {
     return [];
@@ -453,7 +466,7 @@ function readStartedPlanets() {
 
 function readBalloonSessions() {
   try {
-    const saved = JSON.parse(localStorage.getItem(BALLOON_SESSION_KEY));
+    const saved = JSON.parse(learningStorage.getItem(BALLOON_SESSION_KEY));
     return saved && typeof saved === "object" ? saved : {};
   } catch {
     return {};
@@ -466,7 +479,7 @@ function saveBalloonSession(mode, round) {
   if (round === null) delete sessions[mode];
   else sessions[mode] = round;
 
-  localStorage.setItem(BALLOON_SESSION_KEY, JSON.stringify(sessions));
+  learningStorage.setItem(BALLOON_SESSION_KEY, JSON.stringify(sessions));
 }
 
 function playBoop(soundOn, step = 0) {
@@ -533,11 +546,12 @@ export default function LittleExplorers({
   onBack,
   soundOn = true,
 }) {
-  const [screen, setScreen] = useState("adventures");
+  const [screen, setScreen] = useState(() => resumeScreen(readSavedActivity('oatle-little-location', {}), ['adventures', 'map', 'planet', 'coloring', 'building'], 'adventures'));
   const [completed, setCompleted] = useState(readProgress);
   const [startedPlanets, setStartedPlanets] = useState(readStartedPlanets);
-  const [activeAdventureId, setActiveAdventureId] = useState("balloons");
-  const [activePlanetId, setActivePlanetId] = useState(1);
+  const [activeAdventureId, setActiveAdventureId] = useState(() => readSavedActivity('oatle-little-location', {}).adventure || 'balloons');
+  const [activePlanetId, setActivePlanetId] = useState(() => readSavedActivity('oatle-little-location', {}).planet || 1);
+  useEffect(() => { saveActivity('oatle-little-location', { screen, adventure: activeAdventureId, planet: activePlanetId }); }, [screen, activeAdventureId, activePlanetId]);
   const [popped, setPopped] = useState([]);
   const [balloonCategory, setBalloonCategory] = useState(null);
   const [balloonMode, setBalloonMode] = useState(null);
@@ -575,7 +589,7 @@ export default function LittleExplorers({
   ) || activeAdventure.planets[0];
   const isPlanetComplete = (planet, adventure = activeAdventure) =>
     completed.includes(planet.progressId) ||
-    completed.includes(adventure.id) ||
+    (planet.activity !== "coloring" && completed.includes(adventure.id)) ||
     (adventure.id === "shapes" && completed.includes("balloons-shapes-5"));
 
   useLayoutEffect(() => {
@@ -591,11 +605,11 @@ export default function LittleExplorers({
         ? [...current]
         : [...current, planet.progressId];
       const adventureComplete = adventure.planets.every(
-        (item) => next.includes(item.progressId) || current.includes(adventure.id)
+        (item) => next.includes(item.progressId) || (item.activity !== "coloring" && current.includes(adventure.id))
       );
 
       if (adventureComplete && !next.includes(adventure.id)) next.push(adventure.id);
-      localStorage.setItem(LITTLE_PROGRESS_KEY, JSON.stringify(next));
+      learningStorage.setItem(LITTLE_PROGRESS_KEY, JSON.stringify(next));
       return next;
     });
   };
@@ -653,7 +667,7 @@ export default function LittleExplorers({
     setStartedPlanets((current) => {
       if (current.includes(progressId)) return current;
       const next = [...current, progressId];
-      localStorage.setItem(LITTLE_STARTED_KEY, JSON.stringify(next));
+      learningStorage.setItem(LITTLE_STARTED_KEY, JSON.stringify(next));
       return next;
     });
   };
@@ -1205,8 +1219,23 @@ export default function LittleExplorers({
     celebratePlanet();
   };
 
+  if (screen === "coloring") {
+    return <ColoringBook ageGroup="little" soundOn={soundOn} onBack={showMap} onComplete={finishExtraMission} />;
+  }
+
+  if (screen === "feelings") {
+    return <FeelingsAdventure ageGroup="little" soundOn={soundOn} onBack={showAdventures} onComplete={() => {
+      setCompleted(current => {
+        if (current.includes("feelings")) return current;
+        const next = [...current, "feelings"];
+        try { learningStorage.setItem(LITTLE_PROGRESS_KEY, JSON.stringify(next)); } catch { /* Play still works without storage. */ }
+        return next;
+      });
+    }} />;
+  }
+
   if (screen === "storybooks") {
-    return <StorybookAdventure onBack={showAdventures} />;
+    return <StorybookAdventure soundOn={soundOn} onBack={showAdventures} />;
   }
 
   if (screen === "building") {
@@ -1661,6 +1690,7 @@ export default function LittleExplorers({
         </section>
 
         <div className="little-drawing-tools" aria-label="Scribbler tools">
+          <SavePictureButton canvasRef={canvasRef} filename="oatle-kids-little-scribbler.png" />
           <div className="little-drawing-main-tools" aria-label="Drawing colours and eraser">
             {DRAWING_COLORS.map((color) => (
               <button
@@ -1737,6 +1767,7 @@ export default function LittleExplorers({
           onSelect: () => openAdventure(adventure.id) };
       }),
       { id: "storybooks", title: "Storybook Adventure", subtitle: "A little world of picture books", onSelect: () => { stopSpeech(); setScreen("storybooks"); } },
+      { id: "feelings", title: "Feelings Adventure", subtitle: "Meet happy, sad, angry and surprised", image: "/little-adventure-homes/feelings.webp", complete: completed.includes("feelings"), onSelect: () => { stopSpeech(); setScreen("feelings"); } },
     ]} />;
   }
 
@@ -1751,12 +1782,13 @@ export default function LittleExplorers({
       <header className="little-map-header">
         <p className="eyebrow">{activeAdventure.title.toUpperCase()}</p>
         <h1>{activeAdventure.title} Map</h1>
-        <p>Complete each planet to unlock the next mission.</p>
+        <p>{activeAdventure.id === "scribble" ? "All drawing activities are free. Choose any planet!" : "Complete each planet to unlock the next mission."}</p>
       </header>
 
       <ResponsivePlanetJourney adventureId={activeAdventure.id} centerTitle={activeAdventure.title} centerImage={activeAdventure.id === "building" ? "/adventure-homes/builder.webp" : undefined} centerEmblem={activeAdventure.id === "animals" ? <AnimalIcon /> : activeAdventure.id === "puzzles" ? <PuzzleIcon /> : activeAdventure.id === "music" ? <MusicIcon /> : activeAdventure.icon || "✦"} key={activeAdventure.id} playful label={`${activeAdventure.title} planet journey`} currentId={activePlanetId} items={activeAdventure.planets.map((planet, index) => ({
         id: planet.id, title: planet.name, subtitle: planet.missionTitle, image: planet.image, color: planet.colour,
-        locked: Boolean(index > 0 && !isPlanetComplete(activeAdventure.planets[index - 1])),
+        locked: isLittleMissionLocked(activeAdventure, index, isPlanetComplete),
+        free: activeAdventure.id === "scribble",
         complete: isPlanetComplete(planet), onSelect: () => openPlanet(planet.id),
       }))} />
 

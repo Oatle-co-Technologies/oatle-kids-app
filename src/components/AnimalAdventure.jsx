@@ -8,6 +8,10 @@ import catSound from '../sounds/animals/cat.mp3';
 import cowSound from '../sounds/animals/cow.mp3';
 import sheepSound from '../sounds/animals/sheep.mp3';
 import elephantSound from '../sounds/animals/elephant.mp3';
+import horseSound from '../sounds/animals/horse.mp3';
+import pigSound from '../sounds/animals/pig.mp3';
+import duckSound from '../sounds/animals/duck.mp3';
+import chickenSound from '../sounds/animals/chicken.mp3';
 import './AnimalAdventure.css';
 import FeedAnimalScene from './FeedAnimalScene';
 import AnimalHomesScene from './AnimalHomesScene';
@@ -27,7 +31,7 @@ const ACTIVITY_INFO = {
   sounds: { number: '03 · LISTENING', title: 'Hear the Sound', copy: 'Listen, then find the animal.' },
 };
 
-const ANIMAL_SOUNDS = { dog: dogSound, cat: catSound, cow: cowSound, sheep: sheepSound, elephant: elephantSound };
+const ANIMAL_SOUNDS = { dog: dogSound, cat: catSound, cow: cowSound, sheep: sheepSound, elephant: elephantSound, horse: horseSound, pig: pigSound, duck: duckSound, chicken: chickenSound };
 
 export default function AnimalAdventure({ onBack, soundOn, mission, onComplete }) {
   const [mode, setMode] = useState(mission?.mode || 'menu');
@@ -148,6 +152,7 @@ export default function AnimalAdventure({ onBack, soundOn, mission, onComplete }
       {homesFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('homes')} aria-label="Play again"><span aria-hidden="true">↻</span></button>}
     </> : <>
       <AnimalSoundScene key={current.id} animal={current} matched={soundMatches.includes(current.id)} soundOn={soundOn} onListen={() => playSound()} onChoose={chooseSound} />
+      <a className="animal-sound-credits" href="/animal-sound-credits.html" target="_blank" rel="noreferrer" aria-label="Animal sound credits">ⓘ</a>
       {soundsFinished && !mission && <button className="animal-again" type="button" onClick={() => chooseMode('sounds')} aria-label="Play again"><span aria-hidden="true">↻</span></button>}
     </>}
     {mode !== 'menu' && <p className={`animal-feedback ${mode !== 'menu' ? 'animal-sr-only' : ''}`} role="status" aria-live="polite">{message}</p>}

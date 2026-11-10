@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
+import FreeBuildStudio from './FreeBuildStudio';
 import useLittleMissionCompletion from './useLittleMissionCompletion';
 import { speak, stopSpeech } from '../utils/speech';
 import { BLOCKS, SHAPES, BUILDS, BOARD, CELL, MAX_BLOCKS, containsPoint, freePlacement, matchingTarget } from './buildingLogic';
@@ -110,7 +111,7 @@ export default function BuildingAdventure({ onBack, soundOn, mission, onComplete
   const title = mode === 'menu' ? 'Building Adventure' : mode === 'choose' ? 'Build This' : isCopy ? build.title : 'Build Anything';
 
   useEffect(() => {
-    if (!soundOn) { stopSpeech(); return undefined; }
+    if (!soundOn || mode === 'free') { stopSpeech(); return undefined; }
     const prompt = mode === 'menu' ? 'Building adventure. Build anything, or copy a little picture.'
       : mode === 'choose' ? 'Choose a little picture to build.'
         : mode === 'free' ? 'Build anything you like. Tap a block, then tap a space. You can drag blocks too.' : build.prompt;
@@ -201,6 +202,8 @@ export default function BuildingAdventure({ onBack, soundOn, mission, onComplete
     setSelected(null); setMessage('');
   }
 
+  if (mode === 'free') return <FreeBuildStudio simple soundOn={soundOn} onBack={() => mission ? onBack() : changeMode('menu')} onComplete={mission ? onComplete : undefined} />;
+
   return <main className={`little-explorers-page building-page building-${mode}`}>
     <header className="building-header">
       <LocalBackButton label={mission ? 'Building Adventure map' : mode === 'menu' ? 'Adventures' : mode === 'copy' ? 'Build This' : 'Building'} onClick={() => mission || mode === 'menu' ? onBack() : changeMode(mode === 'copy' ? 'choose' : 'menu')} />
@@ -212,19 +215,18 @@ export default function BuildingAdventure({ onBack, soundOn, mission, onComplete
     {mode === 'menu' ? <section className="building-mode-grid" aria-label="Building activities">
       <button className="building-mode-card" type="button" onClick={() => changeMode('free')}>
         <span className="building-mode-art building-brick-art"><BuildingIcon /></span>
-        <span className="building-mode-number">01 · BLOCK PLAY</span><strong>Build Anything</strong><small>Chunky blocks. Your own ideas.</small><span className="building-card-action">Let’s build <span aria-hidden="true">↗</span></span>
+        <span className="building-mode-number">01 · BLOCK PLAY</span><strong>Build Anything</strong><span className="building-card-action">Let’s build <span aria-hidden="true">↗</span></span>
       </button>
       <button className="building-mode-card building-copy-card" type="button" onClick={() => changeMode('choose')}>
         <span className="building-mode-art"><BuildPicture build={BUILDS[0]} /></span>
-        <span className="building-mode-number">02 · SHAPE PICTURES</span><strong>Build This</strong><small>A little picture to make together.</small><span className="building-card-action">Choose a picture <span aria-hidden="true">↗</span></span>
+        <span className="building-mode-number">02 · SHAPE PICTURES</span><strong>Build This</strong><span className="building-card-action">Choose a picture <span aria-hidden="true">↗</span></span>
       </button>
-      <p className="building-grownup">Play together: let your little builder choose, try and explore.</p>
     </section> : mode === 'choose' ? <section className="building-choice-grid" aria-label="Pictures to build">
       {BUILDS.map((picture, index) => <button type="button" key={picture.id} aria-label={`${picture.title}, ${picture.targets.length} shapes`} onClick={() => chooseBuild(index)}>
         <BuildPicture build={picture} /><strong>{picture.title}</strong><small>{picture.targets.length} shapes</small>
       </button>)}
     </section> : <section className="building-workshop" aria-label={title}>
-      <div className="building-instructions" id="building-help">
+      <div className="building-instructions app-sr-only" id="building-help">
         <span className="building-step-dot" aria-hidden="true">1</span><span>Tap a piece.</span>
         <span className="building-step-dot" aria-hidden="true">2</span><span>Tap {isCopy ? 'its outline.' : 'a space.'}</span>
         <span className="building-drag-hint">Or drag it into place.</span>
@@ -249,7 +251,7 @@ export default function BuildingAdventure({ onBack, soundOn, mission, onComplete
               </button>)}
             {ghost && <div className="building-piece building-ghost" style={positionStyle(ghost, definitions[ghost.kind])}><PieceArt piece={definitions[ghost.kind]} brick={!isCopy} /></div>}
           </div>
-          <p className="building-feedback" role="status" aria-live="polite">{message || (selected ? `${definitions[selected.kind].name} selected.` : isCopy ? 'Your picture goes here.' : 'What will you build?')}</p>
+          <p className="building-feedback app-sr-only" role="status" aria-live="polite">{message || (selected ? `${definitions[selected.kind].name} selected.` : isCopy ? 'Your picture goes here.' : 'What will you build?')}</p>
         </div>
       </div>
       <div className="building-palette" aria-label={isCopy ? 'Choose a shape' : 'Choose a block'}>

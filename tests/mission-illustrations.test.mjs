@@ -7,10 +7,10 @@ import { EXTRA_ADVENTURES } from '../src/components/littleMissionCatalog.js';
 test('Reading uses the nine approved activity illustrations in the original mission sequence', () => {
   assert.deepEqual(MISSION_ILLUSTRATIONS.reading.map(icons => icons[0]), ['uppercase', 'lowercase', 'letter-pair', 'ear', 'book', 'pencil', 'blocks', 'storybook', 'trophy']);
   assert.equal(MISSION_ILLUSTRATIONS.counting.length, 9);
-  assert.equal(MISSION_ILLUSTRATIONS.writing.length, 4);
+  assert.equal(MISSION_ILLUSTRATIONS.writing.length, 5);
   assert.deepEqual(missionIllustration('writing', { id:'scribbler', free:true }, 4), ['palette', 'pencil']);
   for (const adventure of EXTRA_ADVENTURES) assert.equal(MISSION_ILLUSTRATIONS[adventure.id].length, adventure.missions.length);
-  for (const [id, count] of [['balloons',5],['shapes',5],['trail',5],['scribble',1],['discovery',2]]) assert.equal(MISSION_ILLUSTRATIONS[id].length,count);
+  for (const [id, count] of [['balloons',5],['shapes',5],['trail',5],['scribble',2],['discovery',2]]) assert.equal(MISSION_ILLUSTRATIONS[id].length,count);
   assert.deepEqual(missionIllustration('reading', {id:'future-stage'}, 99), ['book']);
 });
 

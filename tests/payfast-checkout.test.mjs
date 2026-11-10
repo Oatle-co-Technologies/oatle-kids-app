@@ -26,3 +26,13 @@ test('rejects sandbox, changed amounts, unexpected credentials, and non-owned re
   assert.throws(()=>validatePayfastCheckout({...data,fields:{...data.fields,passphrase:'leaked'}}));
   assert.throws(()=>makeCheckout({...options,appUrl:'https://other.example'}));
 });
+
+test('Family is R200 initially and monthly, and cannot be mistaken for Single Child', () => {
+  const data=makeCheckout({...options,planId:'family'});
+  assert.equal(data.fields.amount,'200.00'); assert.equal(data.fields.recurring_amount,'200.00');
+  assert.equal(data.fields.custom_str2,'family');
+  assert.equal(validatePayfastCheckout(data,'family').fields.amount,'200.00');
+  assert.throws(()=>validatePayfastCheckout(data,'single'));
+  assert.throws(()=>validatePayfastCheckout({...data,fields:{...data.fields,amount:'120.00',recurring_amount:'120.00'}},'family'));
+  assert.throws(()=>makeCheckout({...options,planId:'unlimited'}));
+});

@@ -1,7 +1,7 @@
 /* Shared navigation clearance. Use additive spacing below the hardware safe area,
    including standalone iOS/iPadOS where the status bar overlays the viewport. */
 :root {
-  --app-safe-area-top: env(safe-area-inset-top, 0px);
+  --app-safe-area-top: max(32px, env(safe-area-inset-top, 0px));
   --app-safe-area-left: env(safe-area-inset-left, 0px);
   --app-back-button-top: calc(var(--app-safe-area-top) + 12px);
   --app-back-button-left: calc(var(--app-safe-area-left) + 12px);
@@ -48,3 +48,23 @@ main.little-activity-page { --page-navigation-top-space: calc(var(--app-back-but
 main.adventure-hub.expedition-hub {
   padding-top: max(32px, var(--app-back-button-top)) !important;
 }
+
+/* Activity toolbars share the same clearance as the map navigation. Keep these
+   after component media rules so compact layouts cannot remove the inset. */
+main:is(.colouring-book, .instrument-studio, .feelings-adventure,
+        .free-build-studio, .karaoke-garden) {
+  padding-top: var(--app-back-button-top) !important;
+}
+.music-garden-immersive:not(.karaoke-garden) {
+  padding-top: calc(var(--app-back-button-top) + 64px) !important;
+}
+.scribbler-page-actions { top: var(--app-back-button-top) !important; }
+.colouring-book .colouring-actions {
+  top: calc(var(--app-back-button-top) + 54px);
+}
+.colouring-book .colouring-message.colouring-feedback {
+  top: calc(var(--app-back-button-top) + 58px);
+}
+.make-a-face .face-character-area { top: var(--app-back-button-top); }
+.music-garden .garden-muted { top: var(--app-back-button-top); }
+.storybook-reader-inner { padding-top: var(--app-back-button-top) !important; }

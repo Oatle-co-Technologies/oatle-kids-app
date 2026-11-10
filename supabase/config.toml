@@ -1,3 +1,16 @@
+# Deploy these existing functions by their live endpoint names.
+[functions.quick-service]
+entrypoint = "./functions/quick-service/create-payfast-checkout.ts"
+verify_jwt = false
+
+[functions.hyper-action]
+entrypoint = "./functions/redeem-promo/redeem-promo.ts"
+verify_jwt = false
+
+[functions.payfast-itn]
+entrypoint = "./functions/payfast-itn/index.ts"
+verify_jwt = false
+
 [functions.parent-email]
 # The handler verifies the bearer token with auth.getUser (supports current signing keys).
 verify_jwt = false

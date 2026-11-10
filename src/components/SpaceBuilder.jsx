@@ -1,19 +1,22 @@
+import { learningStorage } from '../lib/profileStorage.js';
 import ResponsivePlanetJourney from './ResponsivePlanetJourney';
+import FreeBuildStudio from './FreeBuildStudio';
 import { useEffect, useRef, useState } from 'react';
 import LocalBackButton from './LocalBackButton';
 import { speak, stopSpeech } from '../utils/speech';
 import mercury from '../assets/images/planets/mercury.webp';
 import saturn from '../assets/images/planets/saturn.webp';
 import earth from '../assets/images/planets/earth.webp';
+import neptune from '../assets/images/planets/neptune.webp';
 import victory from '../sounds/victory.mp3';
 import { BUILD_SIZE, PARTS, SPACE_BUILDS, fitsBlueprint, remainingParts } from './spaceBuilderLogic';
 import './CosmicPuzzles.css';
 import './SpaceBuilder.css';
 
-const PLANETS = [mercury, saturn, earth];
+const PLANETS = [mercury, earth, saturn];
 const SAVE_KEY = 'oatle-space-builder-v1';
 function readCompleted() {
-  try { const saved = JSON.parse(localStorage.getItem(SAVE_KEY)); return Array.isArray(saved) ? saved.filter(id => SPACE_BUILDS.some(b => b.id === id)) : []; } catch { return []; }
+  try { const saved = JSON.parse(learningStorage.getItem(SAVE_KEY)); return Array.isArray(saved) ? saved.filter(id => SPACE_BUILDS.some(b => b.id === id)) : []; } catch { return []; }
 }
 // Construction pieces are simple geometry; all decorative artwork is from the app.
 function Part({ kind, turn = 0, outline = false }) {
@@ -29,7 +32,7 @@ function Blueprint({ build, className = '' }) {
   </div>;
 }
 export function SpaceBuilderEntry({ onClick }) {
-  return <button className="cosmic-entry" type="button" onClick={onClick}><img src={mercury} alt="" /><span><small>SPACE CHALLENGE ARCADE</small><strong>Space Builder</strong><span>Read the blueprint. Build the mission.</span></span><b aria-hidden="true">→</b></button>;
+  return <button className="cosmic-entry" type="button" onClick={onClick}><img src={mercury} alt="" /><span><small>SPACE CHALLENGE ARCADE</small><strong>Space Builder</strong><span>Build freely or follow a mission.</span></span><b aria-hidden="true">→</b></button>;
 }
 export default function SpaceBuilder({ onBack, soundOn = true }) {
   const [screen, setScreen] = useState('missions');
@@ -47,6 +50,7 @@ export default function SpaceBuilder({ onBack, soundOn = true }) {
     window.scrollTo(0, 0); document.querySelector('.app')?.scrollTo(0, 0);
   }, [screen]);
   useEffect(() => {
+    if (screen === 'studio') { stopSpeech(); return undefined; }
     const prompt = screen === 'missions' ? 'Space Builder. Choose a construction mission.' : screen === 'briefing' ? `${build.title}. ${build.brief}` : screen === 'play' ? 'Copy the blueprint. Choose a part, rotate it if needed, then tap a square. You can drag parts too.' : `Mission accomplished! ${build.success}`;
     const audio = screen === 'complete' && soundOn ? new Audio(victory) : null;
     if (audio) { audio.volume = .55; void audio.play().catch(() => {}); }
@@ -72,7 +76,7 @@ export default function SpaceBuilder({ onBack, soundOn = true }) {
     const next = [...placed, { ...selected, cell }]; setPlaced(next); setChoice(null);
     if (next.length === build.parts.length) {
       const saved = [...new Set([...completed, build.id])]; setCompleted(saved);
-      try { localStorage.setItem(SAVE_KEY, JSON.stringify(saved)); } catch { /* Building works without storage. */ }
+      try { learningStorage.setItem(SAVE_KEY, JSON.stringify(saved)); } catch { /* Building works without storage. */ }
       go('complete');
     } else setMessage('Part secured! Choose the next part.');
   }
@@ -102,12 +106,17 @@ export default function SpaceBuilder({ onBack, soundOn = true }) {
     }
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   }
+  if (screen === 'studio') return <FreeBuildStudio soundOn={soundOn} backLabel="Back to Space Builder" onBack={() => go('missions')} />;
+
   return <main className={`cosmic-page sb-page sb-screen-${screen}`}><div className="cosmic-shell">
     <header className="cosmic-header"><LocalBackButton label={screen === 'missions' ? 'Explore' : 'Missions'} onClick={() => screen === 'missions' ? onBack() : go('missions')} /><p className="eyebrow">SPACE CHALLENGE ARCADE / CONSTRUCTION CREW</p><h1>{screen === 'missions' ? 'Space Builder' : screen === 'complete' ? 'Mission accomplished!' : build.title}</h1><p>{screen === 'missions' ? 'From launch pad to lunar outpost. Your next build starts here.' : screen === 'complete' ? build.success : build.location}</p></header>
-    {screen === 'missions' && <ResponsivePlanetJourney label="Construction missions" items={SPACE_BUILDS.map((item, i) => ({
-      id: item.id, title: item.title, subtitle: item.location, image: PLANETS[i],
-      complete: completed.includes(item.id), onSelect: () => chooseMission(i),
-    }))} />}
+    {screen === 'missions' && <ResponsivePlanetJourney label="Construction missions and free play" items={[
+      ...SPACE_BUILDS.map((item, i) => ({
+        id: item.id, title: item.title, subtitle: item.location, image: PLANETS[i],
+        complete: completed.includes(item.id), onSelect: () => chooseMission(i),
+      })),
+      { id: 'build-anything', title: 'Build Anything', subtitle: 'Free play · colours and letters', image: neptune, onSelect: () => go('studio') },
+    ]} />}
     {screen === 'briefing' && <section className="cosmic-briefing"><Blueprint build={build} /><div className="cosmic-brief-copy"><img className="cosmic-planet" src={PLANETS[index]} alt="" /><p className="eyebrow">MISSION 0{index + 1} / BRIEFING</p><h2>Build it. Power the expedition.</h2><p>{build.brief}</p><p>{build.parts.length} parts. Match the shape, position and direction.</p><p className="cosmic-note">Tap a part, then a square. Or drag it into place. Rotate triangles and panels before placing them. The blueprint stays beside you, and a guide is available.</p><button className="cosmic-primary" type="button" onClick={launch}>Start construction →</button></div></section>}
     {screen === 'play' && <section aria-label="Construction workshop">
       <div className="cosmic-status"><span><b>{placed.length}/{build.parts.length}</b> parts secured</span><span>MISSION 0{index + 1}</span><span>Take your time</span></div><div className="cosmic-progress" role="progressbar" aria-label="Construction complete" aria-valuemin={0} aria-valuemax={build.parts.length} aria-valuenow={placed.length}><span style={{ width: `${placed.length / build.parts.length * 100}%` }} /></div>

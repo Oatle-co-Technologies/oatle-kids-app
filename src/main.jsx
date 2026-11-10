@@ -1,5 +1,5 @@
-import { supabase } from './lib/supabase';
-import { prepareAccountStorage } from './lib/accountStorage';
+import { restoreScopedDeviceState } from './lib/restoreScopedDeviceState.js';
+import ParentAccount from './components/ParentAccount.jsx';
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -7,10 +7,9 @@ import './pwa.js'
 import App from './App.jsx'
 import './BackButtonSafeArea.css'
 
-const { data: { session } } = await supabase.auth.getSession();
-prepareAccountStorage(localStorage, session?.user?.id || null);
+restoreScopedDeviceState(localStorage);
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <ParentAccount AppComponent={App} />
   </StrictMode>,
 )

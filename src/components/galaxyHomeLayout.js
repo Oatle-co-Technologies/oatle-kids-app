@@ -4,3 +4,9 @@ export function galaxyHomeLayout(compact = false) {
     ? { height: 1080, points: [{ x: 180, y: 150 }, { x: 540, y: 200 }, { x: 180, y: 470 }, { x: 540, y: 520 }, { x: 180, y: 790 }, { x: 540, y: 840 }] }
     : { height: 890, points: [{ x: 125, y: 155 }, { x: 360, y: 190 }, { x: 595, y: 155 }, { x: 145, y: 455 }, { x: 575, y: 475 }, { x: 360, y: 690 }] };
 }
+
+// Adventure homes can grow without moving the established learning-mission maps.
+export function adventureHomeLayout(compact = false) {
+  const original = galaxyHomeLayout(compact);
+  return { height: compact ? 1430 : 1500, points: [...original.points, ...(compact ? [{ x: 180, y: 1110 }, { x: 540, y: 1160 }] : [{ x: 360, y: 1010 }, { x: 360, y: 1310 }])] };
+}

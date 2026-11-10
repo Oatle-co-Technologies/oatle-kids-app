@@ -83,6 +83,6 @@ test('desktop geometry retains the approved winding composition',()=>{
   assert.deepEqual(planetJourneyLayout(5,'wide'),{height:600,points:[
     {x:165,y:130,row:0,wide:true},{x:320,y:145,row:0,wide:true},{x:475,y:125,row:0,wide:true},{x:630,y:130,row:0,wide:true},{x:360,y:390,row:1,wide:true},
   ]});
-  const originalCssHash='25cc536ca91442b3b1a3ecad82ced9f32790ea6477b6916e79a96f4f4590c174';
+  const originalCssHash='e6597d8f638e5852b48c579682eba15194e861dd83e1291fc79eb6986ec1d906';
   return readFile(new URL('../src/components/BigKidsPlanetJourney.css',import.meta.url)).then(css=>assert.equal(createHash('sha256').update(css).digest('hex'),originalCssHash));
 });

@@ -31,11 +31,11 @@ export const EXTRA_ADVENTURES = [
   },
   {
     id: 'music', title: 'Music & Movement',
-    description: 'Play instruments, copy four sounds and dance along.',
+    description: 'Play instruments, dance, listen and sing karaoke.',
     missions: [
-      { key: 'play', mode: 'play', missionTitle: 'My Little Band', description: 'Choose an instrument at the top, then tap it to play. Play as long as you like, then tap the tick.' },
-      { key: 'copy', mode: 'copy', missionTitle: 'Copy My Music', description: 'We are going to listen and copy four sounds, with one instrument at a time.' },
-      { key: 'dance', mode: 'dance', missionTitle: 'Dance & Freeze', description: 'We are going to dance when the music plays and freeze when it stops. Let’s play three rounds!' },
+      { key: 'play', mode: 'play', missionTitle: 'My Little Band', description: 'Choose an instrument below, then tap it to play. Play as long as you like, then tap Done.' },
+      { key: 'dance', mode: 'dance', planetArtIndex: 2, missionTitle: 'Dance & Freeze', description: 'We are going to dance when the music plays and freeze when it stops. Let’s play three rounds!' },
+      { key: 'karaoke', mode: 'karaoke', planetArtIndex: 4, missionTitle: 'Karaoke Mission', description: 'Choose from ten traditional songs. Follow the glowing letters and words, and sing with the instruments. Tap the tick after a song to finish.' },
     ],
   },
 ];
@@ -44,8 +44,13 @@ export function makeExtraAdventures(planetArt) {
   return EXTRA_ADVENTURES.map(({ missions, ...adventure }) => ({
     ...adventure,
     planets: missions.map((mission, index) => ({
-      ...planetArt[index], ...mission, id: index + 1,
+      ...planetArt[mission.planetArtIndex ?? index], ...mission, id: index + 1,
       activity: adventure.id, progressId: `${adventure.id}-${mission.key}`,
     })),
   }));
+}
+
+export function isLittleMissionLocked(adventure, index, isComplete) {
+  if (adventure.id === 'scribble' || adventure.planets[index]?.free || index === 0) return false;
+  return !isComplete(adventure.planets[index - 1]);
 }

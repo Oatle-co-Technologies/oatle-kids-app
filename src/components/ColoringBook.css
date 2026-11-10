@@ -1,0 +1,37 @@
+.colouring-book{position:fixed;z-index:10020;inset:0;display:flex;flex-direction:column;gap:6px;width:100%;height:100dvh;box-sizing:border-box;padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));overflow:hidden;color:#eef4ff;background:#111d35;font-family:inherit}
+.colouring-book *{box-sizing:border-box}
+.colouring-book button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.colouring-book button:focus-visible,.colouring-region:focus-visible{outline:3px solid #ffd45c;outline-offset:2px}
+.colouring-book button:disabled{opacity:.4;cursor:default}
+.colouring-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 auto;min-height:48px}
+.colouring-back,.colouring-done{min-height:44px;padding:8px 14px;border:1px solid #ffffff30;border-radius:12px;background:#ffffff0b;color:#fff;font-size:.85rem!important;font-weight:800!important;flex-shrink:0}
+.colouring-done{background:#c3efba;color:#18352b;border-color:#c3efba}
+.colouring-page-navigation{display:flex;align-items:center;gap:14px;min-width:0}
+.colouring-page-navigation>button{width:46px;height:44px;border:1px solid #ffffff35;border-radius:12px;background:#ffffff0c;color:#fff;font-size:1.35rem;flex-shrink:0}
+.colouring-page-title{text-align:center;min-width:0}
+.colouring-page-title h1{font-size:clamp(1rem,2vw,1.4rem);margin:0 0 2px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.colouring-page-title span{font-size:.72rem;color:#bdcce6}
+.colouring-actions{display:flex;justify-content:center;gap:8px;flex:0 0 auto;padding:0 0 2px}
+.colouring-actions button{min-height:44px;padding:7px 14px;border-radius:10px;border:1px solid #ffffff25;background:#ffffff08;color:#edf3ff;font-size:.8rem;font-weight:700}
+.colouring-actions button[aria-pressed=true]{border-color:#ffd45c;background:#ffd45c22}
+.colouring-paper{position:relative;flex:1 1 0;min-height:0;min-width:0;width:100%;border-radius:16px;background:white;overflow:hidden}
+.colouring-picture{display:block;width:100%;height:100%}
+.colouring-region{cursor:pointer;touch-action:manipulation;transition:fill .1s ease}
+.colouring-region:focus-visible{stroke:#a16d00;stroke-dasharray:8 4}
+.colouring-palette{display:flex;flex:0 0 auto;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;padding:3px 0 0;margin:0}
+.colouring-palette button{border:2px solid transparent;display:grid;place-items:center;background:transparent;border-radius:50%;width:52px;height:52px;padding:4px}
+.colouring-palette button[aria-pressed=true]{border-color:#fff;background:#ffffff15}
+.colouring-palette span{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;background:var(--paint);box-shadow:inset 0 -4px 0 #0002;color:#10233d;font-weight:900;font-size:1.25rem;text-shadow:0 1px 2px #fff}
+.colouring-message{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.scribbler-colouring-launcher{position:absolute;z-index:10;top:12px;right:12px;min-height:44px;padding:10px 14px;border:1px solid #ffd45c;border-radius:13px;background:#203354;color:#fff;font-family:inherit;font-size:13px;font-weight:700;line-height:1.2;cursor:pointer}
+.scribbler-with-colouring .scribbler-landscape-tip{right:170px}
+@media(max-width:600px){.colouring-book{padding-left:6px;padding-right:6px;gap:4px}.colouring-heading{gap:5px}.colouring-back,.colouring-done{padding:7px 8px;font-size:.75rem!important}.colouring-page-navigation{gap:5px;flex:1;justify-content:center}.colouring-page-navigation>button{width:40px;height:44px}.colouring-page-title h1{font-size:.9rem;max-width:130px}.colouring-page-title span{font-size:.6rem}.colouring-actions{gap:5px}.colouring-actions button{padding:6px 8px;font-size:.7rem;min-height:44px}.colouring-paper{border-radius:11px}.colouring-palette{gap:4px;max-width:320px;align-self:center}.colouring-palette button{width:52px;height:52px}.scribbler-with-colouring .scribbler-landscape-tip{display:none}}
+@media(max-width:350px){.colouring-page-title h1{max-width:85px}.colouring-back,.colouring-done{padding:6px}.colouring-page-navigation>button{width:34px}.colouring-actions button{padding:6px;font-size:.65rem}}
+@media(prefers-reduced-motion:reduce){.colouring-region{transition:none}}
+
+.colouring-tools-toggle{flex-shrink:0;min-height:44px;padding:7px 12px;border:1px solid #ffffff30;border-radius:12px;background:#ffffff0b;color:white;font-size:.8rem!important;font-weight:750!important}
+.colouring-actions{position:absolute;z-index:5;right:12px;top:62px;flex-wrap:wrap;max-width:calc(100% - 24px);padding:10px;border:1px solid #ffffff40;border-radius:15px;background:#172c4f;box-shadow:0 8px 25px #0004}
+.colouring-actions[hidden]{display:none}
+.colouring-message.colouring-feedback{clip-path:none;width:max-content;max-width:calc(100% - 32px);height:auto;white-space:normal;top:65px;left:50%;transform:translateX(-50%);margin:0;padding:10px 16px;border-radius:12px;background:#172c4f;color:white;z-index:4;pointer-events:none;font-size:.85rem}
+@media(max-width:600px){.colouring-tools-toggle{padding:6px 9px}.colouring-tools-toggle span{display:none}.colouring-page-title h1{max-width:110px}.colouring-page-navigation{gap:3px}}
+@media(orientation:landscape) and (max-height:500px){.colouring-palette{max-width:none;gap:8px}.colouring-palette button{width:44px;height:44px}.colouring-book{padding-top:4px;padding-bottom:4px}}

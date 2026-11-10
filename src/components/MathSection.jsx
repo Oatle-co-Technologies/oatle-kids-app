@@ -1,3 +1,5 @@
+import { learningStorage } from '../lib/profileStorage.js';
+import { readSavedActivity, saveActivity, resumeScreen } from '../utils/savedActivity';
 import { attemptId, queueReport } from '../lib/parentEmail';
 import MissionBalloonBreak from './MissionBalloonBreak';
 import { prepareMathQuestion, mathsQuestionNarration } from "../utils/mathsLanguage";
@@ -53,7 +55,7 @@ const MATH_ASSESSMENT_ATTEMPT_KEY =
 const readAssessmentAttempt = () => {
   try {
     const saved = JSON.parse(
-      localStorage.getItem(MATH_ASSESSMENT_ATTEMPT_KEY)
+      learningStorage.getItem(MATH_ASSESSMENT_ATTEMPT_KEY)
     );
 
     const questions = restoreAssessmentQuestions(saved?.questionIds, mathAssessmentQuestions).map(prepareMathQuestion);
@@ -77,7 +79,7 @@ function getMissionQuestions(mission) {
 const readProgress = () => {
   try {
     const saved = JSON.parse(
-      localStorage.getItem("oatle-maths-progress")
+      learningStorage.getItem("oatle-maths-progress")
     );
 
     if (!saved) return defaultProgress;
@@ -2166,7 +2168,8 @@ export default function MathSection({
     );
 
   const [screen, setScreen] =
-    useState("map");
+    useState(() => resumeScreen(readSavedActivity('oatle-maths-location', {}), ['map', 'planet', 'mission'], 'map'));
+  useEffect(() => { saveActivity('oatle-maths-location', { screen }); }, [screen]);
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
@@ -2374,14 +2377,14 @@ export default function MathSection({
       },
     };
 
-    localStorage.setItem(
+    learningStorage.setItem(
       "oatle-maths-progress",
       JSON.stringify(savedProgress)
     );
   }, [progress]);
 
   useEffect(() => {
-    localStorage.setItem(
+    learningStorage.setItem(
       MATH_ASSESSMENT_ATTEMPT_KEY,
       JSON.stringify({
         active: assessmentActive,

@@ -3,6 +3,7 @@ const userId='a1234567-1234-4123-8123-123456789012';
 const user={id:userId,email:'parent@example.invalid',email_confirmed_at:'2026-01-01',aud:'authenticated',role:'authenticated',app_metadata:{},user_metadata:{}};
 async function mock(page,authenticated=false,access=false) {
  const calls=[];
+ let progress={revision:0,data:{'oatle-age-group':'big'}};
  await page.route('https://test.supabase.co/**',async route=>{
   const request=route.request(),url=new URL(request.url());
   let data={};
@@ -10,7 +11,14 @@ async function mock(page,authenticated=false,access=false) {
   else if(url.pathname.endsWith('/auth/v1/signup')) {calls.push(request.postDataJSON());data={user,session:null};}
   else if(url.pathname.endsWith('/entitlements')) data=access?{user_id:userId,status:'active',expires_at:null}:null;
   else if(url.pathname.endsWith('/email_preferences')) data={opted_in:false};
-  else if(url.pathname.includes('/rpc/')) {calls.push({rpc:url.pathname,body:request.postDataJSON()});data=null;}
+  else if(url.pathname.includes('/rpc/')) {
+   const body=request.postDataJSON();calls.push({rpc:url.pathname,body});
+   if(url.pathname.endsWith('/household_overview')) data={limits:{plan_id:'family',profiles:3,devices:2,playing:2},profiles:[{id:'test-child',nickname:'Explorer'}],devices:[]};
+   else if(url.pathname.endsWith('/register_household_device')) data={outcome:'registered'};
+   else if(url.pathname.endsWith('/start_child_session')) data={outcome:'started',...progress,lease_seconds:90};
+   else if(url.pathname.endsWith('/save_child_progress')) {progress={revision:progress.revision+1,data:body.p_data};data={outcome:'saved',revision:progress.revision};}
+   else data={outcome:'ended'};
+  }
   else if(url.pathname.includes('/functions/v1/parent-email')) {calls.push(request.postDataJSON());data={queued:true};}
   await route.fulfill({status:200,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(data)});
  });
@@ -18,7 +26,7 @@ async function mock(page,authenticated=false,access=false) {
  await page.route(/https?:\/\/(?!127\.0\.0\.1|test\.supabase\.co)/,route=>route.abort());
  if(authenticated) await page.addInitScript(({user,userId})=>{
   if(!localStorage.getItem('sb-test-auth-token')) localStorage.setItem('sb-test-auth-token',JSON.stringify({access_token:'fake-token',refresh_token:'fake-refresh',expires_at:Math.floor(Date.now()/1000)+3600,token_type:'bearer',user}));
-  localStorage.setItem('oatle-storage-owner',userId);localStorage.setItem('oatle-age-group','big');
+  sessionStorage.setItem(`oatle-selected-child:${userId}`,'test-child');localStorage.setItem('oatle-age-group','big');
  },{user,userId});
  return calls;
 }
@@ -43,18 +51,19 @@ for(const subject of ['reading','maths']) test(`${subject} completed attempt res
  const calls=await mock(page,true,true);await page.goto('/app.html');
  await expect(page.getByRole('button',{name:/Reading Adventure/})).toBeVisible();
  await page.evaluate(async subject=>{
+  const storage=(await import('/src/lib/profileStorage.js')).learningStorage;
   const {selectAssessment}=await import('/src/utils/assessmentSelection.js');
   if(subject==='reading') {
    const bank=await import('/src/data/assessmentQuestions.js');
    const questions=selectAssessment(bank.assessmentQuestions,bank.assessmentSkills,4);
    const scores=Object.fromEntries(bank.assessmentSkills.map(({id})=>[id,{correct:2,total:4}]));
-   localStorage.setItem('atli-space-progress',JSON.stringify({unlocked:9,activePlanet:9,question:27,missions:{}}));
-   localStorage.setItem('oatle-reading-assessment-attempt',JSON.stringify({active:true,questionIds:questions.map(q=>q.assessmentId),answered:28,scores}));
+   storage.setItem('atli-space-progress',JSON.stringify({unlocked:9,activePlanet:9,question:27,missions:{}}));
+   storage.setItem('oatle-reading-assessment-attempt',JSON.stringify({active:true,questionIds:questions.map(q=>q.assessmentId),answered:28,scores}));
   } else {
    const bank=await import('/src/data/mathAssessmentQuestions.js');
    const questions=selectAssessment(bank.mathAssessmentQuestions,bank.assessmentSkills,2);
-   localStorage.setItem('oatle-maths-progress',JSON.stringify({unlocked:9,activeMission:9,question:19,missions:{}}));
-   localStorage.setItem('oatle-maths-assessment-attempt',JSON.stringify({active:true,questionIds:questions.map(q=>q.assessmentId),answers:questions.map((q,i)=>({skill:q.skill,correct:i%2===0}))}));
+   storage.setItem('oatle-maths-progress',JSON.stringify({unlocked:9,activeMission:9,question:19,missions:{}}));
+   storage.setItem('oatle-maths-assessment-attempt',JSON.stringify({active:true,questionIds:questions.map(q=>q.assessmentId),answers:questions.map((q,i)=>({skill:q.skill,correct:i%2===0}))}));
   }
  },subject);
  await page.reload();
