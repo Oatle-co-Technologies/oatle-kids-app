@@ -4,7 +4,7 @@ const user={id:userId,email:'parent@example.invalid',email_confirmed_at:'2026-01
 async function mock(page,authenticated=false,access=false) {
  const calls=[];
  let progress={revision:0,data:{'oatle-age-group':'big'}};
- await page.route('https://test.supabase.co/**',async route=>{
+ await page.route('**/test-supabase/**',async route=>{
   const request=route.request(),url=new URL(request.url());
   let data={};
   if(url.pathname.endsWith('/auth/v1/user')) data=user;
@@ -22,10 +22,10 @@ async function mock(page,authenticated=false,access=false) {
   else if(url.pathname.includes('/functions/v1/parent-email')) {calls.push(request.postDataJSON());data={queued:true};}
   await route.fulfill({status:200,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(data)});
  });
- // Every external destination is blocked except the mocked Supabase host.
- await page.route(/https?:\/\/(?!127\.0\.0\.1|test\.supabase\.co)/,route=>route.abort());
+ // Every external destination is blocked including production Supabase.
+ await page.route(/https?:\/\/(?!127\.0\.0\.1:4178)/,route=>route.abort());
  if(authenticated) await page.addInitScript(({user,userId})=>{
-  if(!localStorage.getItem('sb-test-auth-token')) localStorage.setItem('sb-test-auth-token',JSON.stringify({access_token:'fake-token',refresh_token:'fake-refresh',expires_at:Math.floor(Date.now()/1000)+3600,token_type:'bearer',user}));
+  if(!localStorage.getItem('sb-127-auth-token')) localStorage.setItem('sb-127-auth-token',JSON.stringify({access_token:'fake-token',refresh_token:'fake-refresh',expires_at:Math.floor(Date.now()/1000)+3600,token_type:'bearer',user}));
   sessionStorage.setItem(`oatle-selected-child:${userId}`,'test-child');localStorage.setItem('oatle-age-group','big');
  },{user,userId});
  return calls;
@@ -76,7 +76,7 @@ for(const subject of ['reading','maths']) test(`${subject} completed attempt res
 });
 test('promo rejection explains the invitation email instead of exposing an edge function error',async({page})=>{
  await mock(page,true,false);
- await page.route('https://test.supabase.co/functions/v1/hyper-action',route=>route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:'This promo code is assigned to another account.'})}));
+ await page.route('**/test-supabase/functions/v1/hyper-action',route=>route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:'This promo code is assigned to another account.'})}));
  await page.goto('/app.html');
  await page.getByPlaceholder(/promo/i).fill('TEST-INVITATION');
  await page.getByRole('button',{name:'Redeem promo code',exact:true}).click();

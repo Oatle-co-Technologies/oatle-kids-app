@@ -1,3 +1,4 @@
+import { isAuthRetryableFetchError } from '@supabase/supabase-js';
 import EmailPreferences from './EmailPreferences';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
@@ -25,6 +26,7 @@ function storedId(store, key) {
 function HouseholdAccount({ AppComponent }) {
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(false);
+  const [authConnectionIssue, setAuthConnectionIssue] = useState(false);
   const [household, setHousehold] = useState(null);
   const [activeChild, setActiveChild] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -34,6 +36,7 @@ function HouseholdAccount({ AppComponent }) {
   const [deviceLabel, setDeviceLabel] = useState('Family learning device');
   const [importOld, setImportOld] = useState(true);
   const [conflictChild, setConflictChild] = useState(null);
+  const retryAuth = useRef(null);
   const sync = useRef(null);
   const activeRef = useRef(null);
   const playKey = useRef(null);
@@ -52,12 +55,15 @@ function HouseholdAccount({ AppComponent }) {
       if (!currentUser) { setHousehold(null); return; }
       const { data, error } = await supabase.from('entitlements').select('user_id,status,expires_at').eq('user_id', currentUser.id).maybeSingle();
       if (error) throw new Error('Could not check your access. Please retry.');
+      if (turn !== generation.current) return;
       if (!hasActiveEntitlement(data, currentUser.id)) { setHousehold(null); return; }
       const overview = await rpc('household_overview');
       if (turn !== generation.current) return;
       setHousehold(overview);
-      const remembered = sessionStorage.getItem(`oatle-selected-child:${currentUser.id}`);
-      const child = overview.profiles.slice(0, overview.limits.profiles).find(p => p.id === remembered);
+      const selectionKey = `oatle-selected-child:${currentUser.id}`;
+      const remembered = localStorage.getItem(selectionKey) || sessionStorage.getItem(selectionKey);
+      const eligible = overview.profiles.slice(0, overview.limits.profiles);
+      const child = eligible.find(profile => profile.id === remembered) || eligible[0];
       if (child) await chooseChild(child, currentUser, false, false);
     } catch (error) { if (turn === generation.current) { setMessage(error.message); setHousehold({ unavailable: true }); } }
     finally { if (turn === generation.current) setReady(true); }
@@ -65,16 +71,38 @@ function HouseholdAccount({ AppComponent }) {
   const loadForEffect = useEffectEvent(currentUser => { void loadAccount(currentUser); });
   function cancelAccountLoads() { generation.current++; }
   useEffect(() => {
-    let live = true, identity;
+    let live = true, identity, checking = false;
     const receive = currentUser => {
       if (!live || identity === (currentUser?.id || null)) return;
       identity = currentUser?.id || null;
+      setAuthConnectionIssue(false);
       sync.current?.stop(); sync.current = null; activeRef.current = null; setActiveChild(null);
+      playKey.current = null; setBusy(false); setMessage(''); setConflictChild(null);
       setUser(currentUser); loadForEffect(currentUser);
     };
-    void supabase.auth.getSession().then(({ data }) => receive(data.session?.user || null));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => receive(session?.user || null));
-    return () => { live = false; cancelAccountLoads(); subscription.unsubscribe(); sync.current?.stop(); };
+    const retrySession = async () => {
+      if (!live || identity !== undefined || checking) return;
+      checking = true;
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (!live || identity !== undefined) return;
+        if (isAuthRetryableFetchError(error)) setAuthConnectionIssue(true);
+        else receive(data.session?.user || null);
+      } catch {
+        if (live && identity === undefined) setAuthConnectionIssue(true);
+      } finally { checking = false; }
+    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'INITIAL_SESSION' && !session) void retrySession();
+      else receive(session?.user || null);
+    });
+    window.addEventListener('online', retrySession);
+    retryAuth.current = retrySession;
+    return () => {
+      live = false; cancelAccountLoads(); subscription.unsubscribe(); sync.current?.stop();
+      window.removeEventListener('online', retrySession);
+      retryAuth.current = null;
+    };
   }, []); // A token refresh must not remount or overwrite a child's active activity.
   useEffect(() => {
     const reload = () => { if (user && !activeRef.current) loadForEffect(user); };
@@ -84,16 +112,21 @@ function HouseholdAccount({ AppComponent }) {
 
   async function chooseChild(child, currentUser = user, importing = false, useLatest = false) {
     setBusy(true); setMessage(''); setConflictChild(null);
+    const turn = generation.current;
     let sessionOpened = false;
+    let channel, key;
     try {
       const deviceKey = storedId(localStorage, 'oatle-device-key');
-      playKey.current = storedId(sessionStorage, `oatle-play-key:${currentUser.id}`);
+      key = storedId(sessionStorage, `oatle-play-key:${currentUser.id}`);
       const registered = await rpc('register_household_device', { p_device_key: deviceKey, p_label: deviceLabel });
+      if (turn !== generation.current) return;
       if (registered.outcome !== 'registered') throw new Error(registered.outcome);
-      const session = await rpc('start_child_session', { p_device_key: deviceKey, p_child_id: child.id, p_play_key: playKey.current });
+      const session = await rpc('start_child_session', { p_device_key: deviceKey, p_child_id: child.id, p_play_key: key });
+      if (turn !== generation.current) return;
       if (session.outcome !== 'started') throw new Error(session.outcome);
       sessionOpened = true;
-      const channel = childProgressSync(supabase, currentUser.id, child.id, playKey.current, setSyncMessage);
+      playKey.current = key;
+      channel = childProgressSync(supabase, currentUser.id, child.id, key, setSyncMessage);
       sync.current = channel;
       const owner = localStorage.getItem('oatle-legacy-progress-owner');
       const oldData = importing && (!owner || owner === currentUser.id) ? legacyProgressSnapshot() : null;
@@ -102,14 +135,17 @@ function HouseholdAccount({ AppComponent }) {
       if (importData) localStorage.setItem('oatle-legacy-progress-owner', currentUser.id);
       leaseEnd.current = Date.now() + session.lease_seconds * 1000;
       await channel.flush();
-      sessionStorage.setItem(`oatle-selected-child:${currentUser.id}`, child.id);
+      if (turn !== generation.current) return;
+      localStorage.setItem(`oatle-selected-child:${currentUser.id}`, child.id);
       activeRef.current = child; setActiveChild(child);
     } catch (error) {
-      sync.current?.stop(); sync.current = null;
-      if (sessionOpened) await rpc('end_child_session', { p_play_key: playKey.current }).catch(() => {});
+      if (turn !== generation.current) return;
+      channel?.stop(); sync.current = null;
+      if (sessionOpened) await rpc('end_child_session', { p_play_key: key }).catch(() => {});
+      if (turn !== generation.current) return;
       if (error.message === 'progress_conflict') setConflictChild(child);
       setMessage(messages[error.message] || error.message);
-    } finally { setBusy(false); }
+    } finally { if (turn === generation.current) setBusy(false); }
   }
   useEffect(() => {
     if (!activeChild || !user) return;
@@ -143,32 +179,48 @@ function HouseholdAccount({ AppComponent }) {
   }, [activeChild, user]);
 
   async function showParent() {
+    const turn = generation.current;
+    const channel = sync.current;
+    const key = playKey.current;
     setBusy(true);
     try {
-      await sync.current?.flush();
-      await rpc('end_child_session', { p_play_key: playKey.current });
-      sync.current?.stop(); sync.current = null; activeRef.current = null;
+      await channel?.flush();
+      if (turn !== generation.current) return;
+      await rpc('end_child_session', { p_play_key: key });
+      if (turn !== generation.current) return;
+      channel?.stop(); sync.current = null; activeRef.current = null;
       sessionStorage.removeItem(`oatle-selected-child:${user.id}`);
-      setActiveChild(null); setHousehold(await rpc('household_overview')); setMessage('');
-    } catch { setMessage('Your progress is still waiting to sync. Reconnect before changing children.'); }
-    finally { setBusy(false); }
+      setActiveChild(null);
+      const overview = await rpc('household_overview');
+      if (turn === generation.current) { setHousehold(overview); setMessage(''); }
+    } catch {
+      if (turn === generation.current) setMessage('Your progress is still waiting to sync. Reconnect before changing children.');
+    } finally { if (turn === generation.current) setBusy(false); }
   }
   async function beforeSignOut() {
-    await sync.current?.flush();
-    if (playKey.current) await rpc('end_child_session', { p_play_key: playKey.current });
+    await sync.current?.flush().catch(() => {});
+    if (playKey.current) await rpc('end_child_session', { p_play_key: playKey.current }).catch(() => {});
     sessionStorage.removeItem(`oatle-selected-child:${user.id}`);
   }
   async function createChild(event) {
+    const turn = generation.current;
     event.preventDefault(); setBusy(true); setMessage('');
     try {
       const result = await rpc('create_child_profile', { p_nickname: nickname.trim() });
+      if (turn !== generation.current) return;
       if (result.outcome !== 'created') throw new Error(messages[result.outcome] || 'Please enter a nickname.');
       const firstChild = household.profiles.length === 0;
-      setHousehold(await rpc('household_overview')); setNickname('');
+      const overview = await rpc('household_overview');
+      if (turn !== generation.current) return;
+      setHousehold(overview); setNickname('');
       await chooseChild(result.profile, user, firstChild && importOld);
-    } catch (error) { setMessage(error.message); }
-    finally { setBusy(false); }
+    } catch (error) { if (turn === generation.current) setMessage(error.message); }
+    finally { if (turn === generation.current) setBusy(false); }
   }
+  if (authConnectionIssue) return <main className="parent-account"><div className="parent-card">
+    <h1>Reconnect to restore your session</h1>
+    <button onClick={() => retryAuth.current?.()}>Retry connection</button>
+  </div></main>;
   if (!ready) return <main className="parent-account"><h1>Getting your family ready…</h1></main>;
   if (!user || !household) return <AppComponent onAccessChanged={() => window.dispatchEvent(new Event('oatle-access-changed'))} />;
   if (activeChild) return <><AppComponent key={activeChild.id} onParentAccount={showParent} onBeforeSignOut={beforeSignOut} profileNickname={activeChild.nickname} /><span className="parent-sync-status" role="status">{message || syncMessage}</span></>;
@@ -177,7 +229,7 @@ function HouseholdAccount({ AppComponent }) {
   try { canImport = !household.profiles?.length && (!localStorage.getItem('oatle-legacy-progress-owner') || localStorage.getItem('oatle-legacy-progress-owner') === user.id) && Object.keys(legacyProgressSnapshot()).length > 0; } catch { /* Optional import. */ }
   return <main className="parent-account"><div className="parent-card">
     <img src="/oatle-kids-wordmark.webp" alt="Oatle Kids" width="190" />
-    <h1>Who’s ready to explore?</h1>
+    <h1>{household.profiles?.length === 0 ? 'Set up your child’s profile' : 'Child profiles'}</h1>
     {limits && <p>{limits.plan_id === 'family' ? 'Family · R200/month' : limits.promo ? 'Promo · Single Child access' : 'Single Child · R120/month'}<br />{limits.profiles === 1 ? '1 child profile · 1 child playing at a time' : 'Up to 3 child profiles · 2 children playing at once'} · 2 registered devices</p>}
     <p className="parent-message" role="status">{message}</p>
     {conflictChild && <button disabled={busy} onClick={() => chooseChild(conflictChild, user, false, true)}>Keep local backup and load latest progress</button>}
