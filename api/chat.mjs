@@ -13,6 +13,15 @@ Subscriptions launch on 16 November 2026. Do not claim subscriptions are open be
 The marketing page has a Log in button linking to https://www.oatlekids.co.za/app.html. Parents can sign in there and continue into the game. Subscriptions open on 16 November 2026 with Single Child at R120/month and Family at R200/month. Before launch, say subscriptions open on 16 November; from launch day, say subscriptions are open. Do not describe private testing, reserved families, or approval-only access in marketing answers. For access issues, refer parents to support@oatlekids.co.za. Do not invent invitation codes or promise account access.
 This is supplemental practice with a parent, not a school or replacement for teaching. Contact: support@oatlekids.co.za. Website: https://www.oatlekids.co.za/ . Each chat question is answered independently. No previous messages are provided.`;
 
+const downloadQuestion = /^how (?:do|can) i (?:download|install|get) (?:the app|oatle kids)[?.!]*$/i;
+const downloadReply = `Oatle Kids isn’t listed in the App Store or Google Play yet. You can add it to your home screen and open it from its icon like your other apps.
+
+iPhone or iPad: Open https://www.oatlekids.co.za/ in Safari. Tap Share, then Add to Home Screen. If Open as Web App appears, turn it on, then tap Add.
+
+Android: Open the same website in Chrome. Tap the three-dot menu and choose Install app or Add to Home screen.
+
+More help: https://www.oatlekids.co.za/#install`;
+
 const recent = new Map();
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -30,6 +39,7 @@ export default async function handler(req, res) {
   const usage = recent.get(key) || {time:now,count:0};
   if (usage.count >= 10 || recent.size > 5000) { res.setHeader('Retry-After','60'); return res.status(429).json({error:'Please wait a minute before asking another question.'}); }
   usage.count++; recent.set(key,usage);
+  if (downloadQuestion.test(body.message.trim())) return res.status(200).json({reply: downloadReply});
   const token = process.env.CLOUDFLARE_API_TOKEN;
   const account = process.env.CLOUDFLARE_ACCOUNT_ID;
   if (!token || !/^[a-f0-9]{32}$/i.test(account || '')) return res.status(503).json({error:'Chat is unavailable. Please email support@oatlekids.co.za.'});
