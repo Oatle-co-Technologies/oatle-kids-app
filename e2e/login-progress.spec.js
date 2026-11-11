@@ -25,7 +25,8 @@ function household(plan = 'family') {
   const profiles = plan === 'family' ? children : children.slice(0, 1);
   const cloud = new Map(profiles.map(child => [child.id, { revision: 0, data: { 'oatle-age-group': 'big' } }]));
   const devices = new Set();
-  const state = { cloud, devices, refreshes: 0, saveUnavailable: false };
+  const leases = new Map();
+  const state = { cloud, devices, leases, refreshes: 0, saveUnavailable: false };
   state.install = async (context, { access = true, seed = true } = {}) => {
     if (seed) await context.addInitScript(({ session, tokenKey }) => {
       if (!localStorage.getItem(tokenKey) && !localStorage.getItem('test-seeded')) {
@@ -58,8 +59,14 @@ function household(plan = 'family') {
         devices.add(body.p_device_key);
         data = { outcome: 'registered' };
       } else if (endpoint === 'start_child_session') {
-        await state.beforeStart?.();
-        data = { outcome: 'started', ...cloud.get(body.p_child_id), lease_seconds: 90 };
+        await state.beforeStart?.(body);
+        const current = leases.get(body.p_device_key);
+        if (state.enforceDeviceLease && current && (current.playKey !== body.p_play_key || current.childId !== body.p_child_id)) {
+          data = { outcome: 'device_busy' };
+        } else {
+          leases.set(body.p_device_key, { playKey: body.p_play_key, childId: body.p_child_id });
+          data = { outcome: 'started', ...cloud.get(body.p_child_id), lease_seconds: 90 };
+        }
       } else if (endpoint === 'save_child_progress') {
         const { revision } = cloud.get(body.p_child_id);
         if (state.saveUnavailable) {
@@ -72,6 +79,7 @@ function household(plan = 'family') {
           data = { outcome: 'saved', revision: revision + 1 };
         }
       } else if (endpoint === 'end_child_session') {
+        for (const [device, lease] of leases) if (lease.playKey === body.p_play_key) leases.delete(device);
         data = { outcome: 'ended' };
       }
       await route.fulfill({ status, json: data });
@@ -125,6 +133,40 @@ test('a returning parent sees the welcome screen from first paint through child 
     loadApp();
     finishRestore();
   }
+});
+
+test('a reopened window reuses its device lease while an already open window keeps exclusive play', async ({ context, page }) => {
+  const server = household('single');
+  server.enforceDeviceLease = true;
+  await server.install(context);
+  await page.goto('/app.html');
+  await expect(page.getByRole('button', { name: /Reading Adventure/ })).toBeVisible();
+  const [deviceKey, originalLease] = [...server.leases][0];
+
+  const reopened = await context.newPage();
+  await reopened.goto('/app.html');
+  await expect(reopened.getByText(/Oatle Kids is open in another tab or window/)).toBeVisible();
+  await expect(reopened.getByRole('heading', { name: 'Child profiles' })).toHaveCount(0);
+  await page.close();
+
+  await expect(reopened.getByRole('button', { name: /Reading Adventure/ })).toBeVisible({ timeout: 10000 });
+  expect(server.leases.get(deviceKey)).toEqual(originalLease);
+  expect(server.devices.size).toBe(1);
+});
+
+test('an older device lease is retried automatically without opening the profile picker', async ({ context, page }) => {
+  const server = household('single');
+  server.enforceDeviceLease = true;
+  await server.install(context);
+  await context.addInitScript(() => localStorage.setItem('oatle-device-key', 'existing-device'));
+  server.leases.set('existing-device', { playKey: 'closed-window-key', childId: 'first' });
+
+  await page.goto('/app.html');
+  await expect(page.getByRole('heading', { name: 'Resuming Explorer’s activities' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Child profiles' })).toHaveCount(0);
+  server.leases.delete('existing-device');
+
+  await expect(page.getByRole('button', { name: /Reading Adventure/ })).toBeVisible({ timeout: 10000 });
 });
 
 test('a parent without an entitlement bypasses the login link after signing in, refreshing and restarting the browser', async ({ browser, baseURL }) => {
@@ -207,6 +249,7 @@ test('a session invalidated by Supabase returns to login', async ({ context, pag
 
 test('Family retains pending activity data across reload, separates siblings, and restores cloud data on a second registered device', async ({ browser, context, page }) => {
   const server = household();
+  server.enforceDeviceLease = true;
   await server.install(context);
   await page.goto('/app.html');
   await expect(page.getByRole('button', { name: 'Settings for Explorer' })).toBeVisible();
@@ -228,8 +271,23 @@ test('Family retains pending activity data across reload, separates siblings, an
   await page.reload();
   await expect(page.getByRole('button', { name: /Reading Adventure/ })).toBeVisible();
   expect(server.cloud.get('first').data).toMatchObject(saved);
-  await page.getByRole('button', { name: 'Settings for Explorer' }).click();
-  await page.getByRole('button', { name: 'Manage child profiles, plan and devices' }).click();
+  let startHeartbeat;
+  const heartbeatStarted = new Promise(resolve => { startHeartbeat = resolve; });
+  let finishHeartbeat;
+  const heartbeatResponse = new Promise(resolve => { finishHeartbeat = resolve; });
+  server.beforeStart = body => {
+    if (!body.p_heartbeat) return;
+    startHeartbeat();
+    return heartbeatResponse;
+  };
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  await heartbeatStarted;
+  try {
+    await page.getByRole('button', { name: 'Settings for Explorer' }).click();
+    await page.getByRole('button', { name: 'Manage child profiles, plan and devices' }).click();
+  } finally {
+    finishHeartbeat();
+  }
   await expect(page.getByRole('heading', { name: 'Child profiles' })).toBeVisible();
   await expect(page.getByText(/Family · R200/)).toBeVisible();
   await page.getByRole('button', { name: 'Back to Settings' }).click();

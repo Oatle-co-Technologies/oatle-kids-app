@@ -6,11 +6,13 @@ import { supabase } from '../lib/supabase';
 import { hasActiveEntitlement } from '../lib/accessPolicy';
 import { legacyProgressSnapshot } from '../lib/profileStorage';
 import { childProgressSync } from '../lib/childProgressSync';
+import { acquirePlayWindow } from '../lib/playWindow';
 import './ParentAccount.css';
 
 const messages = {
   device_limit: 'Two devices are already registered. Remove an old device below before adding this one.',
-  device_busy: 'This device already has a play session open. Close the other activity, then wait up to 90 seconds and try again.',
+  device_busy: 'This device is reconnecting to its previous play session. Please try again shortly.',
+  device_open_here: 'Oatle Kids is open in another tab or window on this device. Close it to continue here.',
   child_busy: 'This child is playing on another device. Finish there first, then try again.',
   play_limit: 'Your plan’s play limit has been reached. Finish on the other device before starting here.',
   profile_limit: 'Your plan does not include another child profile. Your existing profiles and progress are safe.',
@@ -31,6 +33,7 @@ function HouseholdAccount({ AppComponent }) {
   const [household, setHousehold] = useState(null);
   const [activeChild, setActiveChild] = useState(null);
   const [settingsChild, setSettingsChild] = useState(null);
+  const [resumeChild, setResumeChild] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [syncMessage, setSyncMessage] = useState('Progress saved');
@@ -42,7 +45,10 @@ function HouseholdAccount({ AppComponent }) {
   const sync = useRef(null);
   const activeRef = useRef(null);
   const playKey = useRef(null);
+  const releasePlayWindow = useRef(null);
   const leaseEnd = useRef(0);
+  const heartbeat = useRef(null);
+  const endingPlay = useRef(false);
   const generation = useRef(0);
 
   async function rpc(name, args = {}) {
@@ -66,7 +72,7 @@ function HouseholdAccount({ AppComponent }) {
       const remembered = localStorage.getItem(selectionKey) || sessionStorage.getItem(selectionKey);
       const eligible = overview.profiles.slice(0, overview.limits.profiles);
       const child = eligible.find(profile => profile.id === remembered) || eligible[0];
-      if (child) await chooseChild(child, currentUser);
+      if (child) await chooseChild(child, currentUser, { automatic: true });
     } catch (error) { if (turn === generation.current) { setMessage(error.message); setHousehold({ unavailable: true }); } }
     finally { if (turn === generation.current) setReady(true); }
   }
@@ -79,6 +85,9 @@ function HouseholdAccount({ AppComponent }) {
       identity = currentUser?.id || null;
       setAuthConnectionIssue(false);
       sync.current?.stop(); sync.current = null; activeRef.current = null; setActiveChild(null);
+      releasePlayWindow.current?.(); releasePlayWindow.current = null;
+      heartbeat.current = null; endingPlay.current = false;
+      setResumeChild(null);
       playKey.current = null; setBusy(false); setMessage(''); setConflictChild(null); setSettingsChild(null);
       setUser(currentUser); loadForEffect(currentUser);
     };
@@ -102,6 +111,7 @@ function HouseholdAccount({ AppComponent }) {
     retryAuth.current = retrySession;
     return () => {
       live = false; cancelAccountLoads(); subscription.unsubscribe(); sync.current?.stop();
+      releasePlayWindow.current?.(); releasePlayWindow.current = null;
       window.removeEventListener('online', retrySession);
       retryAuth.current = null;
     };
@@ -112,14 +122,27 @@ function HouseholdAccount({ AppComponent }) {
     return () => window.removeEventListener('oatle-access-changed', reload);
   }, [user]);
 
-  async function chooseChild(child, currentUser = user, { importing = false, useLatest = false, startInSettings = false } = {}) {
-    setBusy(true); setMessage(''); setConflictChild(null);
+  async function chooseChild(child, currentUser = user, { importing = false, useLatest = false, startInSettings = false, automatic = false } = {}) {
+    setBusy(true);
+    if (!automatic) setMessage('');
+    setConflictChild(null);
     const turn = generation.current;
     let sessionOpened = false;
-    let channel, key;
+    let channel, key, releaseWindow;
     try {
       const deviceKey = storedId(localStorage, 'oatle-device-key');
-      key = storedId(sessionStorage, `oatle-play-key:${currentUser.id}`);
+      const tabKey = `oatle-play-key:${currentUser.id}`;
+      const devicePlayKey = `oatle-device-play-key:${currentUser.id}:${deviceKey}`;
+      releaseWindow = await acquirePlayWindow(navigator.locks, devicePlayKey);
+      if (turn !== generation.current) return;
+      if (releaseWindow === null) throw new Error('device_open_here');
+      if (releaseWindow) {
+        const existingTabKey = sessionStorage.getItem(tabKey);
+        if (existingTabKey && !localStorage.getItem(devicePlayKey)) localStorage.setItem(devicePlayKey, existingTabKey);
+        key = storedId(localStorage, devicePlayKey);
+      } else {
+        key = storedId(sessionStorage, tabKey);
+      }
       const registered = await rpc('register_household_device', { p_device_key: deviceKey, p_label: deviceLabel });
       if (turn !== generation.current) return;
       if (registered.outcome !== 'registered') throw new Error(registered.outcome);
@@ -139,6 +162,9 @@ function HouseholdAccount({ AppComponent }) {
       await channel.flush();
       if (turn !== generation.current) return;
       localStorage.setItem(`oatle-selected-child:${currentUser.id}`, child.id);
+      releasePlayWindow.current = releaseWindow;
+      releaseWindow = undefined;
+      setResumeChild(null); setMessage('');
       activeRef.current = child;
       setActiveChild({ ...child, startInSettings });
       setSettingsChild(null);
@@ -147,34 +173,55 @@ function HouseholdAccount({ AppComponent }) {
       channel?.stop(); sync.current = null;
       if (sessionOpened) await rpc('end_child_session', { p_play_key: key }).catch(() => {});
       if (turn !== generation.current) return;
+      const waitingForDevice = error.message === 'device_busy' || error.message === 'device_open_here';
+      setResumeChild(automatic && waitingForDevice ? child : null);
       if (error.message === 'progress_conflict') setConflictChild(child);
       setMessage(messages[error.message] || error.message);
-    } finally { if (turn === generation.current) setBusy(false); }
+    } finally {
+      releaseWindow?.();
+      if (turn === generation.current) setBusy(false);
+    }
   }
+  const retryPlay = useEffectEvent(() => {
+    void chooseChild(resumeChild, user, { automatic: true });
+  });
+  useEffect(() => {
+    if (!resumeChild || busy) return;
+    const timer = setTimeout(() => retryPlay(), 4000);
+    return () => clearTimeout(timer);
+  }, [resumeChild, busy]);
+
   useEffect(() => {
     if (!activeChild || !user) return;
     let live = true, renewing = false;
-    const pause = text => {
+    const pause = (text, retry = false) => {
       if (!live) return;
       sync.current?.stop(); sync.current = null;
+      releasePlayWindow.current?.(); releasePlayWindow.current = null;
       activeRef.current = null; setActiveChild(null); setMessage(text);
+      if (retry) setResumeChild(activeChild);
     };
     const renew = async () => {
-      if (!live || renewing) return;
+      if (!live || renewing || endingPlay.current) return;
       renewing = true;
       try {
         await sync.current?.flush();
-        const session = await rpc('start_child_session', { p_device_key: localStorage.getItem('oatle-device-key'), p_child_id: activeChild.id, p_play_key: playKey.current, p_heartbeat: true });
-        if (!live) return;
+        if (!live || endingPlay.current) return;
+        const request = rpc('start_child_session', { p_device_key: localStorage.getItem('oatle-device-key'), p_child_id: activeChild.id, p_play_key: playKey.current, p_heartbeat: true });
+        heartbeat.current = request;
+        const session = await request.finally(() => {
+          if (heartbeat.current === request) heartbeat.current = null;
+        });
+        if (!live || endingPlay.current) return;
         if (session.outcome !== 'started') { pause(messages[session.outcome] || 'Your play session ended. Please choose a child again.'); return; }
         if (session.revision !== sync.current?.revision) { pause(messages.progress_conflict); return; }
         leaseEnd.current = Date.now() + session.lease_seconds * 1000;
       } catch {
-        if (Date.now() >= leaseEnd.current) pause('Reconnect to check your play session. Your progress is saved on this device.');
+        if (!endingPlay.current && Date.now() >= leaseEnd.current) pause('Reconnecting to your play session. Your progress is saved on this device.', true);
       } finally { renewing = false; }
     };
     const checkExpiry = setInterval(() => {
-      if (Date.now() >= leaseEnd.current) pause('Reconnect to check your play session. Your progress is saved on this device.');
+      if (!endingPlay.current && Date.now() >= leaseEnd.current) pause('Reconnecting to your play session. Your progress is saved on this device.', true);
     }, 1000);
     const timer = setInterval(() => { void renew(); }, 30000);
     const onOnline = () => { void renew(); };
@@ -183,16 +230,21 @@ function HouseholdAccount({ AppComponent }) {
   }, [activeChild, user]);
 
   async function showParent() {
+    if (endingPlay.current) return;
+    endingPlay.current = true;
     const turn = generation.current;
     const channel = sync.current;
     const key = playKey.current;
     setBusy(true);
     try {
+      await heartbeat.current?.catch(() => {});
+      if (turn !== generation.current) return;
       await channel?.flush();
       if (turn !== generation.current) return;
       await rpc('end_child_session', { p_play_key: key });
       if (turn !== generation.current) return;
       channel?.stop(); sync.current = null; activeRef.current = null;
+      releasePlayWindow.current?.(); releasePlayWindow.current = null;
       sessionStorage.removeItem(`oatle-selected-child:${user.id}`);
       setSettingsChild(activeChild);
       setActiveChild(null);
@@ -200,7 +252,12 @@ function HouseholdAccount({ AppComponent }) {
       if (turn === generation.current) { setHousehold(overview); setMessage(''); }
     } catch {
       if (turn === generation.current) setMessage('Your progress is still waiting to sync. Reconnect before changing children.');
-    } finally { if (turn === generation.current) setBusy(false); }
+    } finally {
+      if (turn === generation.current) {
+        endingPlay.current = false;
+        setBusy(false);
+      }
+    }
   }
   async function beforeSignOut() {
     await sync.current?.flush().catch(() => {});
@@ -228,6 +285,15 @@ function HouseholdAccount({ AppComponent }) {
   </div></main>;
   if (!ready) return <WelcomeScreen />;
   if (!user || !household) return <AppComponent sessionUser={user} onAccessChanged={() => window.dispatchEvent(new Event('oatle-access-changed'))} />;
+  if (resumeChild) return <main className="parent-account"><div className="parent-card">
+    <img src="/oatle-kids-wordmark.webp" alt="Oatle Kids" width="190" />
+    <h1>Resuming {resumeChild.nickname}’s activities</h1>
+    <p role="status">{message} The app will retry automatically.</p>
+    <button className="parent-secondary" type="button" disabled={busy} onClick={() => {
+      setResumeChild(null);
+      setMessage('');
+    }}>Manage child profiles</button>
+  </div></main>;
   if (activeChild) return <><AppComponent key={activeChild.id} sessionUser={user} onParentAccount={showParent} onBeforeSignOut={beforeSignOut} profileNickname={activeChild.nickname} startInSettings={activeChild.startInSettings} /><span className="parent-sync-status" role="status">{message || syncMessage}</span></>;
   const limits = household.limits;
   let canImport = false;
