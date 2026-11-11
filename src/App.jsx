@@ -1000,8 +1000,6 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
       ) || selectedWritingPlanet;
 
     const prompts = {
-      explore:
-        "Choose an adventure. Reading, counting, writing, arcade challenges, or storybooks.",
       map: "Choose a planet for your next reading mission.",
       planet: `Welcome to planet ${planet.name}. ${planet.description}.`,
       celebration: `Mission accomplished! You completed your mission on ${planet.name}.`,
@@ -1996,16 +1994,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
           LET'S EXPLORE
         </p>
 
-        <h1>
-          Choose an <em>Adventure</em>
-        </h1>
-
-        <p className="page-intro">
-          Pick an adventure and
-          let's go!
-        </p>
-
-        <AdventureWorlds onAdventure={(id) => {
+        <AdventureWorlds soundOn={soundOn} onAdventure={(id) => {
           stopSpeech();
           const nextScreen = adventureEntryScreen(id);
           if (nextScreen) setScreen(nextScreen);

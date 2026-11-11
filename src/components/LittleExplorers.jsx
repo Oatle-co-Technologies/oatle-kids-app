@@ -676,7 +676,6 @@ export default function LittleExplorers({
     if (!soundOn) return undefined;
 
     const prompts = {
-      adventures: "Choose your little space adventure.",
       map: `${activeAdventure.title}. Choose a planet.`,
       planet: `Welcome to planet ${activePlanet.name} in the ${activeAdventure.title}. ${activePlanet.description}`,
       celebration: `Mission accomplished! You completed the ${activePlanet.missionTitle} mission on planet ${activePlanet.name}.`,
@@ -1758,7 +1757,7 @@ export default function LittleExplorers({
   }
 
   if (screen === "adventures") {
-    return <LittleAdventureHomes onBack={onBack} backLabel={backLabel} items={[
+    return <LittleAdventureHomes onBack={onBack} backLabel={backLabel} soundOn={soundOn} items={[
       ...LITTLE_ADVENTURES.map(adventure => {
         const completeCount = adventure.planets.filter(planet => isPlanetComplete(planet, adventure)).length;
         return { id: adventure.id, title: adventure.title,
