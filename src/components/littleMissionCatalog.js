@@ -30,7 +30,7 @@ export const EXTRA_ADVENTURES = [
     ],
   },
   {
-    id: 'music', title: 'Music & Movement',
+    id: 'music', title: 'Music Adventure',
     description: 'Play instruments, dance, listen and sing karaoke.',
     missions: [
       { key: 'play', mode: 'play', missionTitle: 'My Little Band', description: 'Choose an instrument below, then tap it to play. Play as long as you like, then tap Done.' },

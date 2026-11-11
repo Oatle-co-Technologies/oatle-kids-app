@@ -32,7 +32,7 @@ function Blueprint({ build, className = '' }) {
   </div>;
 }
 export function SpaceBuilderEntry({ onClick }) {
-  return <button className="cosmic-entry" type="button" onClick={onClick}><img src={mercury} alt="" /><span><small>SPACE CHALLENGE ARCADE</small><strong>Space Builder</strong><span>Build freely or follow a mission.</span></span><b aria-hidden="true">→</b></button>;
+  return <button className="cosmic-entry" type="button" onClick={onClick}><img src={mercury} alt="" /><span><small>SPACE CHALLENGE ARCADE</small><strong>Building Adventure</strong><span>Build freely or follow a mission.</span></span><b aria-hidden="true">→</b></button>;
 }
 export default function SpaceBuilder({ onBack, soundOn = true }) {
   const [screen, setScreen] = useState('missions');
@@ -51,7 +51,7 @@ export default function SpaceBuilder({ onBack, soundOn = true }) {
   }, [screen]);
   useEffect(() => {
     if (screen === 'studio') { stopSpeech(); return undefined; }
-    const prompt = screen === 'missions' ? 'Space Builder. Choose a construction mission.' : screen === 'briefing' ? `${build.title}. ${build.brief}` : screen === 'play' ? 'Copy the blueprint. Choose a part, rotate it if needed, then tap a square. You can drag parts too.' : `Mission accomplished! ${build.success}`;
+    const prompt = screen === 'missions' ? 'Building Adventure. Choose a construction mission.' : screen === 'briefing' ? `${build.title}. ${build.brief}` : screen === 'play' ? 'Copy the blueprint. Choose a part, rotate it if needed, then tap a square. You can drag parts too.' : `Mission accomplished! ${build.success}`;
     const audio = screen === 'complete' && soundOn ? new Audio(victory) : null;
     if (audio) { audio.volume = .55; void audio.play().catch(() => {}); }
     const timer = soundOn ? window.setTimeout(() => speak(prompt), audio ? 7800 : 220) : null;
@@ -106,10 +106,10 @@ export default function SpaceBuilder({ onBack, soundOn = true }) {
     }
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   }
-  if (screen === 'studio') return <FreeBuildStudio soundOn={soundOn} backLabel="Back to Space Builder" onBack={() => go('missions')} />;
+  if (screen === 'studio') return <FreeBuildStudio soundOn={soundOn} backLabel="Back to Building Adventure" onBack={() => go('missions')} />;
 
   return <main className={`cosmic-page sb-page sb-screen-${screen}`}><div className="cosmic-shell">
-    <header className="cosmic-header"><LocalBackButton label={screen === 'missions' ? 'Explore' : 'Missions'} onClick={() => screen === 'missions' ? onBack() : go('missions')} /><p className="eyebrow">SPACE CHALLENGE ARCADE / CONSTRUCTION CREW</p><h1>{screen === 'missions' ? 'Space Builder' : screen === 'complete' ? 'Mission accomplished!' : build.title}</h1><p>{screen === 'missions' ? 'From launch pad to lunar outpost. Your next build starts here.' : screen === 'complete' ? build.success : build.location}</p></header>
+    <header className="cosmic-header"><LocalBackButton label={screen === 'missions' ? 'Explore' : 'Missions'} onClick={() => screen === 'missions' ? onBack() : go('missions')} /><p className="eyebrow">SPACE CHALLENGE ARCADE / CONSTRUCTION CREW</p><h1>{screen === 'missions' ? 'Building Adventure' : screen === 'complete' ? 'Mission accomplished!' : build.title}</h1><p>{screen === 'missions' ? 'From launch pad to lunar outpost. Your next build starts here.' : screen === 'complete' ? build.success : build.location}</p></header>
     {screen === 'missions' && <ResponsivePlanetJourney label="Construction missions and free play" items={[
       ...SPACE_BUILDS.map((item, i) => ({
         id: item.id, title: item.title, subtitle: item.location, image: PLANETS[i],

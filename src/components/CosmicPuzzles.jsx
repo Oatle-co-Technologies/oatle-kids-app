@@ -37,7 +37,7 @@ function PuzzlePicture({ image, tile = null, columns = 5, rows = 4 }) {
 
 export function CosmicPuzzleEntry({ onClick }) {
   return <button type="button" className="cosmic-entry" onClick={onClick}>
-    <img src={saturnImage} alt="" /><span><small>SPACE CHALLENGE ARCADE</small><strong>Cosmic Puzzles</strong><span>Rebuild the picture. Complete the mission.</span></span><b aria-hidden="true">→</b>
+    <img src={saturnImage} alt="" /><span><small>SPACE CHALLENGE ARCADE</small><strong>Puzzle Adventure</strong><span>Rebuild the picture. Complete the mission.</span></span><b aria-hidden="true">→</b>
   </button>;
 }
 
@@ -68,7 +68,7 @@ export default function CosmicPuzzles({ onBack, soundOn = true }) {
 
   useEffect(() => {
     if (!soundOn) { stopSpeech(); return undefined; }
-    const prompt = screen === 'missions' ? 'Cosmic Puzzles. Choose your space mission.'
+    const prompt = screen === 'missions' ? 'Puzzle Adventure. Choose your space mission.'
       : screen === 'briefing' ? `${mission.title}. ${mission.brief} Choose ten, twelve, sixteen or twenty pieces, then launch your mission.`
         : screen === 'play' ? `Restore the picture of ${mission.subject}. Drag one piece onto another, or tap two pieces to swap them.`
           : `Mission accomplished! ${mission.success}`;
@@ -146,7 +146,7 @@ export default function CosmicPuzzles({ onBack, soundOn = true }) {
       <header className="cosmic-header">
         <LocalBackButton label={screen === 'missions' ? 'Explore' : 'Missions'} onClick={() => screen === 'missions' ? onBack() : navigate('missions')} />
         <p className="eyebrow">SPACE CHALLENGE ARCADE</p>
-        <h1>{screen === 'missions' ? 'Cosmic Puzzles' : screen === 'complete' ? 'Mission accomplished!' : mission.title}</h1>
+        <h1>{screen === 'missions' ? 'Puzzle Adventure' : screen === 'complete' ? 'Mission accomplished!' : mission.title}</h1>
         <p>{screen === 'missions' ? 'A scrambled transmission. A sharp-eyed explorer. Your next mission awaits.' : screen === 'complete' ? mission.success : mission.location}</p>
       </header>
 
