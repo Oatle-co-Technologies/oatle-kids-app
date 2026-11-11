@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import SpaceJourney from './SpaceJourney';
+import AdventureIntro from './AdventureIntro';
 import LocalBackButton from './LocalBackButton';
 import './AdventureWorlds.css';
 import './LittleAdventureHomes.css';
@@ -12,7 +13,7 @@ function subscribe(callback) {
   return () => media.removeEventListener('change', callback);
 }
 const compactSnapshot = () => window.matchMedia(query).matches;
-export default function LittleAdventureHomes({ items, onBack, backLabel }) {
+export default function LittleAdventureHomes({ items, onBack, backLabel, soundOn }) {
   const compact = useSyncExternalStore(subscribe, compactSnapshot, () => true);
   const { points, height } = littleHomeLayout(items.length, compact);
   return <main className="page adventure-hub expedition-hub big-kids-galaxy little-home-galaxy">
@@ -21,8 +22,7 @@ export default function LittleAdventureHomes({ items, onBack, backLabel }) {
       <LocalBackButton label={backLabel} onClick={onBack} />
     </header>
     <p className="eyebrow">LITTLE EXPLORERS · AGES 2–3</p>
-    <h1>Choose an <em>Adventure</em></h1>
-    <p className="page-intro">Tap a little world. Let’s play and discover!</p>
+    <AdventureIntro items={items} soundOn={soundOn} />
     <div className="galaxy-environment">
       <div className="galaxy-orbit" aria-hidden="true" />
       <SpaceJourney className="galaxy-journey little-home-journey" positions={points} stageHeight={height}

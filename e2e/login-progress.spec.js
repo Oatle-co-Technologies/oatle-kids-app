@@ -171,6 +171,47 @@ test('a signed-in parent reclaims an older same-device lease on the first attemp
   expect(server.leases.get('existing-device').playKey).not.toBe('closed-window-key');
 });
 
+for (const [ageGroup, region] of [
+  ['big', 'Big Kids floating adventure homes'],
+  ['little', 'Little Explorers adventure destinations'],
+]) {
+  test(`${ageGroup} kids narration reads every visible adventure title in order`, async ({ context, page }) => {
+    const server = household('single');
+    server.cloud.get('first').data['oatle-age-group'] = ageGroup;
+    await server.install(context);
+    await page.addInitScript(() => {
+      window.spokenAdventurePrompts = [];
+      Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+        value: class {
+          constructor(text) { this.text = text; }
+        },
+      });
+      Object.defineProperty(window, 'speechSynthesis', {
+        value: {
+          getVoices: () => [],
+          addEventListener: () => {},
+          cancel: () => {},
+          resume: () => {},
+          speak: utterance => {
+            window.spokenAdventurePrompts.push(utterance.text);
+            queueMicrotask(() => utterance.onstart?.());
+          },
+        },
+      });
+    });
+
+    await page.goto('/app.html');
+    const destinations = page.getByRole('region', { name: region });
+    await expect(destinations).toBeVisible();
+    const titles = await destinations.getByRole('button').locator('strong').allTextContents();
+    expect(titles).toEqual(expect.arrayContaining(['Storybook Adventure', 'Feelings Adventure']));
+    if (ageGroup === 'big') expect(titles).toContain('Music Adventure');
+    const invitation = await page.locator('.adventure-hub .page-intro').textContent();
+    const expected = `Choose an adventure. ${titles.join('. ')}. ${invitation}`;
+    await expect.poll(() => page.evaluate(() => window.spokenAdventurePrompts)).toContain(expected);
+  });
+}
+
 test('a parent without an entitlement bypasses the login link after signing in, refreshing and restarting the browser', async ({ browser, baseURL }) => {
   const server = household();
   const browserType = browser.browserType();
