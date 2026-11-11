@@ -51,6 +51,7 @@ import ShapeTracingMission from "./components/ShapeTracingMission";
 import SentenceWritingMission from "./components/SentenceWritingMission";
 import { migrateWritingProgress } from "./data/wordWriting";
 import LocalBackButton from "./components/LocalBackButton";
+import WelcomeScreen from "./components/WelcomeScreen";
 import LittleExplorers from "./components/LittleExplorers";
 import CosmicPuzzles from "./components/CosmicPuzzles";
 import ReadingBalloonBreak from "./components/ReadingBalloonBreak";
@@ -571,13 +572,17 @@ function PlanetVisual({
   );
 }
 
-function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone, profileNickname = '', startInSettings = false } = {}) {
+function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone, profileNickname = '', startInSettings = false, sessionUser } = {}) {
   const [passwordRecovery, setPasswordRecovery] = useState(() =>
     new URLSearchParams(window.location.search).get("reset") === "1" ||
     new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery"
   );
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  // The household has already resolved the session. Only password recovery
+  // runs before that gate and needs its own auth subscription.
+  const [recoveryUser, setRecoveryUser] = useState(null);
+  const [recoveryAuthLoading, setRecoveryAuthLoading] = useState(true);
+  const user = sessionUser === undefined ? recoveryUser : sessionUser;
+  const authLoading = sessionUser === undefined && recoveryAuthLoading;
 
   // Authentication and product access are separate.
   const [accessLoading, setAccessLoading] = useState(true);
@@ -678,6 +683,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
   }, [screen]);
 
   useEffect(() => {
+    if (sessionUser !== undefined) return;
     let mounted = true;
 
     const {
@@ -687,13 +693,13 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
         if (!mounted) return;
 
         if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
-        setUser(session?.user ?? null);
+        setRecoveryUser(session?.user ?? null);
 
         if (event === "SIGNED_OUT") {
           setAccessGrant(null);
         }
 
-        setAuthLoading(false);
+        setRecoveryAuthLoading(false);
       }
     );
 
@@ -701,7 +707,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [sessionUser]);
 
   useEffect(() => {
     let mounted = true;
@@ -1847,28 +1853,8 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
 
   let content;
 
-  if (authLoading) {
-    content = (
-      <main className="login-page">
-        <div className="login-card">
-          <div className="login-logo">
-            <img className="login-logo-image" src="/icons/oatle-kids-192.png" alt="Oatle Kids" width="78" height="78" loading="eager" fetchPriority="high" />
-          </div>
-
-          <p className="eyebrow">
-            OATLE KIDS
-          </p>
-
-          <h1>
-            Launching...
-          </h1>
-
-          <p className="login-intro">
-            Getting your space adventure ready.
-          </p>
-        </div>
-      </main>
-    );
+  if (authLoading || (user && accessLoading && !passwordRecovery)) {
+    content = <WelcomeScreen />;
   } else if (passwordRecovery) {
     content = <PasswordRecovery user={user} onDone={() => {
       const url = new URL(window.location.href);
@@ -1881,33 +1867,12 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
   } else if (!user) {
     content = (
       <LoginPage
-        onLogin={(loggedInUser) => {
+        onLogin={() => {
           const url = new URL(window.location.href);
           url.searchParams.delete('auth');
           window.history.replaceState(null, '', url.pathname + url.search + url.hash);
-          setAccessGrant(null);
-          setAccessLoading(true);
-          setUser(loggedInUser);
         }}
       />
-    );
-  } else if (accessLoading) {
-    content = (
-      <main className="login-page">
-        <div className="login-card">
-          <p className="eyebrow">
-            OATLE KIDS
-          </p>
-
-          <h1>
-            Checking access...
-          </h1>
-
-          <p className="login-intro">
-            Getting your space adventure ready.
-          </p>
-        </div>
-      </main>
     );
   } else if (!hasAccess) {
     content = (

@@ -1,5 +1,6 @@
 import { isAuthRetryableFetchError } from '@supabase/supabase-js';
 import EmailPreferences from './EmailPreferences';
+import WelcomeScreen from './WelcomeScreen';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { hasActiveEntitlement } from '../lib/accessPolicy';
@@ -225,9 +226,9 @@ function HouseholdAccount({ AppComponent }) {
     <h1>Reconnect to restore your session</h1>
     <button onClick={() => retryAuth.current?.()}>Retry connection</button>
   </div></main>;
-  if (!ready) return <main className="parent-account"><h1>Getting your family ready…</h1></main>;
-  if (!user || !household) return <AppComponent onAccessChanged={() => window.dispatchEvent(new Event('oatle-access-changed'))} />;
-  if (activeChild) return <><AppComponent key={activeChild.id} onParentAccount={showParent} onBeforeSignOut={beforeSignOut} profileNickname={activeChild.nickname} startInSettings={activeChild.startInSettings} /><span className="parent-sync-status" role="status">{message || syncMessage}</span></>;
+  if (!ready) return <WelcomeScreen />;
+  if (!user || !household) return <AppComponent sessionUser={user} onAccessChanged={() => window.dispatchEvent(new Event('oatle-access-changed'))} />;
+  if (activeChild) return <><AppComponent key={activeChild.id} sessionUser={user} onParentAccount={showParent} onBeforeSignOut={beforeSignOut} profileNickname={activeChild.nickname} startInSettings={activeChild.startInSettings} /><span className="parent-sync-status" role="status">{message || syncMessage}</span></>;
   const limits = household.limits;
   let canImport = false;
   try { canImport = !household.profiles?.length && (!localStorage.getItem('oatle-legacy-progress-owner') || localStorage.getItem('oatle-legacy-progress-owner') === user.id) && Object.keys(legacyProgressSnapshot()).length > 0; } catch { /* Optional import. */ }
