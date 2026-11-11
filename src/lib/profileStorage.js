@@ -12,13 +12,21 @@ export const PROGRESS_KEYS = [
 ];
 let prefix = '';
 let onChange = null;
+let selection = null;
 export function selectProgressCache(userId, childId, changed) {
-  prefix = `oatle-profile:${userId}:${childId}:`;
+  const scope = `oatle-profile:${userId}:${childId}:`;
+  const cache = {
+    snapshot: () => progressSnapshot(scope),
+    clear: () => { if (selection === cache) clearProgressCacheSelection(); },
+  };
+  selection = cache;
+  prefix = scope;
   onChange = changed || null;
+  return cache;
 }
-export function clearProgressCacheSelection() { prefix = ''; onChange = null; }
-export function progressSnapshot() {
-  return Object.fromEntries(PROGRESS_KEYS.map(key => [key, localStorage.getItem(prefix + key)]).filter(([,value]) => value !== null));
+export function clearProgressCacheSelection() { prefix = ''; onChange = null; selection = null; }
+export function progressSnapshot(scope = prefix) {
+  return Object.fromEntries(PROGRESS_KEYS.map(key => [key, localStorage.getItem(scope + key)]).filter(([,value]) => value !== null));
 }
 export function replaceProgressCache(data) {
   for (const key of PROGRESS_KEYS) {

@@ -473,6 +473,7 @@ function AppNav({
   onExplore,
   onSettings,
   activeScreen,
+  childName,
 }) {
   const items = [
     {
@@ -511,7 +512,8 @@ function AppNav({
     {
       label: "Settings",
       action: onSettings,
-      icon: <SettingsIcon />,
+      icon: childName ? <span className="child-avatar" aria-hidden="true">{Array.from(childName)[0].toLocaleUpperCase()}</span> : <SettingsIcon />,
+      childName,
       active: activeScreen === "settings",
     },
   ];
@@ -529,7 +531,7 @@ function AppNav({
           }`}
           onClick={item.action}
           type="button"
-          aria-label={item.label}
+          aria-label={item.childName ? `Settings for ${item.childName}` : item.label}
           aria-current={
             item.active ? "page" : undefined
           }
@@ -539,6 +541,7 @@ function AppNav({
           </span>
 
           <span className="bottom-nav-label">
+            {item.childName && <><span className="bottom-nav-child-name">{item.childName}</span><span aria-hidden="true"> · </span></>}
             {item.label}
           </span>
         </button>
@@ -581,7 +584,6 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
   const [accessGrant, setAccessGrant] = useState(null);
   const hasAccess = hasActiveEntitlement(accessGrant, user?.id);
 
-  const [authEntry, setAuthEntry] = useState(() => ['login', 'signup'].includes(new URLSearchParams(window.location.search).get('auth')));
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutMessage, setCheckoutMessage] = useState(() => {
     const payment = new URLSearchParams(window.location.search).get('payment');
@@ -677,13 +679,6 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-
-      setUser(data.session?.user ?? null);
-      setAuthLoading(false);
-    });
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
@@ -695,9 +690,6 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
 
         if (event === "SIGNED_OUT") {
           setAccessGrant(null);
-          // Learning progress stays in this child’s cache after signing out.
-          setAgeGroup(null);
-          setScreen("explore");
         }
 
         setAuthLoading(false);
@@ -721,12 +713,13 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
         return;
       }
       try {
-        const { data, error } = await supabase.from("entitlements")
+        const { data, error, status } = await supabase.from("entitlements")
           .select("user_id, status, expires_at").eq("user_id", userId).maybeSingle();
         if (!mounted || request !== requestSequence) return;
-        setAccessGrant(error ? null : data);
+        if (!error) setAccessGrant(data);
+        else if (status > 0 && status < 500 && status !== 408 && status !== 429) setAccessGrant(null);
       } catch {
-        if (mounted && request === requestSequence) setAccessGrant(null);
+        // Keep the last verified grant during a connection failure. Its expiry still applies.
       } finally {
         if (mounted && request === requestSequence) setAccessLoading(false);
       }
@@ -1884,20 +1877,16 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
       setPasswordRecovery(false);
       onRecoveryDone?.();
     }} />;
-  } else if (!user || authEntry) {
+  } else if (!user) {
     content = (
       <LoginPage
         onLogin={(loggedInUser) => {
-          setAuthEntry(false);
           const url = new URL(window.location.href);
           url.searchParams.delete('auth');
           window.history.replaceState(null, '', url.pathname + url.search + url.hash);
           setAccessGrant(null);
           setAccessLoading(true);
           setUser(loggedInUser);
-          learningStorage.removeItem("oatle-age-group");
-          setAgeGroup(null);
-          setScreen("ageSelect");
         }}
       />
     );
@@ -2020,10 +2009,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
             className="secondary-button"
             onClick={async () => {
               await onBeforeSignOut?.();
-            await supabase.auth.signOut({ scope: 'local' });
-              setUser(null);
-              setAccessGrant(null);
-              setAgeGroup(null);
+              await supabase.auth.signOut({ scope: 'local' });
             }}
             type="button"
           >
@@ -3350,7 +3336,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
           </button>
         </label>
 
-        {onParentAccount && <button className="primary-button" type="button" onClick={onParentAccount}>Children, plan and devices</button>}
+        {onParentAccount && <button className="primary-button" type="button" onClick={onParentAccount}>Manage child profiles, plan and devices</button>}
 
         <button
           className="danger-button"
@@ -3381,11 +3367,6 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
           onClick={async () => {
             await onBeforeSignOut?.();
             await supabase.auth.signOut({ scope: 'local' });
-            setUser(null);
-            setAccessGrant(null);
-            learningStorage.removeItem("oatle-age-group");
-            setAgeGroup(null);
-            setScreen("explore");
           }}
           type="button"
         >
@@ -3411,6 +3392,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
             }
             onSettings={() => openSettings()}
             activeScreen={screen}
+            childName={childProfile.name.trim() || profileNickname}
           />
         )}
     </div>

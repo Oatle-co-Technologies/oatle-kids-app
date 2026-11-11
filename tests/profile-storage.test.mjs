@@ -22,3 +22,39 @@ test('cloud sync uses revisions, keeps pending edits over refresh, and rejects s
  sync=childProgressSync(client,'u','c','p');assert.throws(()=>sync.hydrate({revision:remote.revision+1,data:{'atli-space-progress':'newer'}}),/progress_conflict/);
  sync.hydrate({revision:remote.revision+1,data:{'atli-space-progress':'newer'}},{useLatest:true});assert.equal(learningStorage.getItem('atli-space-progress'),'newer');assert(localStorage.getItem('oatle-progress-meta:u:c:backup').includes('pending'));sync.stop();
 });
+
+test('a stopped sync cannot clear a new child selection or mark its own pending save clean', async () => {
+ globalThis.localStorage = memory();
+ let finish;
+ const client = { rpc: () => new Promise(resolve => { finish = resolve; }) };
+ const first = childProgressSync(client, 'parent', 'first', 'play');
+ first.hydrate({ revision: 0, data: {} });
+ learningStorage.setItem('atli-space-progress', 'first draft');
+ const saving = first.flush();
+ first.stop();
+ const second = childProgressSync(client, 'parent', 'second', 'play');
+ second.hydrate({ revision: 0, data: { 'atli-space-progress': 'second draft' } });
+ first.stop();
+ finish({ data: { outcome: 'saved', revision: 1 } });
+ await saving;
+ assert.equal(learningStorage.getItem('atli-space-progress'), 'second draft');
+ assert.deepEqual(JSON.parse(localStorage.getItem('oatle-progress-meta:parent:first')), { revision: 0, dirty: true });
+ second.stop();
+});
+
+test('retrying first-time legacy import preserves newer local edits before the first cloud save', async () => {
+ globalThis.localStorage = memory();
+ const remote = { revision: 0, data: {} };
+ const importData = { 'atli-space-progress': 'legacy' };
+ const client = { rpc: async () => ({ error: new Error('offline') }) };
+ const first = childProgressSync(client, 'parent', 'child', 'play');
+ first.hydrate(remote, { importData });
+ assert.equal(learningStorage.getItem('atli-space-progress'), 'legacy');
+ learningStorage.setItem('atli-space-progress', 'newer progress');
+ await assert.rejects(first.flush());
+ first.stop();
+ const retry = childProgressSync(client, 'parent', 'child', 'play');
+ retry.hydrate(remote, { importData });
+ assert.equal(learningStorage.getItem('atli-space-progress'), 'newer progress');
+ retry.stop();
+});
