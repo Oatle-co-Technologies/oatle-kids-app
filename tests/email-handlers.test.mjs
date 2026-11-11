@@ -38,6 +38,15 @@ test('unsubscribe GET is scanner-safe; POST hashes token and changes only market
  assert.equal((await unsubscribeHandler(new Request(url,{method:'POST'}))).status,200);
  assert.equal(calls[0][0],'unsubscribe_email');assert.notEqual(calls[0][1].p_hash,'a'.repeat(64));
  assert.equal((await unsubscribeHandler(new Request('https://example.invalid?token=bad',{method:'POST'}))).status,400);
+ const submit = origin => unsubscribeHandler(new Request('https://example.invalid', {
+  method:'POST', headers:{Origin:origin}, body:new URLSearchParams({token:'a'.repeat(64)}),
+ }));
+ const browser = await submit('https://www.oatlekids.co.za');
+ assert.equal(browser.status,200);
+ assert.equal(browser.headers.get('Access-Control-Allow-Origin'),'https://www.oatlekids.co.za');
+ assert.deepEqual(calls[0],calls[1]);
+ assert.equal((await submit('https://other.example')).status,400);
+ assert.equal(calls.length,2);
 });
 test('worker sends educational report despite marketing opt-out and suppresses ineligible reminder',async()=>{
  env={EMAIL_WORKER_SECRET:'test-worker',EMAIL_DELIVERY_ENABLED:'true',EMAIL_FROM:'test@example.invalid',EMAIL_TOKEN_SECRET:'test-token-secret',RESEND_API_KEY:'fake-key',SUPABASE_URL:'https://example.invalid'};

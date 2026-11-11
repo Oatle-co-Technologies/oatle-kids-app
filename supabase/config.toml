@@ -20,5 +20,12 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.email-unsubscribe]
-# Public signed-token access awaits approval; keep delivery disabled meanwhile.
-verify_jwt = true
+# The signed unsubscribe token authenticates the request.
+verify_jwt = false
+
+[functions.subscription-email]
+# The scheduled worker authenticates with its dedicated private secret.
+verify_jwt = false
+
+[functions.marketing-reminder]
+verify_jwt = false
