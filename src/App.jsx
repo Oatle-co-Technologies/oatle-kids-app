@@ -571,7 +571,7 @@ function PlanetVisual({
   );
 }
 
-function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone, profileNickname = '' } = {}) {
+function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone, profileNickname = '', startInSettings = false } = {}) {
   const [passwordRecovery, setPasswordRecovery] = useState(() =>
     new URLSearchParams(window.location.search).get("reset") === "1" ||
     new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery"
@@ -607,6 +607,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
 
   // Ask once, then open the saved age group's adventures on later visits.
   const [screen, setScreen] = useState(() => {
+    if (startInSettings) return 'settings';
     const group = savedAgeGroup();
     const fallback = group === 'little' ? 'littleExplorers' : group === 'big' ? 'explore' : 'ageSelect';
     return group === 'big' ? resumeScreen(readSavedActivity('oatle-app-location', {}),

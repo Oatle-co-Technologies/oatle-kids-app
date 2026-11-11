@@ -29,6 +29,7 @@ function HouseholdAccount({ AppComponent }) {
   const [authConnectionIssue, setAuthConnectionIssue] = useState(false);
   const [household, setHousehold] = useState(null);
   const [activeChild, setActiveChild] = useState(null);
+  const [settingsChild, setSettingsChild] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [syncMessage, setSyncMessage] = useState('Progress saved');
@@ -64,7 +65,7 @@ function HouseholdAccount({ AppComponent }) {
       const remembered = localStorage.getItem(selectionKey) || sessionStorage.getItem(selectionKey);
       const eligible = overview.profiles.slice(0, overview.limits.profiles);
       const child = eligible.find(profile => profile.id === remembered) || eligible[0];
-      if (child) await chooseChild(child, currentUser, false, false);
+      if (child) await chooseChild(child, currentUser);
     } catch (error) { if (turn === generation.current) { setMessage(error.message); setHousehold({ unavailable: true }); } }
     finally { if (turn === generation.current) setReady(true); }
   }
@@ -77,7 +78,7 @@ function HouseholdAccount({ AppComponent }) {
       identity = currentUser?.id || null;
       setAuthConnectionIssue(false);
       sync.current?.stop(); sync.current = null; activeRef.current = null; setActiveChild(null);
-      playKey.current = null; setBusy(false); setMessage(''); setConflictChild(null);
+      playKey.current = null; setBusy(false); setMessage(''); setConflictChild(null); setSettingsChild(null);
       setUser(currentUser); loadForEffect(currentUser);
     };
     const retrySession = async () => {
@@ -110,7 +111,7 @@ function HouseholdAccount({ AppComponent }) {
     return () => window.removeEventListener('oatle-access-changed', reload);
   }, [user]);
 
-  async function chooseChild(child, currentUser = user, importing = false, useLatest = false) {
+  async function chooseChild(child, currentUser = user, { importing = false, useLatest = false, startInSettings = false } = {}) {
     setBusy(true); setMessage(''); setConflictChild(null);
     const turn = generation.current;
     let sessionOpened = false;
@@ -137,7 +138,9 @@ function HouseholdAccount({ AppComponent }) {
       await channel.flush();
       if (turn !== generation.current) return;
       localStorage.setItem(`oatle-selected-child:${currentUser.id}`, child.id);
-      activeRef.current = child; setActiveChild(child);
+      activeRef.current = child;
+      setActiveChild({ ...child, startInSettings });
+      setSettingsChild(null);
     } catch (error) {
       if (turn !== generation.current) return;
       channel?.stop(); sync.current = null;
@@ -190,6 +193,7 @@ function HouseholdAccount({ AppComponent }) {
       if (turn !== generation.current) return;
       channel?.stop(); sync.current = null; activeRef.current = null;
       sessionStorage.removeItem(`oatle-selected-child:${user.id}`);
+      setSettingsChild(activeChild);
       setActiveChild(null);
       const overview = await rpc('household_overview');
       if (turn === generation.current) { setHousehold(overview); setMessage(''); }
@@ -213,7 +217,7 @@ function HouseholdAccount({ AppComponent }) {
       const overview = await rpc('household_overview');
       if (turn !== generation.current) return;
       setHousehold(overview); setNickname('');
-      await chooseChild(result.profile, user, firstChild && importOld);
+      await chooseChild(result.profile, user, { importing: firstChild && importOld });
     } catch (error) { if (turn === generation.current) setMessage(error.message); }
     finally { if (turn === generation.current) setBusy(false); }
   }
@@ -223,16 +227,21 @@ function HouseholdAccount({ AppComponent }) {
   </div></main>;
   if (!ready) return <main className="parent-account"><h1>Getting your family ready…</h1></main>;
   if (!user || !household) return <AppComponent onAccessChanged={() => window.dispatchEvent(new Event('oatle-access-changed'))} />;
-  if (activeChild) return <><AppComponent key={activeChild.id} onParentAccount={showParent} onBeforeSignOut={beforeSignOut} profileNickname={activeChild.nickname} /><span className="parent-sync-status" role="status">{message || syncMessage}</span></>;
+  if (activeChild) return <><AppComponent key={activeChild.id} onParentAccount={showParent} onBeforeSignOut={beforeSignOut} profileNickname={activeChild.nickname} startInSettings={activeChild.startInSettings} /><span className="parent-sync-status" role="status">{message || syncMessage}</span></>;
   const limits = household.limits;
   let canImport = false;
   try { canImport = !household.profiles?.length && (!localStorage.getItem('oatle-legacy-progress-owner') || localStorage.getItem('oatle-legacy-progress-owner') === user.id) && Object.keys(legacyProgressSnapshot()).length > 0; } catch { /* Optional import. */ }
   return <main className="parent-account"><div className="parent-card">
+    {settingsChild && <div className="parent-back">
+      <button className="parent-secondary" type="button" disabled={busy} onClick={() => chooseChild(settingsChild, user, { startInSettings: true })}>
+        <span aria-hidden="true">← </span>Back to Settings
+      </button>
+    </div>}
     <img src="/oatle-kids-wordmark.webp" alt="Oatle Kids" width="190" />
     <h1>{household.profiles?.length === 0 ? 'Set up your child’s profile' : 'Child profiles'}</h1>
     {limits && <p>{limits.plan_id === 'family' ? 'Family · R200/month' : limits.promo ? 'Promo · Single Child access' : 'Single Child · R120/month'}<br />{limits.profiles === 1 ? '1 child profile · 1 child playing at a time' : 'Up to 3 child profiles · 2 children playing at once'} · 2 registered devices</p>}
     <p className="parent-message" role="status">{message}</p>
-    {conflictChild && <button disabled={busy} onClick={() => chooseChild(conflictChild, user, false, true)}>Keep local backup and load latest progress</button>}
+    {conflictChild && <button disabled={busy} onClick={() => chooseChild(conflictChild, user, { useLatest: true })}>Keep local backup and load latest progress</button>}
     {household.unavailable ? <button onClick={() => loadAccount(user)}>Retry connection</button> : <>
       <EmailPreferences />
       <div className="parent-children">{household.profiles.map((child, index) => <button key={child.id} disabled={busy || index >= limits.profiles} onClick={() => chooseChild(child)}><span aria-hidden="true">★</span>{child.nickname}{index >= limits.profiles && <small>Saved · Family plan needed</small>}</button>)}</div>
