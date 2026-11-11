@@ -146,7 +146,8 @@ function HouseholdAccount({ AppComponent }) {
       const registered = await rpc('register_household_device', { p_device_key: deviceKey, p_label: deviceLabel });
       if (turn !== generation.current) return;
       if (registered.outcome !== 'registered') throw new Error(registered.outcome);
-      const session = await rpc('start_child_session', { p_device_key: deviceKey, p_child_id: child.id, p_play_key: key });
+      const endpoint = releaseWindow ? 'resume_child_session' : 'start_child_session';
+      const session = await rpc(endpoint, { p_device_key: deviceKey, p_child_id: child.id, p_play_key: key });
       if (turn !== generation.current) return;
       if (session.outcome !== 'started') throw new Error(session.outcome);
       sessionOpened = true;
