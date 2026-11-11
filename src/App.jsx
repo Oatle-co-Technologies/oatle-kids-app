@@ -1004,7 +1004,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
       planet: `Welcome to planet ${planet.name}. ${planet.description}.`,
       celebration: `Mission accomplished! You completed your mission on ${planet.name}.`,
       writingMap:
-        "Choose a writing planet, or open the Scribbler to draw freely.",
+        "Writing Adventure. Choose a writing planet, or open the Scribbler to draw freely.",
       writingPlanet: `Welcome to planet ${selectedWritingPlanet.name}. ${selectedWritingPlanet.description}.`,
       writingCelebration: `Mission accomplished! You completed your writing mission on ${completedWritingPlanet.name}.`,
       scribbler:
@@ -2031,8 +2031,8 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
       />
     );
   } else if (screen === "writingMap") {
-    content = <BigKidsPlanetJourney title="Writing and Arts" label="Writing planet journey"
-      description="Complete each planet to unlock the next writing and arts planet."
+    content = <BigKidsPlanetJourney title="Writing Adventure" label="Writing planet journey"
+      description="Complete each planet to unlock the next writing planet."
       notice={profileReminder("writingMap")}
       currentId={writingActivePlanet} onBack={() => setScreen("explore")}
       childName={childProfile.name} onProfile={() => openSettings()}

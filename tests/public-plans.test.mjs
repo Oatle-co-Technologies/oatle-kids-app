@@ -14,5 +14,5 @@ test('public prices match checkout and both plans have distinct visible cards',(
 test('the assistant receives the current plan limits, promo restriction, sync rules and activity facts',()=>{
  assert(context.includes(PUBLIC_PLAN_FACTS));assert(context.includes(PUBLIC_ACTIVITY_FACTS));
  for(const fact of ['1 child profile','2 registered devices','up to 3 child profiles','2 children playing at once','Single Child limits only','90 seconds','Existing recurring amounts are not changed automatically'])assert(context.includes(fact),fact);
- assert(context.includes('Writing and Arts'));assert(context.includes('unlimited offline'));
+ assert(context.includes('Writing Adventure'));assert(context.includes('unlimited offline'));
 });

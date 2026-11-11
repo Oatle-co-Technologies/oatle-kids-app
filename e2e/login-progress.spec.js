@@ -204,8 +204,11 @@ for (const [ageGroup, region] of [
     const destinations = page.getByRole('region', { name: region });
     await expect(destinations).toBeVisible();
     const titles = await destinations.getByRole('button').locator('strong').allTextContents();
-    expect(titles).toEqual(expect.arrayContaining(['Storybook Adventure', 'Feelings Adventure']));
-    if (ageGroup === 'big') expect(titles).toContain('Music Adventure');
+    expect(titles).toEqual(expect.arrayContaining([
+      'Storybook Adventure', 'Feelings Adventure', 'Music Adventure', 'Puzzle Adventure', 'Building Adventure',
+    ]));
+    for (const title of titles) expect(title).toMatch(/ Adventure$/);
+    if (ageGroup === 'big') expect(titles).toContain('Writing Adventure');
     const invitation = await page.locator('.adventure-hub .page-intro').textContent();
     const expected = `Choose an adventure. ${titles.join('. ')}. ${invitation}`;
     await expect.poll(() => page.evaluate(() => window.spokenAdventurePrompts)).toContain(expected);
@@ -363,7 +366,7 @@ test('Family retains pending activity data across reload, separates siblings, an
       const { learningStorage } = await import('/src/lib/profileStorage.js');
       return Object.fromEntries(keys.map(key => [key, learningStorage.getItem(key)]));
     }, Object.keys(saved))).toEqual(saved);
-    await secondPage.getByRole('button', { name: /Writing and Arts/i }).click();
+    await secondPage.getByRole('button', { name: /Writing Adventure/i }).click();
     await secondPage.getByRole('button', { name: /Coloring Book/i }).click();
     await expect(secondPage.getByRole('heading', { name: 'Space adventure' })).toBeVisible();
     await expect(secondPage.getByRole('button', { name: 'Colour background' })).toHaveAttribute('fill', '#fca5a5');

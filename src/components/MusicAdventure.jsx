@@ -14,7 +14,7 @@ const ACTIVITIES = [
   { id:'karaoke', title:'Karaoke Mission', kind:'xylophone' },
 ];
 const INSTRUCTIONS = {
-  menu:'Choose a music adventure.',
+  menu:'Music Adventure. Choose an activity.',
   play:'Choose an instrument below. Tap to play, or slide across the keys. Tap Done when you are finished.',
   copy:'Tap the listening flower. Listen to four sounds. Then play the same instrument four times.',
   karaoke:'Choose a song. Tap play. After four gentle beats, follow the glowing words and sing along.',
@@ -118,8 +118,8 @@ function MusicGarden({ onBack, soundOn=true, mission, onComplete }) {
   if(activity==='play') return <MusicStudio onStart={quietIntro} soundOn={soundOn} onBack={back} onComplete={mission?onComplete:undefined} />;
   if(activity==='karaoke') return <KaraokeMission onBack={back} onComplete={onComplete} soundOn={soundOn} onStart={quietIntro} />;
   return <main className={`music-garden ${activity==='menu'?'music-garden-menu':'music-garden-immersive'} garden-mode-${activity}`}>
-    <button type="button" className="garden-back garden-control" aria-label={mission?'Back to Music & Movement map':'Back to music activities'} onClick={back}><span aria-hidden="true">←</span></button>
-    <h1 className={activity==='menu'?'':'garden-sr-only'}>{ACTIVITIES.find(a=>a.id===activity)?.title || 'Music & Movement'}</h1>
+    <button type="button" className="garden-back garden-control" aria-label={mission?'Back to Music Adventure map':'Back to music activities'} onClick={back}><span aria-hidden="true">←</span></button>
+    <h1 className={activity==='menu'?'':'garden-sr-only'}>{ACTIVITIES.find(a=>a.id===activity)?.title || 'Music Adventure'}</h1>
     {activity==='menu' ? <div className="garden-activity-choices">{ACTIVITIES.map(item=><button type="button" key={item.id} onClick={()=>{reset();setRound(0);setActivity(item.id);}}><InstrumentArt kind={item.kind} /><strong>{item.title}</strong></button>)}</div> : <>
       {!soundOn && <span className="garden-muted" role="img" aria-label="Sound is off. Ask a grown-up to turn sound on in Settings.">♪̸</span>}
       {activity==='copy' && <>

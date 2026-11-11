@@ -74,7 +74,7 @@ export default function KaraokeMission({ onBack, onComplete, soundOn = true, onS
   }
   return <main className="music-garden music-garden-immersive karaoke-garden">
     <header className="karaoke-toolbar">
-      <button type="button" className="garden-control" aria-label="Back to Music & Movement map" onClick={() => { stop(); onBack(); }}>←</button>
+      <button type="button" className="garden-control" aria-label="Back to Music Adventure map" onClick={() => { stop(); onBack(); }}>←</button>
       <h1>Karaoke Mission</h1>
       {onComplete && <button type="button" className="garden-control" aria-label="Finish karaoke" disabled={!heard.length} onClick={() => { stop(); onComplete(); }}>✓</button>}
     </header>
