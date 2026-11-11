@@ -28,7 +28,7 @@ def start(u,s,key,c,play=None):
 class HouseholdTests(unittest.TestCase):
  @classmethod
  def setUpClass(cls):
-  for file in ['supabase/tests/household-fixture.sql','supabase/migrations/202610270001_atomic_promo_redemption.sql','supabase/migrations/20261105180000_live_payfast_itn.sql','supabase/migrations/20261110090000_household_plans.sql']:
+  for file in ['supabase/tests/household-fixture.sql','supabase/migrations/202610270001_atomic_promo_redemption.sql','supabase/migrations/20261105180000_live_payfast_itn.sql','supabase/migrations/20261110090000_household_plans.sql','supabase/migrations/20261111200000_resume_same_device_session.sql']:
    sql((ROOT/file).read_text())
  def test_promo_is_single_even_when_family_is_requested(self):
   u,s=account('family');limits=call(u,s,'household_limits');self.assertEqual((limits['profiles'],limits['playing'],limits['devices']),(1,1,2))
@@ -48,6 +48,25 @@ class HouseholdTests(unittest.TestCase):
   self.assertEqual(start(u,s,k,c,play)[1]['outcome'],'started')
   call(u,s,'remove_household_device',f"'{d['device_id']}'")
   self.assertEqual(start(u,s,k,c,play)[1]['outcome'],'device_required');self.assertEqual(start(u,s,k2,c)[1]['outcome'],'started')
+ def test_same_device_resume_reclaims_only_the_same_auth_session_and_child(self):
+  u,s=account('family','subscription')
+  other_session=ident()
+  sql(f"insert into auth.sessions values('{other_session}','{u}')")
+  a=child(u,s,'A')['profile']['id'];b=child(u,s,'B')['profile']['id']
+  key,_=device(u,s);other_device,_=device(u,s)
+  old,_=start(u,s,key,a);new=ident()
+  payload=json.dumps({'atli-space-progress':'saved'})
+  saved=call(u,s,'save_child_progress',f"'{a}','{old}',0,'{payload}'")
+  self.assertEqual(saved['outcome'],'saved')
+  self.assertEqual(call(u,other_session,'resume_child_session',f"'{key}','{a}','{new}'")['outcome'],'device_busy')
+  self.assertEqual(call(u,s,'resume_child_session',f"'{key}','{b}','{new}'")['outcome'],'device_busy')
+  self.assertEqual(call(u,s,'resume_child_session',f"'{other_device}','{a}','{new}'")['outcome'],'child_busy')
+  resumed=call(u,s,'resume_child_session',f"'{key}','{a}','{new}'")
+  self.assertEqual((resumed['outcome'],resumed['revision'],resumed['data']),('started',1,{'atli-space-progress':'saved'}))
+  self.assertEqual(call(u,s,'save_child_progress',f"'{a}','{old}',1,'{{}}'")['outcome'],'session_required')
+  self.assertEqual(call(u,s,'start_child_session',f"'{key}','{a}','{old}',true")['outcome'],'device_busy')
+  call(u,s,'end_child_session',f"'{old}'")
+  self.assertEqual(call(u,s,'save_child_progress',f"'{a}','{new}',1,'{{}}'")['outcome'],'saved')
  def test_family_two_children_play_and_progress_stays_separate(self):
   u,s=account('family','subscription');a=child(u,s,'A')['profile']['id'];b=child(u,s,'B')['profile']['id'];k,_=device(u,s);k2,_=device(u,s)
   play,r=start(u,s,k,a);self.assertEqual(r['outcome'],'started');self.assertEqual(start(u,s,k2,b)[1]['outcome'],'started')

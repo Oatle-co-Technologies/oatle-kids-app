@@ -58,10 +58,11 @@ function household(plan = 'family') {
       } else if (endpoint === 'register_household_device') {
         devices.add(body.p_device_key);
         data = { outcome: 'registered' };
-      } else if (endpoint === 'start_child_session') {
+      } else if (endpoint === 'start_child_session' || endpoint === 'resume_child_session') {
         await state.beforeStart?.(body);
         const current = leases.get(body.p_device_key);
-        if (state.enforceDeviceLease && current && (current.playKey !== body.p_play_key || current.childId !== body.p_child_id)) {
+        const canResume = endpoint === 'resume_child_session' && current?.childId === body.p_child_id;
+        if (state.enforceDeviceLease && current && !canResume && (current.playKey !== body.p_play_key || current.childId !== body.p_child_id)) {
           data = { outcome: 'device_busy' };
         } else {
           leases.set(body.p_device_key, { playKey: body.p_play_key, childId: body.p_child_id });
@@ -154,19 +155,20 @@ test('a reopened window reuses its device lease while an already open window kee
   expect(server.devices.size).toBe(1);
 });
 
-test('an older device lease is retried automatically without opening the profile picker', async ({ context, page }) => {
+test('a signed-in parent reclaims an older same-device lease on the first attempt', async ({ context, page }) => {
   const server = household('single');
   server.enforceDeviceLease = true;
   await server.install(context);
   await context.addInitScript(() => localStorage.setItem('oatle-device-key', 'existing-device'));
   server.leases.set('existing-device', { playKey: 'closed-window-key', childId: 'first' });
+  let startAttempts = 0;
+  server.beforeStart = () => { startAttempts++; };
 
   await page.goto('/app.html');
-  await expect(page.getByRole('heading', { name: 'Resuming Explorer’s activities' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Reading Adventure/ })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Child profiles' })).toHaveCount(0);
-  server.leases.delete('existing-device');
-
-  await expect(page.getByRole('button', { name: /Reading Adventure/ })).toBeVisible({ timeout: 10000 });
+  expect(startAttempts).toBe(1);
+  expect(server.leases.get('existing-device').playKey).not.toBe('closed-window-key');
 });
 
 test('a parent without an entitlement bypasses the login link after signing in, refreshing and restarting the browser', async ({ browser, baseURL }) => {

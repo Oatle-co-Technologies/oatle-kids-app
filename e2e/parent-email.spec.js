@@ -15,7 +15,7 @@ async function mock(page,authenticated=false,access=false) {
    const body=request.postDataJSON();calls.push({rpc:url.pathname,body});
    if(url.pathname.endsWith('/household_overview')) data={limits:{plan_id:'family',profiles:3,devices:2,playing:2},profiles:[{id:'test-child',nickname:'Explorer'}],devices:[]};
    else if(url.pathname.endsWith('/register_household_device')) data={outcome:'registered'};
-   else if(url.pathname.endsWith('/start_child_session')) data={outcome:'started',...progress,lease_seconds:90};
+   else if(url.pathname.endsWith('/start_child_session') || url.pathname.endsWith('/resume_child_session')) data={outcome:'started',...progress,lease_seconds:90};
    else if(url.pathname.endsWith('/save_child_progress')) {progress={revision:progress.revision+1,data:body.p_data};data={outcome:'saved',revision:progress.revision};}
    else data={outcome:'ended'};
   }
