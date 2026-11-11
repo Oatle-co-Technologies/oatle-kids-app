@@ -37,12 +37,25 @@
       content="Oatle Kids"
     />
 
-    <title>Log in to Oatle Kids</title>
+    <title>Oatle Kids</title>
+    <link rel="stylesheet" href="/src/startup.css" />
     <meta name="robots" content="noindex, follow" />
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main class="startup-screen" aria-labelledby="startup-title">
+        <div class="startup-content">
+          <img src="/oatle-kids-wordmark.webp" alt="" width="200" fetchpriority="high" />
+          <h1 id="startup-title">Welcome to Oatle Kids</h1>
+          <p>A universe of learning opportunities</p>
+          <p class="startup-status" role="status">
+            <span class="startup-orbit" aria-hidden="true"></span>
+            Your multiverse is loading…
+          </p>
+        </div>
+      </main>
+    </div>
 
     <script type="module" src="/src/main.jsx"></script>
   </body>

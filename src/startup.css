@@ -1,0 +1,70 @@
+.startup-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  overflow: auto;
+  padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  background:
+    radial-gradient(ellipse at 50% 28%, #293565 0%, transparent 66%),
+    #080d28;
+  color: #fff8e9;
+  font-family: Nunito, Arial, sans-serif;
+  text-align: center;
+}
+
+.startup-content {
+  width: min(100%, 38rem);
+}
+
+.startup-content img {
+  display: block;
+  max-width: 65%;
+  height: auto;
+  margin: 0 auto 1.6rem;
+}
+
+.startup-content h1 {
+  margin: 0;
+  color: inherit;
+  font-size: clamp(1.8rem, 7vw, 3rem);
+  line-height: 1.15;
+}
+
+.startup-content p {
+  margin: 0.65rem 0 0;
+  color: #d7def8;
+  font-size: clamp(1rem, 3.5vw, 1.2rem);
+  line-height: 1.45;
+}
+
+.startup-content .startup-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: 1.6rem;
+  color: #ffe198;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.startup-orbit {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #ffe19844;
+  border-top-color: #ffe198;
+  border-radius: 50%;
+  animation: startup-orbit 1s linear infinite;
+}
+
+@keyframes startup-orbit {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .startup-orbit { animation: none; }
+}

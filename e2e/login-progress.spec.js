@@ -58,6 +58,7 @@ function household(plan = 'family') {
         devices.add(body.p_device_key);
         data = { outcome: 'registered' };
       } else if (endpoint === 'start_child_session') {
+        await state.beforeStart?.();
         data = { outcome: 'started', ...cloud.get(body.p_child_id), lease_seconds: 90 };
       } else if (endpoint === 'save_child_progress') {
         const { revision } = cloud.get(body.p_child_id);
@@ -79,6 +80,52 @@ function household(plan = 'family') {
   };
   return state;
 }
+
+test('a returning parent sees the welcome screen from first paint through child session restore', async ({ context, page }) => {
+  const server = household('single');
+  await server.install(context);
+  let loadApp;
+  const appModule = new Promise(resolve => { loadApp = resolve; });
+  let finishRestore;
+  const childSession = new Promise(resolve => { finishRestore = resolve; });
+  let restoreStarted;
+  const restoring = new Promise(resolve => { restoreStarted = resolve; });
+  server.beforeStart = () => {
+    restoreStarted();
+    return childSession;
+  };
+
+  await page.route('**/src/main.jsx', async route => {
+    await appModule;
+    await route.continue();
+  });
+  await page.addInitScript(() => {
+    window.loginScreenAppeared = false;
+    new MutationObserver(() => {
+      if (document.querySelector('.login-card input[type="password"]')) window.loginScreenAppeared = true;
+    }).observe(document, { childList: true, subtree: true });
+  });
+
+  try {
+    await page.goto('/app.html?auth=login', { waitUntil: 'commit' });
+    const welcome = page.getByRole('heading', { name: 'Welcome to Oatle Kids' });
+    await expect(welcome).toBeVisible();
+    await expect(page.getByText('Your multiverse is loading…')).toBeVisible();
+    loadApp();
+
+    await restoring;
+    await expect(welcome).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Email', exact: true })).toHaveCount(0);
+    finishRestore();
+
+    await expect(page.getByRole('button', { name: /Reading Adventure/ })).toBeVisible();
+    await expect(welcome).toHaveCount(0);
+    expect(await page.evaluate(() => window.loginScreenAppeared)).toBe(false);
+  } finally {
+    loadApp();
+    finishRestore();
+  }
+});
 
 test('a parent without an entitlement bypasses the login link after signing in, refreshing and restarting the browser', async ({ browser, baseURL }) => {
   const server = household();
