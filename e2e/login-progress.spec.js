@@ -185,6 +185,10 @@ test('Family retains pending activity data across reload, separates siblings, an
   await page.getByRole('button', { name: 'Manage child profiles, plan and devices' }).click();
   await expect(page.getByRole('heading', { name: 'Child profiles' })).toBeVisible();
   await expect(page.getByText(/Family · R200/)).toBeVisible();
+  await page.getByRole('button', { name: 'Back to Settings' }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Settings for Explorer' })).toBeVisible();
+  await page.getByRole('button', { name: 'Manage child profiles, plan and devices' }).click();
   await page.getByRole('button', { name: 'Navigator' }).click();
   const navigatorSettings = page.getByRole('button', { name: 'Settings for Navigator' });
   await expect(navigatorSettings).toBeVisible();
