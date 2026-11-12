@@ -38,8 +38,6 @@ body.marketing::before { content: ""; position: fixed; inset: 0; pointer-events:
 .marketing .skip { background: #111a42; color: white; }
 .marketing :focus-visible { outline-color: #8fe7ff; }
 
-.marketing .founder-signature { margin-block: 24px; color: #ffdb64; font-size: 20px; font-weight: 800; }
-.marketing .founder-signature span { font-size: 13px; font-weight: 600; color: #c7d2f6; }
 .founder-section{padding:96px 0;background:linear-gradient(135deg,#111a42dd,#271644dd);border-block:1px solid #8fe7ff33}.founder-story{max-width:900px;text-align:center}.founder-story h2{max-width:760px;margin-inline:auto}.founder-copy{columns:2;column-gap:60px;text-align:left;margin-top:38px}.founder-copy p{break-inside:avoid;color:#c7d2f6}.founder-story .text-link{display:inline-block;margin-top:4px}
 .app-showcase{padding:100px 0;overflow:hidden}.app-showcase-grid{display:grid;grid-template-columns:.85fr 1.15fr;align-items:center;gap:70px}.app-showcase-copy>p:not(.eyebrow){max-width:500px;color:#c7d2f6}.store-badges{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}.store-badge{display:flex;align-items:center;gap:10px;border:1px solid #8fe7ff55;border-radius:13px;background:#111a42;padding:10px 15px;color:white;font-weight:800;line-height:1.1}.store-badge svg{width:28px;height:28px;fill:#f8fbff}.store-badge small{display:block;font-size:8px;letter-spacing:.7px;color:#8fe7ff;margin-bottom:3px}.phone-stage{position:relative;aspect-ratio:1.23;width:100%;max-width:680px;margin-inline:auto}
 .phone{position:absolute;padding:clamp(4px,1vw,10px);border-radius:clamp(14px,2.3vw,40px);background:#080b18;border:2px solid #536397;box-shadow:0 30px 80px #0008}
