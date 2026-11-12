@@ -386,6 +386,13 @@ export default function AlphabetTracingMission({
   /* ==================     NEXT LETTER
      ========================= */
 
+  const handlePrevious = () => {
+    if (letterIndex === 0) return;
+    const previous = letterIndex - 1;
+    setLetterIndex(previous);
+    onProgress?.(previous);
+  };
+
   function handleNext() {
     /*
      * Last letter: Z
@@ -399,11 +406,9 @@ export default function AlphabetTracingMission({
     /*
      * Move to the next letter.
      */
-    setLetterIndex((current) => {
-      const next = current + 1;
-      onProgress?.(next);
-      return next;
-    });
+    const next = letterIndex + 1;
+    setLetterIndex(next);
+    onProgress?.(next);
 
     /*
      * The canvas is cleared automatically when
@@ -498,6 +503,16 @@ export default function AlphabetTracingMission({
 
             {/* ==================                NEXT BUTTON
                ========================= */}
+
+            <button
+              type="button"
+              className="alphabet-next-button alphabet-previous-button"
+              onClick={handlePrevious}
+              disabled={letterIndex === 0}
+              aria-label="Previous letter"
+            >
+              ←
+            </button>
 
             <button
               type="button"

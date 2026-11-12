@@ -688,6 +688,14 @@ export default function SentenceWritingMission({
     setProgress(0);
   };
 
+  const handlePrevious = () => {
+    if (sentenceIndex === 0) return;
+    clearWritingCanvas();
+    const previous = sentenceIndex - 1;
+    setSentenceIndex(previous);
+    onProgress?.(previous);
+  };
+
   const handleNext = () => {
     if (!hasDrawingRef.current) return;
 
@@ -771,6 +779,15 @@ export default function SentenceWritingMission({
         className="scribbler-toolbar sentence-writing-toolbar"
         aria-label="Writing tools"
       >
+        <button
+          type="button"
+          className="sentence-next-button"
+          onClick={handlePrevious}
+          disabled={sentenceIndex === 0}
+          aria-label={isWordMission ? "Previous word" : "Previous sentence"}
+        >
+          ←
+        </button>
         <button
           type="button"
           className="sentence-next-button"

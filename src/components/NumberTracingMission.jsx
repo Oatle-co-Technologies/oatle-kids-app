@@ -340,17 +340,22 @@ export default function NumberTracingMission({
     }
   };
 
+  const handlePrevious = () => {
+    if (numberIndex === 0) return;
+    const previous = numberIndex - 1;
+    setNumberIndex(previous);
+    onProgress?.(previous);
+  };
+
   const handleNext = () => {
     if (numberIndex === NUMBERS.length - 1) {
       onComplete?.();
       return;
     }
 
-    setNumberIndex((current) => {
-      const next = current + 1;
-      onProgress?.(next);
-      return next;
-    });
+    const next = numberIndex + 1;
+    setNumberIndex(next);
+    onProgress?.(next);
   };
 
   return (
@@ -407,6 +412,16 @@ export default function NumberTracingMission({
               onPointerCancel={stopDrawing}
               onPointerLeave={stopDrawing}
             />
+
+            <button
+              type="button"
+              className="alphabet-next-button alphabet-previous-button"
+              onClick={handlePrevious}
+              disabled={numberIndex === 0}
+              aria-label="Previous number"
+            >
+              ←
+            </button>
 
             <button
               type="button"

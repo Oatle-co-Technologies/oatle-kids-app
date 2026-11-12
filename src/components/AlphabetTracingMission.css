@@ -626,3 +626,20 @@ body {
   display: block;
   overflow: visible;
 }
+
+.alphabet-next-button.alphabet-previous-button {
+  left: 18px;
+  right: auto;
+}
+
+.alphabet-previous-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 600px) {
+  .alphabet-next-button.alphabet-previous-button {
+    left: 9px;
+  }
+}

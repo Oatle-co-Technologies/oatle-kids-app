@@ -350,17 +350,22 @@ export default function ShapeTracingMission({
     }
   };
 
+  const handlePrevious = () => {
+    if (shapeIndex === 0) return;
+    const previous = shapeIndex - 1;
+    setShapeIndex(previous);
+    onProgress?.(previous);
+  };
+
   const handleNext = () => {
     if (shapeIndex === SHAPES.length - 1) {
       onComplete?.();
       return;
     }
 
-    setShapeIndex((current) => {
-      const next = current + 1;
-      onProgress?.(next);
-      return next;
-    });
+    const next = shapeIndex + 1;
+    setShapeIndex(next);
+    onProgress?.(next);
   };
 
   return (
@@ -418,6 +423,16 @@ export default function ShapeTracingMission({
               onPointerLeave={stopDrawing}
               onContextMenu={(event) => event.preventDefault()}
             />
+
+            <button
+              type="button"
+              className="alphabet-next-button alphabet-previous-button"
+              onClick={handlePrevious}
+              disabled={shapeIndex === 0}
+              aria-label="Previous shape"
+            >
+              ←
+            </button>
 
             <button
               type="button"
