@@ -150,10 +150,9 @@ html { scroll-padding-top: calc(var(--marketing-nav-height) + env(safe-area-inse
 
 .marketing .pricing-intro {
   padding: clamp(28px, 5vw, 60px) clamp(18px, 4vw, 44px);
-  border: 1px solid #ffdb6480;
   border-radius: 28px;
   background: radial-gradient(ellipse at top, #54406b, #171b46 75%);
-  box-shadow: 0 16px 54px #080b28a0, inset 0 1px #ffedb452;
+  box-shadow: 0 16px 54px #080b28a0;
 }
 
 .marketing .pricing-intro h2 {
