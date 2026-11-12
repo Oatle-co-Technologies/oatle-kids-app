@@ -307,7 +307,7 @@ function HouseholdAccount({ AppComponent }) {
     </div>}
     <img src="/oatle-kids-wordmark.webp" alt="Oatle Kids" width="190" />
     <h1>{household.profiles?.length === 0 ? 'Set up your child’s profile' : 'Child profiles'}</h1>
-    {limits && <p>{limits.plan_id === 'family' ? 'Family · R200/month' : limits.promo ? 'Promo · Single Child access' : 'Single Child · R120/month'}<br />{limits.profiles === 1 ? '1 child profile · 1 child playing at a time' : 'Up to 3 child profiles · 2 children playing at once'} · 2 registered devices</p>}
+    {limits && <p>{limits.plan_id === 'family' ? 'Family · R200/month' : limits.promo ? 'Promo · Single Child access' : 'Single Child · R120/month'}<br />{limits.profiles === 1 ? '1 child profile · 1 child playing at a time' : `Up to ${limits.profiles} child profiles · 2 children playing at once`} · 2 registered devices</p>}
     <p className="parent-message" role="status">{message}</p>
     {conflictChild && <button disabled={busy} onClick={() => chooseChild(conflictChild, user, { useLatest: true })}>Keep local backup and load latest progress</button>}
     {household.unavailable ? <button onClick={() => loadAccount(user)}>Retry connection</button> : <>
