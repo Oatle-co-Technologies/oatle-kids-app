@@ -1891,7 +1891,7 @@ function App({ onParentAccount, onBeforeSignOut, onAccessChanged, onRecoveryDone
           <div className="subscription-options" aria-label="Subscription plans">
             {Object.values(SUBSCRIPTION_PLANS).map(plan => <section key={plan.id} className="subscription-option">
               <h2>{plan.name} · R{plan.price}/month</h2>
-              <p>{plan.profiles === 1 ? '1 child profile · 1 child playing at a time' : 'Up to 3 child profiles · 2 children playing at once'}<br />2 registered devices · Separate saved progress for each child</p>
+              <p>{plan.profiles === 1 ? '1 child profile · 1 child playing at a time' : `Up to ${plan.profiles} child profiles · 2 children playing at once`}<br />2 registered devices · Separate saved progress for each child</p>
               <button className="primary-button" disabled={!checkoutFunction || checkoutLoading} onClick={() => startSubscription(plan.id)} type="button">
                 {checkoutLoading ? 'Opening secure checkout…' : `Choose ${plan.name} — R${plan.price}/month`}
               </button>

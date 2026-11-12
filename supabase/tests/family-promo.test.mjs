@@ -39,6 +39,31 @@ test('Family invitations grant household limits securely while old promos remain
   assert.equal((await scalar("select create_child_profile('Four')")).outcome,'profile_limit');
   await assert.rejects(db.query("update promo_codes set plan_id='family' where code='OLD-SINGLE'"));
   await db.exec('reset role');
+  const existingFamily = randomUUID();
+  const newFamily = randomUUID();
+  for (const id of [existingFamily, newFamily]) {
+    await db.query('insert into auth.users(id) values($1)', [id]);
+    const subscription = await scalar(
+      "insert into subscriptions(user_id,provider,status,amount_cents,currency,frequency,plan_id,current_period_end) values($1,'payfast','active',20000,'ZAR','monthly','family',now()+interval '1 month') returning id",
+      [id]
+    );
+    await db.query("insert into entitlements(user_id,access_type,status,subscription_id) values($1,'subscription','active',$2)", [id, subscription]);
+  }
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)", [existingFamily]);
+  for (const name of ['One', 'Two', 'Three']) {
+    assert.equal((await scalar('select create_child_profile($1)', [name])).outcome, 'created');
+  }
+  await db.exec(await read('../migrations/202611120003_family_launch_profile_limit.sql'));
+  assert.equal((await scalar('select household_limits()')).profiles, 3);
+  assert.equal((await scalar('select household_overview()')).profiles.length, 3);
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)", [newFamily]);
+  assert.deepEqual(await scalar('select household_limits()'), {plan_id:'family', profiles:2, devices:2, playing:2, promo:false});
+  for (const name of ['One', 'Two']) {
+    assert.equal((await scalar('select create_child_profile($1)', [name])).outcome, 'created');
+  }
+  assert.equal((await scalar("select create_child_profile('Three')")).outcome, 'profile_limit');
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)", [owner]);
+  assert.equal((await scalar('select household_limits()')).profiles, 3);
   // Upgrading a redeemed invitation preserves the original expiry and grants Family on refresh.
   await db.exec("update promo_codes set plan_id='family' where code='OLD-SINGLE';");
   await db.query("update entitlements set promo_redemption_id=(select id from promo_redemptions where user_id=$1),expires_at=(select created_entitlement_until from promo_redemptions where user_id=$1) where user_id=$1",[legacy]);
