@@ -22,7 +22,7 @@
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.2",
+    "@capacitor/cli": "^8.6.2",
     "@electric-sql/pglite": "^0.5.16",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.0",
